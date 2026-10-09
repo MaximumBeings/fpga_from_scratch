@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part03/14-interop-and-reference/">
+        <link rel="prev" href="../part03/15-hot-and-cold-path/">
       
       
       
@@ -849,6 +849,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part03/15-hot-and-cold-path/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    15. Hot Path and Cold Path: Splitting TCP Between Hardware and Software, Keeping the Order, Head-of-Line Blocking, and Reconnects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1284,6 +1312,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 15
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-15-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 15 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1628,6 +1678,28 @@
     <span class="md-ellipsis">
       
         Chapter 14 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 15
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-15-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 15 -- hints for the exercises
       
     </span>
   </a>
@@ -2080,6 +2152,29 @@
 <li><code>RCV.NXT + k*MSS</code> bitmap of arrived segments (the segment boundaries are the sender's: record offsets, not bytes) and the payloads in a RAM; on the segment at <code>RCV.NXT</code>, deliver it and then the run of recorded ones. Mutation-test the new logic; Example A is the benchmark.</li>
 <li>For <code>tx_next</code>, the transition relation is combinational from the state and the event: state the invariant, assume it before the event, assert it after. Without the guard on <code>SND.MAX</code> in the timeout the old code violates the invariant in one step from a state with <code>SND.MAX - SND.UNA &lt; MSS</code> and more data written; that is the counterexample the proof should print.</li>
 <li>Candidates: a mutant of the reference's fast-retransmit threshold from 3 to 4 (equivalent for the budget at these loss rates; a test would need a profile with a particular duplicate-ACK run), or one in the unreachable <code>default</code> of the event decoder (equivalent).</li>
+</ol>
+<h2 id="chapter-15">Chapter 15<a class="headerlink" href="#chapter-15" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Hot: a segment for a connection with nothing pending that <code>tcp_fast</code> accepts (ESTABLISHED, plain ACK, <code>seq = RCV.NXT</code>, length within the window, ACK number within <code>[SND.UNA, SND.NXT]</code>). Punted: every application command, every other segment, and every event of a connection that has events pending.</li>
+<li>If it were taken on the hot path it would be processed before the earlier, pending event, which software has not finished: the connection's events would be handled out of order (a FIN before the data that precedes it, say), and the state software writes back later would overwrite the hot path's update. The count of pending events is what prevents both.</li>
+<li><code>first</code> says that nothing was pending when the event was punted, so the hardware's state is current and software must load the snapshot (the hot path may have moved <code>RCV.NXT</code> since software last saw the connection). Always 0: software works from a stale state after a hot period and the model's transparency check fails. Always 1: software reloads the snapshot for events that arrive while earlier ones are pending, which loses the state it has computed and not yet written back.</li>
+<li>It decrements the count, which is what lets the connection return to the hot path. (The count cannot be decremented at the pop: software has not finished.) If a push for the same connection arrives in the same cycle, the count goes down by one and up by one.</li>
+<li>Transparency: the segments sent, the bytes delivered and the final state are those of the single state machine fed the same events in the same order, for any timing of software. It is the specification of a split (the split must not be visible), it needs no knowledge of the design's internals, and it is independent of the timing, so it can be checked over many random timings.</li>
+<li>An exception keeps its connection pending for about <code>L</code> cycles (one pop and one write-back). In that time <code>phi = (connection's event rate) x L</code> more events of the connection are expected; each is punted and keeps the connection pending for another <code>L</code> cycles, in which <code>phi</code> more are expected, and so on: <code>phi + phi^2 + ... = phi / (1 - phi)</code>.</li>
+<li>The derivation assumes software is idle when an event arrives, so that each pending period is exactly <code>L</code>. At phi = 0.5 the dragged-in events themselves saturate software (22.9% of the traffic punted, mean wait 1,503 cycles), the pending periods stretch, more events are dragged in, and the measured 10.5 events per exception is ten times the derived 1.0.</li>
+<li>With POLICY 0 the event at the head of the input waits for room in the FIFO; every event behind it waits too, whichever connection it belongs to. Room appears once per <code>L</code> cycles, so a burst of <code>B</code> exceptional events with a FIFO of <code>D</code> entries blocks the input for about <code>(B - D) x L</code> cycles (375 against 384 derived for <code>B = 32</code>, <code>D = 8</code>, <code>L = 16</code>).</li>
+<li>When the peer's retransmission is cheap and software is fast enough that drops are rare; it keeps the hot events moving (the longest wait of another event was 5 cycles) but dropped 22 of 32 and 112 of 128 burst events at a depth of 8, and most of the traffic when software is slow.</li>
+<li>In ESTABLISHED the machine of Chapter 12 sends no data, so <code>SND.UNA = SND.NXT</code> and an acceptable ACK number equals the value already stored: the store is invisible to every test, and the mutation run said so. A sender (Chapter 13) has data in flight, so the hot path must store the ACK number, and the tests must have data in flight to notice if it does not.</li>
+<li>In hardware it is two events (the open command and the SYN-ACK) and a write-back; the time is software's: about <code>L</code> cycles for each punted event plus its wait in the FIFO. Measured, from the arrival of the SYN-ACK to the write-back leaving the connection ESTABLISHED: 5.2, 18.8 and 84.2 cycles on average for <code>L</code> = 4, 16 and 64.</li>
+<li>(a) The hot path's store into <code>SND.UNA</code> and the table update's <code>consumed</code> condition: code that cannot matter (<code>SND.UNA = SND.NXT</code> in ESTABLISHED; a hot event is always consumed), so the RTL was simplified. (b) Software popping an empty FIFO: a missing test, closed by spurious pops in the closed loop. (Also: the ACK's sequence number from <code>SND.UNA</code> instead of <code>SND.NXT</code>, equivalent for the same reason, and the passive flag in the snapshot, redundant for transparency.)</li>
+</ol>
+<h2 id="chapter-15-hints-for-the-exercises">Chapter 15 -- hints for the exercises<a class="headerlink" href="#chapter-15-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The count and the snapshot are unchanged; add <code>SND.NXT</code>/<code>SND.MAX</code> writes on send (a second source of table updates in the same cycle as events: priority and bypass), and the hot update <code>t_una &lt;= ack</code>. Extend <code>with_decoys</code>/the stimulus with <code>E_WRITE</code>-like events from the application that advance <code>SND.NXT</code>. The test that fails first when the store is missing is the one with an ACK number above <code>SND.UNA</code> and data outstanding, which the present stimulus never produces.</li>
+<li>A RAM read takes a cycle, so read the entry for the next event while the current one is being decided and forward the write (hot update or write-back) when the connection is the same; the write-back arrives from outside at any time, so it needs its own bypass. Keep <code>count</code> per connection in registers so that the decision does not wait for the RAM.</li>
+<li>Safe only if the event is processed by software to the same effect as by nothing: a duplicate segment that merely produces an ACK and changes no state. Then software cannot be overtaken in a way that matters; the hot path still must not take an event <em>after</em> a state-changing event is pending, so the rule is "raise the count only for events that may change state". The model's <code>reference_check</code> is the test.</li>
+<li>Two FIFOs and an arbiter that always serves the setup FIFO first; <code>first</code> and the count work unchanged, since ordering per connection is by the count. Measure the other events' extra wait and the reconnect latency at <code>L = 64</code>; expect the latter near <code>L</code> plus the setup queue.</li>
+<li>Candidates: a mutant in the unreachable <code>default</code> of the event decode, or one that changes the count width (wider than any queue can fill: equivalent).</li>
 </ol>
 
 
