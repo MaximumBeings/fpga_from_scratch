@@ -90,3 +90,60 @@ Worked answer: the longest frame is 19 bytes (start, length, 16 payload, end), s
 4. Run the mutation script after removing the case: report the survivors, or report that none survive (then that vector kind was redundant for these mutants, which is also a finding).
 5. Candidates: the reset value of an unobserved register (equivalent), or a mutant in code the testbench never drives (a missing test).
 
+## Chapter 3
+
+**1. Write the period equation and say what changes if the clock is 20% faster.**
+
+Worked answer: `T >= t_cq + (LUT + route) x levels + t_setup`. A clock 20% faster has a period 1/1.2 = 0.83 of the old one, so the right-hand side (the sum of delays) must shrink by 17%: fewer levels (with Example A's fit, 1.29 ns per level, a 10 ns path at 100 MHz must drop to 8.3 ns, a bit more than one level fewer), a better placement, or a register cut in the middle (Chapter 4).
+
+**2. The critical path split was 3.1 ns logic and 4.9 ns routing. What would you try first, and why is "use a faster LUT" not on the list?**
+
+Worked answer: routing is the larger part, so first look at *why the wires are long*: reduce fan-out on the nets in the path, register the signals that cross the chip, or pipeline the path; also try other seeds, since the placer's choice moves the routing time. A faster LUT is not a choice: the LUT of the device is what it is, and even a zero-time LUT would remove only 3.1 ns of 8.0.
+
+**3. Why does hold time not depend on the clock period?**
+
+Worked answer: hold concerns the data *changing again after the same edge that captures it*: the launching and capturing edges are the same edge, so the period never enters. A hold violation is a path that is too fast; slowing the clock does not cure it, adding delay to the path does.
+
+**4. Why is the clock you can promise lower than the best seed's Fmax, and how did Example A choose it?**
+
+Worked answer: the best seed is one sample from a spread (111.3 to 124.5 MHz, 11.2%), and the next build, with a different seed or a changed neighbouring design, can land anywhere in it or below it. Example A takes the worst of twelve seeds (111.3 MHz) and 10% below that (100.1 MHz) as the promise. Twelve seeds do not prove a lower bound; they give an estimate.
+
+**5. Why does a reset synchronizer assert asynchronously but release synchronously?**
+
+Worked answer: asserting must work without a clock (the clock may be stopped or not yet running), and an early assert is harmless. Releasing is dangerous if it happens near a clock edge: some flip-flops would see the release in one cycle and some in the next, and the circuit would leave reset half-way. Retiming the release through two flip-flops makes it happen on a clock edge, two edges after the input is released, for every flip-flop at once.
+
+**6. What does the second flip-flop of a synchronizer buy, and what does a third buy?**
+
+Worked answer: each flip-flop gives the signal one more clock period to settle, and the chance of an unresolved value falls exponentially with the time allowed. With the assumed constants of the page, at 200 MHz one flip-flop gives 8 seconds, two give 1.9e4 years and three give 1.3e15 years. A third stage is used when the clock is fast or the consequence of a failure is severe.
+
+**7. A pulse is one 10 ns cycle and the receiving clock has a period of 25 ns. What does the naive circuit deliver, and what does the toggle circuit need?**
+
+Worked answer: the naive circuit delivers only the pulses during which a receiving edge happens to fall (here 80 of 200 in the book's run: about 10/25 = 40% in the long run, as the a register is high for 10 ns of every 25). The toggle circuit delivers all of them, provided successive pulses are far enough apart that no two toggles fall between two receiving edges (at least about three receiving periods).
+
+**8. Why can a multi-bit binary counter not be sent through a bank of synchronizers, and what property of Gray code fixes it?**
+
+Worked answer: each bit is captured independently; when more than one bit changes in a step, a capture in the middle can return a mix of old and new bits, a value the counter never had (for 4 bits, 8 of the 16 steps can do it). In a Gray code exactly one bit changes at each step, so the only possible captures are the old and the new value. The SAT proof shows this for all 16 steps of a 4-bit counter, including the wrap.
+
+**9. Why is `full` computed in the write domain and `empty` in the read domain, and why can each be wrong only in the safe direction?**
+
+Worked answer: each flag decides what *its own side* may do next, so it must be judged in that side's clock, against the other side's pointer arriving through a synchronizer. The pointer a side sees is a little *old*: the writer sees a read pointer that is behind the truth, so it can think the FIFO is fuller than it is (it holds `full` a little too long); the reader sees an old write pointer, so it can think the FIFO is emptier than it is. Neither can think the opposite.
+
+**10. The binary-pointer FIFO passed the data checks but failed the occupancy checks. Give an example of a circuit that would have corrupted data.**
+
+Worked answer: any logic that *acts on the count*: a reader that waits until at least four words are available and then reads four in consecutive cycles without looking at `empty` again; an almost-full flag that releases back-pressure; a DMA that moves `wptr - rptr` words. A count that is too high by a wrapped multi-bit capture sends such a circuit to read words that are not there. (Exercise 2 builds the burst reader.)
+
+**11. Why does the first version of the FIFO (Gray encoder from gates) fail?**
+
+Worked answer: gates between the binary counter and the synchronizer can glitch: in the simulation the encoder output went `0010` -> `0101` -> `0110` within one instant, three bits changing in turn. A capture in the middle of that sees a mix of three bits' old and new values, which is exactly the problem Gray was meant to avoid. The crossing pointer must be a flip-flop output, loaded with the Gray code of the *next* pointer.
+
+**12. Why can no simulation of the ideal synchronizer show that a synchronizer stage is missing?**
+
+Worked answer: without metastability the ideal one-stage and two-stage synchronizers have the same outputs one cycle apart; every functional test passes with both. The model of metastability would show it, but in the book's battery it *replaces* the file being mutated; the check that does catch it is structural (count the flip-flops after synthesis), and a real flow uses a CDC lint tool.
+
+## Chapter 3 -- hints for the exercises
+
+1. A `STAGES` parameter makes `q` the end of a shift register of that length; in the model, only the *first* flip-flop is made metastable, so the extra stages absorb a slowly resolving value only if the model keeps a value in limbo for more than one cycle: you have to extend the model to hold the unresolved value for a random number of cycles. Then find the window at which the number of failures changes between two and three stages.
+2. The consumer reads when `rlevel >= 4`, for four consecutive cycles, and a read that the DUT refuses (`empty` high) is counted as an error. Under the metastability model with binary pointers `rlevel` is sometimes too high; with Gray it never is, so the error count is the difference.
+3. `flow.run(["rtl/tchain.sv"], "tchain", "ecp5", 200, params={"D": d})`; the intercept and slope will differ because the ECP5 LUTs and routing differ; the *linear* form should still hold.
+4. The model gives the delivered count for each gap: loop gap from 1 upwards; the toggle circuit needs the gap times the sending period to exceed one receiving period (41.3 ns here) plus the settling, so a gap of 5 or more (50 ns); confirm in the testbench.
+5. A property that bounds the lag: after the writer has been idle for four read-clock edges, `rlevel` must equal the true occupancy. With that property the `rbin_n` mutant is caught (its count is one too low exactly when a read happens), so it ceases to be equivalent: the lesson is that "equivalent" always means "with respect to the properties checked".

@@ -1,0 +1,27 @@
+== 1. every pointer step, every way a mid-change capture can come out (each changing bit independently takes its old or its new value)
+  bits  steps |   binary: steps with a wrong value  wrong values |  Gray: steps with a wrong value
+     2      4 |                         2 of 4                4 |                    0 of 4    
+     3      8 |                         4 of 8               16 |                    0 of 8    
+     4     16 |                         8 of 16              48 |                    0 of 16   
+     5     32 |                        16 of 32             128 |                    0 of 32   
+     6     64 |                        32 of 64             320 |                    0 of 64   
+     7    128 |                        64 of 128            768 |                    0 of 128  
+     8    256 |                       128 of 256           1792 |                    0 of 256  
+  a binary step changes 1 bit half the time, 2 bits a quarter of the time, and so on; every step that changes k bits has 2^k - 2 wrong captures. A Gray step changes exactly one bit: the only captures are the old and the new value.
+
+== 2. MTBF = exp(tr / tau) / (T0 * fclk * fdata): ASSUMED constants tau = 200 ps, T0 = 100 ps, 2 ns lost to clock-to-q, setup and routing between the flip-flops; data changes at fclk / 10
+   fclk MHz |       1 flip-flop  |       2 flip-flops |       3 flip-flops
+         50 |      1.5e+27 years |      4.2e+70 years |     1.1e+114 years
+        100 |      7.5e+04 years |      3.9e+26 years |      2.0e+48 years
+        150 |          6.0e+04 s |      5.7e+11 years |      1.7e+26 years
+        200 |          8.2e+00 s |      1.9e+04 years |      1.3e+15 years
+        250 |         3.5e+01 ms |          1.7e+07 s |      2.6e+08 years
+  the exponent is why one extra flip-flop turns hours into centuries and why the answer depends so sharply on the clock: tau and T0 are properties of the device and of the supply voltage and temperature (take them from the vendor), not of this book
+
+== 3. the asynchronous FIFO in iCE40 HX8K (target 100 MHz on each clock; seed 1): cost and the maximum frequency of EACH clock
+    W  depth    code  LUTs   FFs RAM4K  Fmax wclk  Fmax rclk
+    8      8    Gray    90    94     0     155.79     160.33
+    8      8  binary    81    88     0     169.35     192.23
+   16     32    Gray   499   558     0      92.48     153.61
+   32     64    Gray  1882  2102     0      85.16     113.83
+  the storage here is the FWFT read of Section 3.6 (a combinational read of the memory array), which an FPGA builds from LUTs and flip-flops, not block RAM: that is why the area grows with width x depth. A block-RAM FIFO has a registered read and needs a prefetch stage; Chapter 8 builds it.

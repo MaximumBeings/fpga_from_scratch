@@ -1,0 +1,18 @@
+Critical path report for clock 'clk$SB_IO_IN_$glb_clk' (posedge -> posedge):
+Info: curr total
+Info:  0.5  0.5  Source x[0]_SB_DFF_Q_6_DFFLC.O
+Info:  0.6  1.1    Net x[0][9] budget 0.292000 ns (6,20) -> (5,19)
+Info:  0.4  1.6  Source x[6]_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I1_SB_LUT4_O_I0_SB_LUT4_O_I0_SB_LUT4_O_3_LC.O
+Info:  1.3  2.8    Net x[6]_SB_LUT4_O_I2_SB_LUT4_O_I0_SB_LUT4_O_I2_SB_LUT4_O_I1_SB_LUT4_O_I1[0] budget 0.292000 ns (5,19) -> (7,18)
+Info:  0.4  3.2  Source x[6]_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I1_SB_LUT4_O_I0_SB_LUT4_O_LC.O
+Info:  0.6  3.8    Net x[6]_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I1_SB_LUT4_O_I0[3] budget 0.292000 ns (7,18) -> (6,18)
+Info:  0.4  4.3  Source x[6]_SB_LUT4_O_I2_SB_LUT4_O_I3_SB_LUT4_O_I1_SB_LUT4_O_I2_SB_LUT4_I3_LC.O
+Info:  1.0  5.2    Net x[6]_SB_LUT4_O_I2_SB_LUT4_O_I0_SB_LUT4_O_I2[3] budget 0.292000 ns (6,18) -> (5,16)
+Info:  0.4  5.7  Source x[6]_SB_LUT4_O_I3_SB_LUT4_O_I2_SB_LUT4_O_LC.O
+Info:  0.6  6.3    Net x[6]_SB_LUT4_O_I2_SB_LUT4_O_I3[2] budget 0.292000 ns (5,16) -> (5,17)
+Info:  0.4  6.7  Source x[6]_SB_LUT4_O_I3_SB_LUT4_O_I2_SB_LUT4_I1_1_LC.O
+Info:  0.9  7.6    Net x[6]_SB_LUT4_O_8_I1[2] budget 0.292000 ns (5,17) -> (3,17)
+Info:  0.5  8.0  Setup x[6]_SB_LUT4_O_13_LC.I0
+Info: 3.1 ns logic, 4.9 ns routing
+
+Max frequency for clock 'clk$SB_IO_IN_$glb_clk': 124.55 MHz (FAIL at 200.00 MHz)

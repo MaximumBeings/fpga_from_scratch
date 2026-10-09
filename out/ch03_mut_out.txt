@@ -1,0 +1,24 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  sync: one flip-flop instead of two (q takes d directly): caught by: structure: 1 flip-flops in the synchronizer, expected 2
+  sync: the first flip-flop starts at 1: caught by: pulse naive BP=2000 gap=6
+  naive pulse: b_pulse is the level, not the edge: caught by: pulse naive BP=2000 gap=6
+  toggle pulse: the source stores the pulse instead of toggling: caught by: pulse toggle BP=2000 gap=6
+  toggle pulse: only rising changes are reported: caught by: pulse toggle BP=2000 gap=6
+  reset synchronizer: reset no longer asserts asynchronously: caught by: reset synchronizer
+  reset synchronizer: released after one edge: caught by: reset synchronizer
+  fifo: full compares only the top pointer bit flipped: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: empty ignores the wrap bit: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: writes ignore full: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: reads ignore empty: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: a word is written one slot ahead: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: read data addressed by the Gray pointer: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: the write pointer is not a Gray code (shifted by two): caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: the read pointer is not a Gray code (shifted by two): caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: gray2bin forgets the XOR with the bits above: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: the write side forgets to reset its sent pointer: caught by: FIFO ideal (10000, 7300, 70, 60)
+  fifo: the write pointer that crosses is one step older (full compares a stale pointer): caught by: FIFO ideal (10000, 7300, 70, 60)
+  gray_prop: the encoder shifts by two: caught by: SAT: Gray property
+mutants caught: 19 of 19
+equivalent changes (no property in the testbench's reach can tell them apart; listed apart, see the page):
+  fifo: the reader's count is taken after this edge's read (rbin_n instead of rbin): NOT CAUGHT

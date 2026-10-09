@@ -1,0 +1,45 @@
+== 1. lint gate: Verilator -Wall --lint-only and Yosys 'check' on rtl/cdc_sync.sv + rtl/cdc.sv (top cdc_afifo) and rtl/cdc.sv alone for the pulse circuits
+  cdc_afifo          Verilator warnings: 0   Yosys check problems: 0
+  cdc_toggle_pulse   Verilator warnings: 0   Yosys check problems: 0
+  cdc_naive_pulse    Verilator warnings: 0   Yosys check problems: 0
+  cdc_rst_sync       Verilator warnings: 0   Yosys check problems: 0
+
+== 2. asynchronous FIFO (8 bits x 8 words), 3,000 words, scoreboard + occupancy checks; 4 clock pairs x 4 traffic profiles = 16 runs per row (Icarus)
+  pointers encoder      synchronizer    passed   first failure
+  Gray     registered   ideal          16 of 16   
+  Gray     registered   meta           16 of 16   
+  binary   registered   ideal          16 of 16   
+  binary   registered   meta            0 of 16   written 3000 read 3000, wrong words 0, overflows 0, underflows 0, reader over-counted 172 times, writer under-counted 31 times, mid-run reset not clean 0 times   (wclk 10000 ps, rclk 7300 ps, offer 70%, ask 60%)
+  Gray     combinational ideal          16 of 16   
+  Gray     combinational meta            0 of 16   written 3000 read 3000, wrong words 0, overflows 0, underflows 0, reader over-counted 151 times, writer under-counted 34 times, mid-run reset not clean 0 times   (wclk 10000 ps, rclk 7300 ps, offer 70%, ask 60%)
+
+  the main configuration in both simulators (wclk 10000 ps, rclk 7300 ps, offer 70%, ask 60%):
+  Icarus     Gray registered, ideal: PASS: 3000 words in order, max occupancy 8 of 8, full seen 52 cycles, empty seen 981 cycles
+  Icarus     Gray registered, meta : PASS: 3000 words in order, max occupancy 8 of 8, full seen 56 cycles, empty seen 1010 cycles
+  Icarus     binary,          meta : FAIL: written 3000 read 3000, wrong words 0, overflows 0, underflows 0, reader over-counted 172 times, writer under-counted 31 times, mid-run reset not clean 0 times
+  Verilator  Gray registered, ideal: PASS: 3000 words in order, max occupancy 8 of 8, full seen 52 cycles, empty seen 982 cycles
+  Verilator  Gray registered, meta : PASS: 3000 words in order, max occupancy 8 of 8, full seen 56 cycles, empty seen 1011 cycles
+  Verilator  binary,          meta : FAIL: written 3000 read 3000, wrong words 0, overflows 0, underflows 0, reader over-counted 172 times, writer under-counted 31 times, mid-run reset not clean 0 times
+
+== 3. pulse crossings: 200 one-cycle pulses; the testbench's count against the event model's prediction (a clock = 10,000 ps, b-clock phase 1,234 ps)
+  b period ps gap (a cycles) | naive sim naive model | toggle sim toggle model
+         2000              6 |       200         200 |        200          200
+         7300              6 |       200         200 |        200          200
+        13000              6 |       154         154 |        200          200
+        25000              6 |        80          80 |        200          200
+        41300              6 |        50          50 |        200          200
+         7300              1 |         1           1 |        200          200
+         7300              2 |       200         200 |        200          200
+        13000              2 |       108         108 |        200          200
+        13000              3 |       153         153 |        200          200
+        13000              4 |       152         152 |        200          200
+        41300              4 |         6           6 |        188          188
+  simulation against model: all agree
+
+== 4. reset synchronizer: assert in the middle of a clock period, release at 40 different offsets after an edge
+  Icarus     trials 40, edges to release [2], model agrees on every trial: True, reset did not fall at once: 0, reset not held low: 0
+  Verilator  trials 40, edges to release [2], model agrees on every trial: True, reset did not fall at once: 0, reset not held low: 0
+
+== 5. the property that makes Gray safe, proved by SAT for EVERY counter value (4-bit counter, all 16 steps including the wrap)
+  Gray   : exactly one bit changes at every step -- PROVED for all 16 values
+  binary : NOT true -- counterexample: the step 1 -> 2 changes more than one bit

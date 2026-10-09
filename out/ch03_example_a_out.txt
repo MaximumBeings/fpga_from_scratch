@@ -1,0 +1,23 @@
+== 1. logic depth against Fmax (iCE40 HX8K, seed 1, target 200 MHz so nextpnr tries hard; W = 16 bits wide)
+    D  LUTs  FFs levels (ltp)  Fmax MHz  period ns  logic ns  routing ns  routing share
+    1    16   32            3     408.2       2.45       1.0         1.5            60%
+    2    32   32            4     271.1       3.69       1.5         2.2            59%
+    3    48   32            5     201.5       4.96       1.8         3.2            64%
+    4    64   32            6     169.7       5.89       2.2         3.7            63%
+    6    96   32            8     124.5       8.03       3.1         4.9            61%
+    8   128   32           10      90.8      11.01       3.9         7.1            65%
+   10   160   32           12      71.9      13.91       4.5         9.4            68%
+   12   192   32           14      59.4      16.84       5.6        11.2            67%
+
+  fit: period = 0.91 ns + 1.29 ns per LUT level (R^2 = 0.996); the 0.91 ns is clock-to-q plus setup plus the first route, the 1.29 ns is one LUT plus one route
+
+== 2. the same design (D = 6) with 12 placer seeds: only the random start of the placer changes
+  seed:       1      2      3      4      5      6      7      8      9     10     11     12
+  Fmax:   124.5  116.4  118.8  119.0  119.8  121.2  119.5  116.2  120.3  114.7  116.9  111.3
+  min 111.3  mean 118.2  max 124.5 MHz   spread (max - min) / mean = 11.2%
+  a clock you can PROMISE for this design is below the worst seed: 111.3 MHz, and a margin of 10% below that gives 100.1 MHz
+
+== 3. slack at a target clock: slack = period - (clock-to-q + logic + routing + setup); negative slack = fails
+  target 100 MHz (period 10.0 ns): seeds that meet it: 12 of 12   slack at the worst seed: +1.01 ns
+  target 125 MHz (period 8.0 ns): seeds that meet it: 0 of 12   slack at the worst seed: -0.99 ns
+  target 150 MHz (period 6.7 ns): seeds that meet it: 0 of 12   slack at the worst seed: -2.32 ns
