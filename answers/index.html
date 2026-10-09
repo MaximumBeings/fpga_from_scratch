@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part03/15-hot-and-cold-path/">
+        <link rel="prev" href="../part04/16-exchange-protocols/">
       
       
       
@@ -888,6 +888,95 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 4 -- Market data
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 4 -- Market data
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part04/16-exchange-protocols/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    16. Exchange Protocols: MoldUDP64 and ITCH, and a Generator That Turns a Message Grammar into a Parser
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -906,10 +995,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -927,8 +1016,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1334,6 +1423,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 16
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-16-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 16 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1700,6 +1811,28 @@
     <span class="md-ellipsis">
       
         Chapter 15 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 16
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-16-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 16 -- hints for the exercises
       
     </span>
   </a>
@@ -2175,6 +2308,29 @@
 <li>Safe only if the event is processed by software to the same effect as by nothing: a duplicate segment that merely produces an ACK and changes no state. Then software cannot be overtaken in a way that matters; the hot path still must not take an event <em>after</em> a state-changing event is pending, so the rule is "raise the count only for events that may change state". The model's <code>reference_check</code> is the test.</li>
 <li>Two FIFOs and an arbiter that always serves the setup FIFO first; <code>first</code> and the count work unchanged, since ordering per connection is by the count. Measure the other events' extra wait and the reconnect latency at <code>L = 64</code>; expect the latter near <code>L</code> plus the setup queue.</li>
 <li>Candidates: a mutant in the unreachable <code>default</code> of the event decode, or one that changes the count width (wider than any queue can fill: equivalent).</li>
+</ol>
+<h2 id="chapter-16">Chapter 16<a class="headerlink" href="#chapter-16" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Session (10 bytes), sequence number of the first message (8), count of blocks (2), then the blocks, each a 2-byte length and a message. Count 0 is a heartbeat (no blocks); 0xFFFF marks the end of the session, and the parser does not compare it with the number of blocks.</li>
+<li>The type and length of a block are known at the start, but the error class (unknown type, wrong length) and the complete fields are known only at the end; the registers are stable on the last byte, and the next block's two length bytes give the output time to be read before anything is overwritten.</li>
+<li>One shift register <code>f_&lt;name&gt;</code> of the field's width and one select <code>s_&lt;name&gt;</code> that is an OR of <code>(ty == type &amp;&amp; off &gt;= start &amp;&amp; off &lt; start + width)</code> terms, one per type; the register shifts in the byte, big-endian, whenever the select is true.</li>
+<li>The type byte is itself at body offset 0; the type register holds it only from the next byte on, and the error class likewise. Fields start at offset 1 or later (after the type), so by then the registered values are valid.</li>
+<li>If the generator and the model both read the grammar, a wrong layout in it would be in both and nothing would disagree. With the model's own <code>struct</code> layouts a typo in one copy fails a test. A misreading of the protocol that is the same in both copies still passes, and the layouts here are from memory.</li>
+<li>Ending inside a block: no message for that block, <code>trunc</code> set on the packet end. A new sop in the middle: the packet in progress is abandoned silently (no packet end); messages already completed stay.</li>
+<li>The counter is incremented as the block completes, in the same clock edge that registers the message. Reporting the register's new value would be one too many; the block's index is the value before the increment.</li>
+<li>For a heartbeat (header only) the last count byte arrives in the same cycle as the eop; the register had not yet been loaded, so the comparison used the old count. The check now uses the byte on the wire in that cycle.</li>
+<li>Flagged: type byte, length bytes (a truncation, a wrong count or an error), count. Not flagged: a payload byte (the corrupted message is accepted) and the sequence number (only a sequencer with memory can tell). Payloads are guarded by the UDP checksum (Chapter 9); sequence numbers by gap detection (Exercise 1).</li>
+<li>After the bad length the framing is lost for the rest of the packet, but a sop restarts the parse, so the next packet is unaffected: on average 5.5 of 12 messages come out right, the rest are lost, and no garbage was accepted in 800 trials.</li>
+<li>A garbage block must start with a type byte of the grammar (8 of 256) <em>and</em> be followed by exactly that type's length in its two length bytes (about 1 in 65,536 for random bytes), so about 1e-5 per garbage block; none was accepted in 800 packets.</li>
+<li>For example: no zero-length or one-byte block was ever generated (the stimulus lacked those lengths); the offset counter does not saturate (no block over 255 bytes); reset does not stop a packet (the testbench reset only at the start); the stray-eop mutants (stray bytes never carried an eop).</li>
+</ol>
+<h2 id="chapter-16-hints-for-the-exercises">Chapter 16 -- hints for the exercises<a class="headerlink" href="#chapter-16-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Keep <code>next_seq</code> (64 bits); on a packet end set it to <code>seq + count</code>; compare a new packet's <code>seq</code> with it when the header completes (a 64-bit comparison is a carry chain: register it and use the next cycle). A packet with <code>seq + count &lt;= next_seq</code> is a duplicate; with <code>seq &gt; next_seq</code>, a gap of <code>seq - next_seq</code>. Extend <code>decode</code> with the same state and <code>random_packets</code> with replays and holes.</li>
+<li>The grammar entry becomes <code>("name", "lp1")</code> (length prefix of one byte); the field select cannot be a fixed offset any more, so keep a running offset per message and a counter for the string; the generator emits a small sub-state per such field. Messages after it have offsets that depend on the string's length: the grammar must say that they are relative to it.</li>
+<li>SoupBinTCP packets are <code>length(2) type(1) payload</code>: the same loop with a one-byte type in place of the Mold header; generate it by giving the generator a different framing preamble, then check against a model with its own struct layouts.</li>
+<li>Walk the grammar in the same order and emit, per type, a <code>case</code> that shifts each field out most significant byte first; the test is <code>decode(encode(x)) == x</code> on random values, then compare with the parser's output.</li>
+<li>Candidates: a mutant of the unreachable <code>default</code> branches (equivalent), or one that changes the width of a counter that can never fill (outside the contract).</li>
 </ol>
 
 
