@@ -55,5 +55,6 @@ nav:
       - "1. What an FPGA Is: Lookup Tables, the Carry Chain, and the Open Flow": part01/01-what-an-fpga-is.md
       - "2. Hardware Design in SystemVerilog: A Portable Subset, Valid/Ready Stages, State Machines, and Lint": part01/02-systemverilog.md
       - "3. Timing and Clock Domains: Setup and Hold, Reading a Timing Report, Reset, Synchronizers, and the Asynchronous FIFO": part01/03-timing-and-cdc.md
+      - "4. Latency as a Budget: Pipelines, Cut-Through Against Store-and-Forward, and Determinism": part01/04-latency-budget.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

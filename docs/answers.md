@@ -147,3 +147,61 @@ Worked answer: without metastability the ideal one-stage and two-stage synchroni
 3. `flow.run(["rtl/tchain.sv"], "tchain", "ecp5", 200, params={"D": d})`; the intercept and slope will differ because the ECP5 LUTs and routing differ; the *linear* form should still hold.
 4. The model gives the delivered count for each gap: loop gap from 1 upwards; the toggle circuit needs the gap times the sending period to exceed one receiving period (41.3 ns here) plus the settling, so a gap of 5 or more (50 ns); confirm in the testbench.
 5. A property that bounds the lag: after the writer has been idle for four read-clock edges, `rlevel` must equal the true occupancy. With that property the `rbin_n` mutant is caught (its count is one too low exactly when a read happens), so it ceases to be equivalent: the lesson is that "equivalent" always means "with respect to the properties checked".
+
+## Chapter 4
+
+**1. Define latency, throughput and jitter, and say which of the three a pipeline's structure fixes.**
+
+Worked answer: latency is the number of cycles from an input to the output that depends on it; throughput is the number of inputs accepted per cycle; jitter is the variation of latency from one input to another. A registered pipeline fixes the latency (S + 1 cycles) and the throughput (one per cycle) and so has no jitter; a store-and-forward stage has latency and jitter that depend on the packet.
+
+**2. Why does the book never quote a wire-to-wire time for a design?**
+
+Worked answer: such a time includes the physical interface, the board, cables and the other side's gateway, none of which the simulations or the open tools measure. What can be measured is the number of cycles inside the FPGA and the clock the tools say it can reach; a nanosecond figure from them is labelled as nextpnr's estimate.
+
+**3. The area is 192 LUTs in every row but the flip-flops grow. Why?**
+
+Worked answer: the logic is 12 rounds of one LUT4 per bit (12 x 16 = 192) whatever the cut. Each extra stage adds a register for the 16-bit word and the valid bit (17 flip-flops), so the count rises from 34 to 221.
+
+**4. Fmax rises from 57 to 385 MHz as the stages go from 1 to 12. Why is the rise less than twelvefold?**
+
+Worked answer: each stage still pays clock-to-q, setup and at least one route, whatever the logic in it. With the fit of Chapter 3, those fixed costs (about 0.9 ns plus a route) do not shrink as the logic shrinks, so the period falls by less than the logic does.
+
+**5. Why does the latency in nanoseconds have a minimum rather than falling forever?**
+
+Worked answer: the latency is (S + 1) x period. The period falls toward its floor (the fixed per-stage cost), while the number of cycles keeps growing, so past a point each added stage adds a whole fixed-cost period for a gain that shrinks. In the measurements the latency rises again from about 25 to 29 ns (S = 2 to 6) to 33.8 ns at S = 12.
+
+**6. Why can the data not tell you whether to use 2 or 6 stages?**
+
+Worked answer: the worst-of-six latencies for S = 2 to 6 span 28.3 to 29.2 ns, a range smaller than the seed-to-seed spread of Fmax (up to 20%). A different seed could reorder them; the measurement supports the shape, not the ranking inside the flat part.
+
+**7. Why did the pipeline get an input register, and what did nextpnr report without it?**
+
+Worked answer: a timing tool measures paths from one flip-flop to another. With S = 1 and no input register, the only path is from the input pins to a register, which is not a clock path, and nextpnr reported no maximum frequency at all. The input register makes every logic path register-to-register and costs one cycle (latency S + 1).
+
+**8. What can cut-through decide at the first beat, and what only at the last? How does it handle the second?**
+
+Worked answer: the header test (the low byte of the first beat) is known at the first beat, so a packet that fails it is dropped at once. The checksum depends on every beat, so it is known only at the last; cut-through has already forwarded the packet and raises a `bad` flag on the last beat.
+
+**9. Why must the receiver of a cut-through stream be able to undo work?**
+
+Worked answer: it has already seen the first beats of a packet that turns out to be bad. Whatever it did with them (started processing, updated state, begun a reply) must be abandoned or reversed when the last beat arrives flagged bad.
+
+**10. Why is "40 of 40 streams agree with the specification" a separate check from the testbench passing?**
+
+Worked answer: the testbench compares the RTL with the golden model; if the model were wrong, a wrong design that matched it would pass. The specification is a separate, timing-free statement of what should come out, and the Python check shows that the model, and so the testbench, is judging against the right thing.
+
+**11. Why does a budget for a store-and-forward stage have to be a range?**
+
+Worked answer: its latency is n + 1 cycles for a packet of n beats, so it depends on the packet; with packets of 1 to 12 beats the first-beat latency took eleven values from 3 to 13 cycles. A budget with one number would be wrong for most packets.
+
+**12. One mutant survived the first run of the battery. Which, why, and what closed it?**
+
+Worked answer: the one that does not clear the input valid register on reset. The first testbench held `in_valid` low during reset, so the register was cleared by the idle input anyway and nothing differed. Holding `in_valid` high during reset (a valid input must be discarded by reset) makes the mutant produce a phantom output, and it is caught.
+
+## Chapter 4 -- hints for the exercises
+
+1. Two buffers selected by a toggle bit: one fills while the other drains; `in_ready` goes low only when both are full. The model needs a second buffer and a queue of lengths; for equal lengths n the rate becomes one packet per n cycles. The cost is a second 32 x 32 memory (2 more block RAMs by Example B's measure) and the toggle logic.
+2. Throughput is the clock in MHz items per microsecond (one item per cycle). A 30 ns budget at the worst-of-six latency rules out S = 1 (35.1 ns) and S = 12 (33.8 ns) and allows S = 2 to 6 only if their worst-of-six latency is under 30 ns, which Example A says it is (28.3 to 29.2 ns).
+3. Add `out_ready` and a hold: either a skid buffer (Chapter 2) at the output, which keeps one cycle of latency and adds registers, or stalling the input, which requires `in_ready`. A stage that can stall no longer has a *single* latency under backpressure: the property becomes "latency 1 when the downstream is ready".
+4. `flow.run(["rtl/pipe.sv"], "pipe", "ecp5", 400, params={"S": s})`; compare the Fmax column and the position of the minimum; ECP5's per-stage overhead differs, so the floor can move.
+5. Candidates: a reset value of an unobserved register (equivalent), or a mutant in a path the vectors never drive (a missing test): for example, a packet of exactly 32 beats, the buffer depth, which the generators never produce (maximum 12).

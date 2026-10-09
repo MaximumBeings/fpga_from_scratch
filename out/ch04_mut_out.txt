@@ -1,0 +1,33 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  pipe: one round too few in each stage: caught by: pipe S=1
+  pipe: the round mixes the wrong neighbours: caught by: pipe S=1
+  pipe: a stage register takes its input, skipping the logic: caught by: pipe S=1
+  pipe: the output valid is taken from the first stage: caught by: pipe S=3
+  pipe: the input register is bypassed (one cycle too fast): caught by: pipe S=1
+  pipe: the valid chain is not cleared by reset: caught by: pipe S=12
+  pipe: the input valid register is not cleared by reset: caught by: pipe S=1
+  pipe: the valid bit is delayed one stage too long (extra register in the first stage): caught by: pipe S=1
+  ct: the header byte is 0xA4: caught by: cut-through mix (5, 3, 2)
+  ct: a dropped packet's later beats are forwarded: caught by: cut-through mix (5, 3, 2)
+  ct: the checksum is not restarted for each packet: caught by: cut-through mix (5, 3, 2)
+  ct: bad is flagged on dropped packets too: caught by: cut-through mix (5, 3, 2)
+  ct: the checksum uses only 15 bits: caught by: cut-through mix (5, 3, 2)
+  ct: no beat is ever the first of a packet after the first packet: caught by: cut-through mix (5, 3, 2)
+  ct: last is never forwarded: caught by: cut-through mix (5, 3, 2)
+  ct: reset does not clear the packet state: caught by: cut-through mix (5, 3, 2)
+  ct: an idle cycle leaves the output valid: caught by: cut-through mix (5, 3, 2)
+  sf: the header byte is 0xA4: caught by: store-and-forward mix (5, 3, 2)
+  sf: the checksum leaves out the last beat: caught by: store-and-forward mix (5, 3, 2)
+  sf: one beat too few is streamed out: caught by: store-and-forward mix (5, 3, 2)
+  sf: last is flagged one beat late: caught by: store-and-forward mix (5, 3, 2)
+  sf: ready stays high while draining: caught by: store-and-forward mix (5, 3, 2)
+  sf: a discarded packet leaves its checksum behind: caught by: store-and-forward mix (5, 3, 2)
+  sf: a discarded packet leaves its length behind: caught by: store-and-forward mix (5, 3, 2)
+  sf: the first byte is never captured: caught by: store-and-forward mix (5, 3, 2)
+  sf: draining never ends: caught by: store-and-forward mix (5, 3, 2)
+  sf: every beat comes out of buffer slot 0: caught by: store-and-forward mix (5, 3, 2)
+mutants caught: 27 of 27
+equivalent changes (no testbench can tell them apart; listed apart, see the page):
+  pipe: a stage register loads only when its valid is set (data is checked only when valid): NOT CAUGHT
+  sf: the write count is not advanced on the last beat of a good packet (it is reset when the drain ends): NOT CAUGHT

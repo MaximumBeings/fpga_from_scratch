@@ -1,0 +1,19 @@
+== latency, throughput and area of a 12-level function cut into S stages (W = 16 bits; asked for 400 MHz so that nextpnr works as hard as it can)
+    S levels/stage  LUTs   FFs  Fmax (seed 1)  Fmax worst of 6  latency cycles  latency ns (seed 1)  latency ns (worst of 6)
+    1           12   192    34        57.0 MHz          57.0 MHz               2              35.1 ns                  35.1 ns
+    2            6   192    51       112.1 MHz         103.5 MHz               3              26.8 ns                  29.0 ns
+    3            4   192    68       149.3 MHz         141.6 MHz               4              26.8 ns                  28.3 ns
+    4            3   192    85       198.9 MHz         175.9 MHz               5              25.1 ns                  28.4 ns
+    6            2   192   119       256.0 MHz         239.7 MHz               7              27.3 ns                  29.2 ns
+   12            1   192   221       385.1 MHz         385.1 MHz              13              33.8 ns                  33.8 ns
+
+  lowest latency in nanoseconds with the worst-of-6 clock: S = 3 (28.3 ns); for S = 2 to 6 the worst-of-6 latency lies between 28.3 and 29.2 ns, a range smaller than the seed-to-seed spread below
+  adding stages raises Fmax but adds a cycle each, and the clock-to-q, setup and routing of each stage are paid S + 1 times: the latency in ns falls steeply from S = 1, is flat over the middle, and rises again when each stage holds one level
+
+== the spread over six placer seeds (Fmax, MHz)
+  S =  1:   57.0   59.1   60.2   57.1   61.7   60.3   spread 7.9%
+  S =  2:  112.1  112.6  103.5  114.7  104.9  112.3   spread 10.1%
+  S =  3:  149.3  150.7  145.3  141.6  172.3  163.8   spread 20.0%
+  S =  4:  198.9  195.2  192.8  175.9  187.2  187.7   spread 12.1%
+  S =  6:  256.0  248.9  239.7  276.3  252.8  249.8   spread 14.4%
+  S = 12:  385.1  422.6  422.6  408.2  408.2  400.2   spread 9.2%

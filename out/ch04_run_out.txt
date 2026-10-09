@@ -1,0 +1,21 @@
+== 1. lint gate: Verilator -Wall --lint-only and Yosys 'check'
+  pipe       Verilator warnings: 0   Yosys check problems: 0
+  ct_filter  Verilator warnings: 0   Yosys check problems: 0
+  sf_filter  Verilator warnings: 0   Yosys check problems: 0
+
+== 2. pipelined function: 12 rounds, 16 bits, 2,000 cycles of random valid/data against the golden model; every output exactly S + 1 cycles after its input
+    S  valid 100%  valid 70%  valid 20%  Verilator (70%)
+    1        PASS       PASS       PASS             PASS
+    2        PASS       PASS       PASS             PASS
+    3        PASS       PASS       PASS             PASS
+    4        PASS       PASS       PASS             PASS
+    6        PASS       PASS       PASS             PASS
+   12        PASS       PASS       PASS             PASS
+
+== 3. the filter models against the specification (Python only): 40 random streams of 100 packets; the cut-through model must output exactly the kept packets (bad ones flagged), the store-and-forward model exactly the good ones
+  40 of 40 streams: both models agree with the specification
+
+== 4. the RTL against the golden models: 6 seeds x 3 mixes per filter (Icarus) and the first of each in Verilator
+  filter                   Icarus  Verilator
+  cut-through            18 of 18        PASS
+  store-and-forward      18 of 18        PASS

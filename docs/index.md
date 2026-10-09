@@ -8,7 +8,7 @@
 An open-toolchain book on FPGA design. It starts from what an FPGA is and builds, step by step, a complete **high-frequency-trading data path** (Ethernet, UDP and TCP, exchange market data, an order book, triggers, pre-trade risk and order entry) as the main running case study; it then applies the same method to case studies in signal processing, radio, security, compression, control, vision, genomics, finance and machine learning.
 
 !!! note "Status"
-    The book is **under development**: Chapters 1 to 3 are written; [Contents](contents.md) lists every part and chapter, what each will build, and the tests it will carry. Chapters are added one at a time, each with its code, its recorded output and its mutation run.
+    The book is **under development**: Chapters 1 to 4 are written; [Contents](contents.md) lists every part and chapter, what each will build, and the tests it will carry. Chapters are added one at a time, each with its code, its recorded output and its mutation run.
 
 ## The method (the same as in *Capra: Silicon Compiler from Scratch*)
 
