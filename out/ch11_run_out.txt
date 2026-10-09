@@ -1,0 +1,45 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  udp_sf       Verilator warnings: 0   Yosys check problems: 0
+  udp_ct       Verilator warnings: 0   Yosys check problems: 0
+  pacer        Verilator warnings: 0   Yosys check problems: 0
+  udp_tx_path  Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model: the builder's frames are accepted by Chapter 9's header filter model, with the right addresses and ports
+  200 of 200 frames forwarded with the fields intended; 38 of them carry a UDP checksum of 0xFFFF (a sum that comes out as zero is sent as all ones)
+
+== 3. the builders against the specification: the whole wire frame (preamble, headers, payload, padding, FCS), every frame of every run
+  builder             source seeds  packets   sent  dropped |    Icarus  Verilator   underruns
+  store-and-forward     100%     8      264    218       46 |      8 of 8       PASS   0
+  store-and-forward      60%     8      264    218       46 |      8 of 8       PASS   0
+  cut-through           100%     8      240    240        0 |      8 of 8       PASS   0
+  (the store-and-forward builder drops a payload above 1472 bytes, whole, and counts it; the cut-through builder is given only lengths it can send; the frame id counts frames sent, so a dropped packet leaves no gap)
+
+== 4. the cut-through builder cannot wait: a source that stalls inside a payload makes the MAC underrun (the wire cannot pause)
+  source speed |  frames exact  underrun flag   (8 seeds, 12 packets each; store-and-forward for comparison)
+          100% | cut-through 8 of 8, underrun in 0 of 8 runs;   store-and-forward 8 of 8, underrun in 0
+           90% | cut-through 0 of 8, underrun in 8 of 8 runs;   store-and-forward 8 of 8, underrun in 0
+           60% | cut-through 0 of 8, underrun in 8 of 8 runs;   store-and-forward 8 of 8, underrun in 0
+
+== 5. the pacers alone against their cycle-exact models: every grant cycle and length (20,000 cycles of random requests that hold their length for at least 4 cycles)
+  pacer                      rate /256  grants |  3 seeds equal
+  pipelined (final)                  4      25 |           3 of 3
+  pipelined (final)                 16      34 |           3 of 3
+  pipelined (final)                 64      74 |           3 of 3
+  pipelined (final)                200     149 |           3 of 3
+  pipelined (final)                256     185 |           3 of 3
+  combinational (first)              4      25 |           3 of 3
+  combinational (first)             16      34 |           3 of 3
+  combinational (first)             64      74 |           3 of 3
+  combinational (first)            200     149 |           3 of 3
+  combinational (first)            256     185 |           3 of 3
+
+== 6. the pacer in the system: frames exact, and the token-bucket bound on the frame start times (any frames i..j: the sum of their costs <= bucket + rate x (start j - start i))
+  builder                   pacer  rate  frames  exact  bound holds  tightest slack
+  store-and-forward     pipelined    16      40    YES          YES          0.1 B
+  store-and-forward     pipelined    64      40    YES          YES          0.2 B
+  store-and-forward     pipelined   160      40    YES          YES       3029.0 B
+  cut-through           pipelined    16      40    YES          YES          0.1 B
+  cut-through           pipelined    64      40    YES          YES          0.2 B
+  cut-through           pipelined   160      40    YES          YES          0.8 B
+  cut-through        combinational    64      40    YES          YES          0.0 B
+  (the rate is in 1/256 byte per cycle: 64 = a quarter of line rate; the bucket is 4,096 bytes; cost = preamble + frame (padded) + FCS + gap in bytes = cycles at line rate)

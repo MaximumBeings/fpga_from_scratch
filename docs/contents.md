@@ -20,7 +20,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 8. *(written)* The MAC datapath: AXI-Stream, FIFOs, clock crossing, the PHY modeled at its interface
 9. *(written)* VLAN, IPv4 and UDP at line rate: a byte-serial header filter, the Internet checksum, drop causes (parsing across the beats of a wide datapath is Exercise 2)
 10. *(written)* Filtering: exact CAM, ternary CAM, range matcher, hash tables and fingerprints, multicast aliasing (update safety is Exercise 4)
-11. Egress: frame building, padding, checksums, pacing
+11. *(written)* Egress: UDP frame building, store-and-forward against cut-through, a token-bucket pacer
 
 ## Part 3 -- Reliable transport: TCP
 12. Why orders use TCP: the state machine and what must be in hardware

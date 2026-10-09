@@ -1,0 +1,61 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  hdr: EtherType 0x0801: caught by: store-and-forward builder, seed 0
+  hdr: IP version/IHL 0x46: caught by: store-and-forward builder, seed 0
+  hdr: total length low byte swapped with high: caught by: store-and-forward builder, seed 0
+  hdr: flags are not don't-fragment: caught by: store-and-forward builder, seed 0
+  hdr: TTL 63: caught by: store-and-forward builder, seed 0
+  hdr: protocol 6: caught by: store-and-forward builder, seed 0
+  hdr: source and destination addresses swapped: caught by: store-and-forward builder, seed 0
+  hdr: destination MAC byte 5 is the source's: caught by: store-and-forward builder, seed 0
+  hdr: UDP length bytes swapped: caught by: store-and-forward builder, seed 0
+  hdr: ports swapped: caught by: store-and-forward builder, seed 0
+  sf: the IP total length is len + 27: caught by: store-and-forward builder, seed 0
+  sf: the UDP length is len + 9: caught by: store-and-forward builder, seed 0
+  sf: the IP checksum omits the id: caught by: store-and-forward builder, seed 0
+  sf: the IP checksum omits the flags word: caught by: store-and-forward builder, seed 0
+  sf: the pseudo-header protocol is missing: caught by: store-and-forward builder, seed 0
+  sf: the pseudo-header length is missing: caught by: store-and-forward builder, seed 0
+  sf: the UDP checksum omits the destination port: caught by: store-and-forward builder, seed 0
+  sf: the UDP checksum omits the UDP header's length: caught by: store-and-forward builder, seed 0
+  sf: the payload sum starts from the IP sum: caught by: store-and-forward builder, seed 0
+  sf: the carry of the payload sum is dropped: caught by: store-and-forward builder, seed 0
+  sf: an odd last byte is the low half of a word: caught by: store-and-forward builder, seed 0
+  sf: an odd last byte is not added: caught by: store-and-forward builder, seed 0
+  sf: no fold at the end: caught by: store-and-forward builder, seed 0
+  sf: a checksum of zero is sent as zero: caught by: store-and-forward builder, seed 0
+  sf: the IP checksum is not complemented: caught by: store-and-forward builder, seed 0
+  ct: the IP checksum is not complemented: caught by: cut-through builder, seed 0
+  ct: no fold at the end: caught by: cut-through builder, seed 0
+  sf: the maximum payload is 1473: caught by: store-and-forward builder, seed 0
+  sf: the maximum payload is 1471: caught by: store-and-forward builder, seed 0
+  sf: an oversize packet is not dropped: caught by: store-and-forward builder, seed 0
+  sf: the accumulator is not cleared after a drop: caught by: store-and-forward builder, seed 0
+  sf: the accumulator is not cleared after a frame: caught by: store-and-forward builder, seed 0
+  sf: the id does not advance: caught by: store-and-forward builder, seed 0
+  sf: the destination port is the previous packet's: caught by: store-and-forward builder, seed 0
+  sf: the wire cost is not padded to 60: caught by: pacer in the system, token-bucket bound, ct 0, pacer 1, rate 32
+  sf: the wire cost omits the gap: caught by: pacer in the system, token-bucket bound, ct 0, pacer 1, rate 32
+  sf: the payload read is one byte late: caught by: store-and-forward builder, seed 0
+  sf: the last byte is marked one early: caught by: store-and-forward builder, seed 0
+  sf: the output does not hold while the MAC is not ready: caught by: store-and-forward builder, seed 0
+  ct: the IP total length is len + 27: caught by: cut-through builder, seed 0
+  ct: the IP checksum uses the previous id: caught by: cut-through builder, seed 0
+  ct: the UDP checksum is not zero: caught by: cut-through builder, seed 0
+  ct: payload is accepted during the headers: caught by: cut-through builder, seed 0
+  ct: the next descriptor overwrites the waiting one: caught by: cut-through builder, seed 0
+  ct: the descriptor's address is not captured: caught by: cut-through builder, seed 0
+  pacer: the bucket does not saturate: caught by: pacer alone, pipelined, rate 16
+  pacer: the bucket starts empty: caught by: pacer alone, pipelined, rate 16
+  pacer: a grant needs one unit more: caught by: pacer alone, pipelined, rate 16
+  pacer: the comparison is not cleared by a grant: caught by: pacer alone, pipelined, rate 16
+  pacer: the request is delayed once, not twice: caught by: pacer alone, pipelined, rate 16
+  pacer: the delayed request is ignored: caught by: pacer alone, pipelined, rate 16
+  pacer: the current request is ignored: caught by: pacer alone, pipelined, rate 64
+  pacer: a grant takes no credit: caught by: pacer alone, pipelined, rate 16
+  pacer: the rate is not added on a grant cycle: caught by: pacer alone, pipelined, rate 16
+  pacer: the rate is halved when idle: caught by: pacer alone, pipelined, rate 16
+  pacer: the cost is that of the length minus one: caught by: pacer alone, pipelined, rate 16
+  pacer: the cost of the first (combinational) version is not taken: caught by: pacer alone, combinational, rate 16
+  pacer_comb: a grant without a request: caught by: pacer alone, combinational, rate 64
+mutants caught: 58 of 58

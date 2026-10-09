@@ -553,3 +553,61 @@ Worked answer: a deleted slot that still matched (exact CAM) survived because th
 3. Take the second hash as the fold of `k ^ (k >> 11) ^ (k << 7)`, check the rank with `rank()` for `KW` from 8 to 24, and repeat the measurement. A multiplication costs about one adder per set bit of the constant when built from LUTs; choose a constant with few set bits.
 4. Two tables A and B: queries read the table named by a `sel` bit; software writes the other one; flipping `sel` takes effect in the cycle after the write of `sel`, and the query pipeline has two stages, so a query issued in the cycle of the flip uses the new table and one issued before it the old one; the model needs the sel bit to be part of the query's tag.
 5. Candidates: a mutant in the unused high bits of `w_addr` (equivalent: only the low bits index the array), or a mutant that stores a wrong value in a slot that is never queried (a missing test only if some run queries every slot).
+
+## Chapter 11
+
+**1. Why can a transmitter not simply send a UDP frame's bytes in order as the payload arrives?**
+
+Worked answer: the IP total length, the UDP length and both checksums stand in the headers, before the payload, and the UDP checksum depends on every payload byte. The transmitter must know the whole payload before the first header byte that depends on it can leave: so it buffers the payload (store-and-forward), or it is told the length in advance and gives up the payload checksum (cut-through).
+
+**2. What does a UDP checksum of zero mean in IPv4, and what must a sender do when its sum comes out as zero?**
+
+Worked answer: zero means "no checksum was computed", and the receiver does not check. A sender whose computed checksum is zero sends `0xFFFF` (the same value in ones' complement). The model builds payloads whose checksum is zero (`csz` packets) and 38 of 200 frames in the filter test carry `0xFFFF`.
+
+**3. What fields go into the UDP checksum that are not in the UDP header?**
+
+Worked answer: the pseudo-header: the source and destination IP addresses, a zero byte with the protocol (17), and the UDP length (which is in the UDP header but is counted twice: once in the pseudo-header and once with the header). Mutants that dropped each of those words were caught.
+
+**4. What does cut-through give up, and what does it demand from the source?**
+
+Worked answer: it gives up the UDP payload checksum (the field is 0) and the ability to drop a bad frame before it starts. It demands a descriptor with the length first and a source that supplies the payload without a gap: a stall inside a payload makes `mac_tx` underrun (8 of 8 runs at 90% and at 60% source speed).
+
+**5. Derive the cycles per packet and the link utilisation of the store-and-forward builder for a payload of `L` bytes.**
+
+Worked answer: the measured cycles per packet are `2 L + 65` (265, 1,065, 2,065 and 3,009 at 100, 500, 1,000 and 1,472 bytes), the wire cost being `L + 66`: the wire idles for `L - 1` cycles per packet. The utilisation is `(L + 66) / (2 L + 65)`: 51.6% at 1,000 bytes. The `65` is a fit, not derived from the state machine: ingest `L`, about 11 cycles of checksum arithmetic and the request, the wire time `L + 54`, with the last 16 cycles of the frame's tail (FCS and gap) overlapping the next ingest.
+
+**6. Why does the cut-through builder keep the wire 100% busy although its checksum takes 11 cycles?**
+
+Worked answer: stage A takes the next descriptor and computes its IP checksum while the previous frame is on the wire; stage B starts the next frame in the cycle `mac_tx` is ready. The arithmetic is hidden behind the transmission of the previous frame, so the cycles per packet equal the wire cost at every length (84, 166, 566, 1,066 and 1,538).
+
+**7. What is a token bucket, and what is guaranteed about the traffic it grants?**
+
+Worked answer: a credit that rises at a constant rate up to a bucket size, from which each frame takes its cost. In any interval of `T` cycles the grants add up to at most the bucket plus `rate x T`: the shaping guarantee, which the test checks for every pair of frames of every run (the slack was never negative and reached 0.1 bytes).
+
+**8. Derive the spacing of frames and the number of frames in a burst for a pacer with rate `r` (in 1/256 byte per cycle) and bucket `B`.**
+
+Worked answer: in the long run each frame of cost `c` needs `c x 256` units of credit, gained at `r` per cycle: the spacing is `256 c / r` cycles (1,066 x 256 / 32 = 8,528). In a burst each frame takes `c` and the credit regains `c x r/256` during the frame's own wire time, so it falls by `c (1 - r/256)` per frame; the `k`-th frame leaves back to back while `B - (k - 1) c (1 - r/256) >= c`: `k <= 1 + (B - c) / (c (1 - r/256))`: 2, 4, 8 and 17 frames for buckets of 2, 4, 8 and 16 KB at `r = 32` (measured the same).
+
+**9. Why did the first pacer limit the clock, and which three changes made the second faster?**
+
+Worked answer: the grant was one combinational expression: a 24-bit comparison, a subtraction, an addition and a saturation, feeding the builder's state machine: 59.6 MHz on iCE40. The second registers the cost and the credit change, registers the comparison and the delayed request (the grant becomes three flip-flops and a gate), and selects the next credit between two sums computed in parallel; with a power-of-two bucket the saturation is a single-bit test. 76.5 MHz, at the price of three cycles of latency.
+
+**10. Why must the bucket be at least the largest frame's cost?**
+
+Worked answer: a frame is granted only when the credit covers its whole cost, and the credit never exceeds the bucket: a bucket below 1,538 bytes (the cost of a 1,472-byte payload) would never grant that frame.
+
+**11. Name one mutant that was code that cannot matter and one that was outside the interface's contract.**
+
+Worked answer: code that cannot matter: the separate overflow flag of the store-and-forward builder (the test at the last byte already drops every oversize payload), or the saturation of the credit on a grant (the credit cannot rise). Outside the contract: the cut-through builder taking its last-byte marker from the source's `s_last` (the interface says it matches the descriptor's length).
+
+**12. What is the critical path of the whole transmit system, and why is it not the pacer?**
+
+Worked answer: the builder's output byte (the header/payload selection, driven by the byte counter or read from the RAM) goes combinationally into the CRC register of `mac_tx`: for cut-through `k` to the CRC on both chips, for store-and-forward the RAM output to the CRC on ECP5. The final pacer's grant is three flip-flops and a gate, so its paths are short; it still costs 9% of the clock for store-and-forward on iCE40, which this chapter did not trace.
+
+## Chapter 11 -- hints for the exercises
+
+1. A one-entry register at the builder output is not enough because `ready` can drop before the first byte only; but once a frame has started `mac_tx` never stalls, so a plain output register (valid, data, last) works if the builder's state machine runs one cycle ahead and the first byte is held until `o_ready`. Latency grows by one cycle; check that the underrun flag stays zero in the cut-through tests.
+2. Two banks: the ingest writes bank A while the output reads bank B; the utilisation limit becomes the wire (100%) when the ingest of the next payload is at most as long as the wire time of the previous, which holds for `L + 54 >= L`. New cases: both banks full while a third payload arrives (the source must see `s_ready` low), and an oversize payload in the middle (the drop must not disturb the frame being sent).
+3. The checksum is over bytes that have not been seen yet, so a cut-through transmitter cannot compute it; the options are to let the producer compute it (offload), to keep the payload in a buffer (store-and-forward), or to send a template whose checksum is correct for fixed payload and update it incrementally for the fields that change: `HC' = ~(~HC + ~m + m')` (RFC 1624).
+4. A policer takes the same credit but drops a request that is not covered: the model is the same bucket with `go = covered` and the request consumed either way; the test sends a stream above the contracted rate and checks that the accepted bytes over any interval stay within bucket + rate x T and that the drop counter plus the accepted frames equal the offered frames.
+5. Candidates: a mutant in the unused high bits of `p_len` (equivalent: the cost never exceeds 1,538), or in the `A_IDLE` handling of a descriptor with `d_len` of zero (outside the interface's contract: a payload of zero bytes cannot be offered).

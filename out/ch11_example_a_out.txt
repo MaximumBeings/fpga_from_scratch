@@ -1,0 +1,26 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz): builder + optional pacer + mac_tx, behind the pin wrapper (212 configuration flip-flops and an output register); RAM = SB_RAM40_4K (iCE40) or DP16KD (ECP5)
+  design                       | iCE40 LUT    FF  RAM   Fmax | ECP5 LUT CCU2C    FF  RAM   Fmax
+  store-and-forward            |      1194   525    4   74.8 |     1820   159   557    1   82.0
+  store-and-forward + pacer    |      1353   578    4   68.1 |     1865   213   612    1   81.8
+  cut-through                  |       779   500    0   79.5 |     1699    88   532    0   83.1
+  cut-through + pacer          |       939   565    0   76.5 |     1746   140   598    0   83.0
+  cut-through + first pacer    |       934   534    0   59.6 |     1745   146   567    0   78.5
+  a byte per clock at 1 Gbit/s needs 125 MHz
+
+== latency of one packet alone: cycles from the descriptor accepted to the first wire byte (the preamble) and to the last wire byte; no other traffic, source at 100%, no pacer
+  payload L |  store-and-forward: first  minus L   last |  cut-through: first   last
+          1 |                        17       16     88 |                  16     87
+         18 |                        34       16    105 |                  16     87
+        100 |                       116       16    269 |                  16    169
+        500 |                       516       16   1069 |                  16    569
+       1000 |                      1016       16   2069 |                  16   1069
+       1472 |                      1488       16   3013 |                  16   1541
+  first = descriptor accepted to the first preamble byte on the wire; last = to the last FCS byte. The store-and-forward builder must have the whole payload and both checksums before it can start; the cut-through builder needs only the length.
+
+== throughput: 20 packets of the same payload length, one after another, source and descriptors never stall, no pacer; utilisation = wire bytes (cost) / (cycles per packet)
+  payload L wire cost |  store-and-forward  utilisation |  cut-through  utilisation
+         18        84 |          101.0 cyc       83.2% |     84.0 cyc      100.0%
+        100       166 |          265.0 cyc       62.6% |    166.0 cyc      100.0%
+        500       566 |         1065.0 cyc       53.1% |    566.0 cyc      100.0%
+       1000      1066 |         2065.0 cyc       51.6% |   1066.0 cyc      100.0%
+       1472      1538 |         3009.0 cyc       51.1% |   1538.0 cyc      100.0%

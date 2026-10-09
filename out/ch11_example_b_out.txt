@@ -1,0 +1,18 @@
+== 1. spacing between frame starts against the rate (60 packets, wire cost 1066 bytes each, bucket 4,096 bytes): after the burst every frame waits for its credit
+  rate /256  bytes per cycle |  derived spacing  measured median  measured min  measured max |  achieved rate (last 40 frames)
+          8            0.031 |          34112.0            34112         34112         34112 |               0.0312 byte/cycle
+         16            0.062 |          17056.0            17056         17056         17056 |               0.0625 byte/cycle
+         32            0.125 |           8528.0             8528          8528          8528 |               0.1250 byte/cycle
+         64            0.250 |           4264.0             4264          4264          4264 |               0.2500 byte/cycle
+        128            0.500 |           2132.0             2132          2132          2132 |               0.5000 byte/cycle
+        200            0.781 |           1364.5             1364          1364          1365 |               0.7813 byte/cycle
+        256            1.000 |           1066.0             1066          1066          1066 |               1.0000 byte/cycle
+  derived spacing = cost x 256 / rate cycles (the credit needed, over the credit gained per cycle); the measured spacing is an integer number of cycles, so the credit's rounding alternates it between two values
+
+== 2. the burst: rate 32/256, frames of cost 1066; the frames that leave back to back from a full bucket (spacing = one frame's wire time), against the bucket size
+  bucket (bytes) |  derived frames  measured
+            2048 |               2         2
+            4096 |               4         4
+            8192 |               8         8
+           16384 |              17        17
+  derived: the k-th frame of the burst can leave at once if the credit still covers it; the credit falls by (cost - credit gained during one frame time = cost x rate/256) per frame, so k <= 1 + (bucket - cost) / (cost - cost x rate/256).
