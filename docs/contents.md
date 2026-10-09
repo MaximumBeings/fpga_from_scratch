@@ -29,7 +29,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 15. *(written)* Hot path and cold path: the dispatcher and its order-keeping count, head-of-line blocking, reconnects, the hardware/software split
 
 ## Part 4 -- Market data
-16. Exchange protocols: MoldUDP64, ITCH, SoupBinTCP and OUCH, and a generator that turns a message grammar into a parser
+16. *(written)* Exchange protocols: MoldUDP64 and ITCH, and a generator that turns a message grammar into a parser (SoupBinTCP and OUCH are exercises)
 17. Line-rate message parsing: variable-length messages across beats, several messages per packet
 18. Sequence gaps and A/B feed arbitration
 19. The order book in hardware: per-symbol state, price-level structures (sorted array, CAM, hash in BRAM), top of book

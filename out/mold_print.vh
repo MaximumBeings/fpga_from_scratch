@@ -1,0 +1,1 @@
+            $display("M %0d %0d %0d %0d %0d %h %h %h %h %h %h %h %h %h %h %h %h", cyc, m_type, m_err, m_idx, h_seq, f_locate, f_tracking, f_ts, f_event, f_ref, f_side, f_shares, f_stock, f_price, f_mpid, f_match, f_newref);

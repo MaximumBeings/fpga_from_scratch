@@ -1,0 +1,18 @@
+== 1. the generator: deterministic, and its output lints
+  two runs give the same text: True; the checked-in rtl/mold_itch.sv equals it: True; 124 lines for 8 message types and 12 fields
+  Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model (python3 model/itch_gold.py) and what the stimulus contains (8 seeds of 60 packets)
+  itch_gold hand-checked scenarios passed
+  480 packets: clean 445, cntbad 7, no eop (abandoned) 16, trunc  12
+  messages: err1 20, err2 13, ok  A 196, ok  D 197, ok  E 179, ok  F 194, ok  P 189, ok  S 173, ok  U 164, ok  X 169
+
+== 3. the generated parser against the model: every message (type, error, index, sequence number, the fields the type has) and every packet end, each at its cycle (the cycle after the last byte)
+  idle cycles seeds  packets  messages   bytes |    Icarus  Verilator
+        mixed     6      240       722   28155 |      6 of 6       PASS
+  faults only     6      240       564   24978 |      6 of 6       PASS
+  well formed     6      240       724   27803 |      6 of 6       PASS
+  long packets     6      240      4920  162195 |      6 of 6       PASS
+
+== 4. the same generator on a second grammar (two message types, a 3-byte and a 10-byte field): generated, simulated, compared with a model built from the same struct idea
+  124 lines of ITCH parser, 82 lines for the second grammar; 40 packets, 88 messages: all equal

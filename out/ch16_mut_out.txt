@@ -1,0 +1,57 @@
+NOTE: this script deliberately breaks copies of the generated RTL, of the generator and of the grammar. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the battery: True
+  the header ends one byte late: caught by: 29 events, expected 129
+  the sequence number is taken from the wrong header bytes: caught by: crash ValueError
+  the session is 9 bytes: caught by: packet end at 64: (64, 0, 0, '004e4153444151303030', 1) vs (64, 0, 0, 369549624021043968487473, 1)
+  the count is taken from the wrong byte: caught by: packet end at 64: (64, 0, 1, '4e415344415130303031', 256) vs (64, 0, 0, 369549624021043968487473, 1)
+  the length is little-endian: caught by: 29 events, expected 129
+  a zero-length block is not reported: caught by: 86 events, expected 87
+  a zero-length block is not counted: caught by: message at cycle 1116: (1116, 83, 0, 1, 11744385534224748742) vs (1116, 83, 0, 2, 11744385534224748742)
+  a zero-length block is reported as an unknown type: caught by: message at cycle 1102: (1102, 0, 1, 1, 11744385534224748742) vs (1102, 0, 2, 1, 11744385534224748742)
+  the length of type A is wrong: caught by: message at cycle 64: (64, 65, 2, 0, 38849760603697497) vs (64, 65, 0, 0, 38849760603697497)
+  the last type of the table is missing: caught by: message at cycle 138: (138, 80, 1, 0, 9033251067661030104) vs (138, 80, 0, 0, 9033251067661030104)
+  the length is not compared with the type's: caught by: message at cycle 1054: (1054, 65, 0, 3, 16396015981447586126) vs (1054, 65, 2, 3, 16396015981447586126)
+  an unknown type is reported as a bad length: caught by: message at cycle 2727: (2727, 20, 2, 3, 16602313165077486998) vs (2727, 20, 1, 3, 16602313165077486998)
+  the error is taken from the wrong place on a one-byte block: caught by: message at cycle 2200: (2200, 90, 0, 0, 4802701685544684535) vs (2200, 90, 1, 0, 4802701685544684535)
+  the type of a one-byte block is stale: caught by: message at cycle 2200: (2200, 70, 1, 0, 4802701685544684535) vs (2200, 90, 1, 0, 4802701685544684535)
+  the body ends one byte late: caught by: 58 events, expected 129
+  the offset counter does not saturate: caught by: message at cycle 2727: (2727, 86, 1, 3, 16602313165077486998) vs (2727, 20, 1, 3, 16602313165077486998)
+  the offset is not reset for each block: caught by: crash ValueError
+  a field of type A starts one byte early: caught by: message at cycle 64: field stock = 8c53505920202020 vs 5350592020202020
+  a field of type U is one byte too short: caught by: message at cycle 246: field newref = xx966baea148beab vs 966baea148beab13
+  a field of type P is not selected: caught by: message at cycle 138: field match = xxxxxxxxxxxxxxxx vs 8a9a021ea648a7dd
+  the shared field takes type E's offset for type X: caught by: message at cycle 205: field shares = 8a978d87 vs 2f978d87
+  a field is shifted in the wrong order: caught by: message at cycle 64: field ref = a3d811736110e578 vs 78e510617311d8a3
+  the message index is the next one: caught by: message at cycle 1102: (1102, 0, 2, 2, 11744385534224748742) vs (1102, 0, 2, 1, 11744385534224748742)
+  the block counter is not cleared by a new packet: caught by: crash ValueError
+  the block counter does not count the last block: caught by: packet end at 64: (64, 0, 1, '4e415344415130303031', 1) vs (64, 0, 0, 369549624021043968487473, 1)
+  the end of the packet inside a block is not a truncation: caught by: packet end at 1272: (1272, 0, 0, '4e415344415130303031', 1) vs (1272, 1, 0, 369549624021043968487473, 1)
+  the end of the packet inside the header is not a truncation: caught by: packet end at 2420: (2420, 0, 0) vs (2420, 1, 0)
+  the count is not compared: caught by: packet end at 150: (150, 0, 0, '4e415344415130303031', 7) vs (150, 0, 1, 369549624021043968487473, 7)
+  the count 0xFFFF is checked: caught by: packet end at 2523: (2523, 0, 1, '4e415344415130303031', 65535) vs (2523, 0, 0, 369549624021043968487473, 6553
+  the count is read before its last byte arrives: caught by: packet end at 1363: (1363, 0, 1, '4e415344415130303031', 0) vs (1363, 0, 0, 369549624021043968487473, 0)
+  a truncated packet also reports a bad count: caught by: packet end at 1272: (1272, 1, 1, '4e415344415130303031', 1) vs (1272, 1, 0, 369549624021043968487473, 1)
+  a stray eop outside a packet reports a packet end: caught by: 133 events, expected 129
+  a packet end does not return to idle: caught by: 133 events, expected 129
+  bytes outside a packet start a packet: caught by: 130 events, expected 129
+  a one-byte packet is not reported: caught by: 100 events, expected 101
+  a new sop does not restart the header: caught by: 29 events, expected 129
+  the first header byte is lost: caught by: crash ValueError
+  valid is not looked at: caught by: 173 events, expected 129
+  the fields are captured on invalid cycles: caught by: message at cycle 64: field tracking = 6a2f vs 1e2f
+  reset does not stop a packet: caught by: 90 events, expected 87
+  generator: the offset of a field starts at 0: caught by: message at cycle 64: field locate = xx41 vs 414c
+  generator: the offset does not advance: caught by: message at cycle 64: field tracking = 414c vs 1e2f
+  generator: a field's end is inclusive: caught by: message at cycle 64: field locate = 4c1e vs 414c
+  generator: the type code is the type's position: caught by: message at cycle 64: (64, 65, 1, 0, 38849760603697497) vs (64, 65, 0, 0, 38849760603697497)
+  generator: a one-byte field is shifted like a wide one: caught by: crash: SyntaxError: f-string: invalid syntax. Perhaps you forgot a comma?
+  grammar: the length of a type leaves out the type byte: caught by: message at cycle 64: (64, 65, 2, 0, 38849760603697497) vs (64, 65, 0, 0, 38849760603697497)
+  grammar: two fields of A swapped: caught by: message at cycle 64: field ref = e510617311d8a342 vs 78e510617311d8a3
+  grammar: the timestamp of S is 4 bytes: caught by: crash: ValueError: field ts has two widths
+  grammar: type D has a stray byte: caught by: message at cycle 919: (919, 68, 2, 3, 6128625989113442357) vs (919, 68, 0, 3, 6128625989113442357)
+  grammar: a message type is missing: caught by: message at cycle 205: (205, 88, 1, 2, 9033251067661030104) vs (205, 88, 0, 2, 9033251067661030104)
+  grammar: the price is 8 bytes everywhere: caught by: crash: ValueError: field price has two widths
+  rtl/mold_itch.sv: caught 40 of 40
+  tools/gen_parser.py: caught 5 of 5
+  model/grammar.py: caught 6 of 6
+mutants caught: 51 of 51

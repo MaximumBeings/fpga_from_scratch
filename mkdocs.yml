@@ -69,5 +69,7 @@ nav:
       - "13. The TCP Send Side: Window, Cumulative ACK, the RFC 6298 Retransmission Timer, and a Scanner for Many Timers": part03/13-send-side-and-timers.md
       - "14. Testing the Stack Against an Independent Reference: Loss, Reordering, Duplication, Forged Segments, and the Bug It Found": part03/14-interop-and-reference.md
       - "15. Hot Path and Cold Path: Splitting TCP Between Hardware and Software, Keeping the Order, Head-of-Line Blocking, and Reconnects": part03/15-hot-and-cold-path.md
+  - "Part 4 -- Market data":
+      - "16. Exchange Protocols: MoldUDP64 and ITCH, and a Generator That Turns a Message Grammar into a Parser": part04/16-exchange-protocols.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

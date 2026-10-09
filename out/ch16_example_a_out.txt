@@ -1,0 +1,17 @@
+== cost of the generated parser against the number of message types (the layouts of the first 8 are ITCH's; beyond that they are copies under other type bytes), behind the pin wrapper
+  types lines of SV | iCE40 LUT    FF   Fmax | ECP5 LUT    FF   Fmax | iCE40 LUT/type
+      1          85 |       120   142  141.5 |      120   143  190.9 |            0.0
+      2         106 |       228   314   94.1 |      334   316  147.1 |          108.0
+      4         116 |       270   267  106.7 |      273   269  153.3 |           50.0
+      8         124 |       287   358   87.1 |      315   360  132.3 |           23.9
+     16         134 |       300   358   97.3 |      349   360  126.7 |           12.0
+     32         150 |       316   358   95.1 |      337   360  114.7 |            6.3
+     64         182 |       289   358   96.8 |      396   365  149.5 |            2.7
+
+== throughput: one byte per clock, so bytes per second = Fmax; messages per second follow from the length of a message (derived, not measured)
+  8 types: iCE40 87.1 MHz = 697 Mbit/s of payload; ECP5 132.3 MHz = 1058 Mbit/s; at 125 MHz (a byte per clock on gigabit Ethernet) the parser would have to reach 125 MHz: it does not on iCE40
+  per message the parser spends (length + 2) cycles (the two length bytes): for a 36-byte Add Order that is 38 cycles, 2.29 million messages/s on iCE40, 3.48 on ECP5
+
+== the end points of the critical path (nextpnr's last report for the clock), 8 types
+  ice40  u.off                    -> u.f_stock                4.0 ns logic, 7.4 ns routing
+  ecp5   iv                       -> u.er                     2.5 ns logic, 5.0 ns routing

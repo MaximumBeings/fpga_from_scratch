@@ -1,0 +1,11 @@
+== one random byte of a 12-message packet replaced by another, at each site (400 packets per site, model decode)
+  site               |  flagged  messages right (of 12)   accepted, never sent | derived right
+  length, high byte  |   100.0%                    5.46                      0 |           5.5
+  length, low byte   |   100.0%                    5.61                      0 |           5.5
+  type byte          |   100.0%                   11.00                      0 |            11
+  payload byte       |     0.0%                   11.00                    400 |            11
+  count              |   100.0%                   12.00                      0 |            12
+  sequence number    |     0.0%                   12.00                      0 |            12
+  (accepted, never sent: messages the parser accepted with err 0 that were not sent. For a payload byte it is the corrupted message itself, which no check at this layer can know. For a length byte it is a block of garbage that happened to frame as a valid message. Derived: a corrupted type byte or payload byte spoils only its own message, so 11 of 12 are right and the parser cannot know for a payload byte (it flags nothing: there is no checksum at this layer; the UDP checksum of Chapter 9 is the guard). A corrupted LENGTH moves every later block boundary: the k messages before it are right and the rest are lost or garbled; with k uniform over the 12 positions the mean is (0 + 1 + ... + 11) / 12 = 5.5 right, a little more when a block is swallowed and the framing happens to recover)
+\n== the same, on the RTL: 100 corrupted packets (all sites mixed, random gaps) through the generated parser against the model
+  100 packets, 41139 bytes: RTL equals the model
