@@ -1,0 +1,30 @@
+== 1. the dedicated carry chain: '+' against hand-built gates, widths 8 to 64 (target clock 100 MHz, seed 1)
+  family   W | a + b: LUT4  carry    Fmax | gates: LUT4    Fmax | speed ratio
+  ice40    8 |           8      8   244.2 |          17   176.4 |       1.38x
+  ice40   16 |          16     16   188.7 |          35    86.4 |       2.18x
+  ice40   24 |          24     24   153.8 |          54    57.1 |       2.69x
+  ice40   32 |          32     32   129.8 |          73    44.2 |       2.94x
+  ice40   48 |          48     48    98.9 |         110    28.4 |       3.47x
+  ice40   64 |          64     64    79.8 |         147    21.8 |       3.66x
+  ecp5     8 |           0      5   352.1 |          27   189.4 |       1.86x
+  ecp5    16 |           0      9   342.0 |          62    97.3 |       3.51x
+  ecp5    24 |           0     13   286.8 |         105    70.3 |       4.08x
+  ecp5    32 |           0     17   271.1 |         135    44.0 |       6.16x
+  ecp5    48 |           0     25   234.7 |         213    32.8 |       7.15x
+  ecp5    64 |           0     33   209.7 |         281    24.8 |       8.47x
+  on iCE40 the '+' adder uses one SB_CARRY per bit and its LUT count grows 1 per bit; the gate version uses about twice the LUTs and never uses the carry chain. The ratio of speeds is the value of knowing the fabric: the same arithmetic, written so that the tool can use the chain, is 1.4 times faster at 8 bits and 3.7 times faster at 64 (iCE40), 1.9 and 8.5 times on ECP5
+  (on ECP5 the carry cells hold two LUT4s each and the plain-LUT column is zero for the '+' adder)
+
+== 2. placement is a randomized search: the same design, eight seeds (W = 32, 100 MHz target)
+  family style          min    mean     max   spread
+  ice40  a + b        129.8   129.8   129.8     0.0%
+  ice40  gates         39.5    43.3    46.1    15.3%
+  ecp5   a + b        264.2   269.8   271.1     2.6%
+  ecp5   gates         44.0    50.3    52.9    17.6%
+  a single place-and-route run is one sample: a quoted Fmax without its seed (or its spread) is not a result. This book states the seed, and Chapter 3 returns to what to do about the spread
+
+== 3. a constraint the design cannot meet: the gate-built 32-bit adder on iCE40 at 100, 150 and 250 MHz targets
+  target 100 MHz -> ERROR: Max frequency for clock 'clk$SB_IO_IN_$glb_clk': 44.19 MHz (FAIL at 100.00 MHz)
+  target 150 MHz -> ERROR: Max frequency for clock 'clk$SB_IO_IN_$glb_clk': 44.19 MHz (FAIL at 150.00 MHz)
+  target 250 MHz -> ERROR: Max frequency for clock 'clk$SB_IO_IN_$glb_clk': 44.19 MHz (FAIL at 250.00 MHz)
+  the answer is the same, 44.19 MHz, whatever the target: nextpnr reports an ERROR when a target is missed, but a tighter constraint did not buy a faster result here. The limit is the ripple of 32 LUT levels, which no placement can shorten: the fix is in the design (use the carry chain, pipeline), not in the constraint

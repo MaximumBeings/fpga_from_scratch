@@ -1,0 +1,5 @@
+??? info "About the kestrels in this picture"
+    - **Mauritius kestrel** (*Falco punctatus*) lives only on the island of Mauritius. By the mid-1970s only a handful of wild birds were known (the figure usually quoted is four); captive breeding and release programmes brought the population back to hundreds.
+    - **Seychelles kestrel** (*Falco araeus*) is found on the granitic islands of the Seychelles. It is a small kestrel that hunts lizards and insects in forest and around villages.
+
+    The scene is imaginary and the birds are stylised drawings.

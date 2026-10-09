@@ -1,2 +1,7 @@
 out/*.hex
+out/*.json
+out/*_synth.log
+out/ex_*
+out/*_net.v
 site/
+__pycache__/

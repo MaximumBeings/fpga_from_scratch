@@ -1,0 +1,5 @@
+??? info "About the kestrels in this picture"
+    - **Common kestrel** (*Falco tinnunculus*) ranges across Europe, Asia and Africa. It is famous for hovering: it faces the wind and holds its head almost still while its body adjusts, searching the ground below before it drops onto prey. A much-cited study reported that voles' scent trails reflect ultraviolet light, which kestrels may be able to see.
+    - **Nankeen kestrel** (*Falco cenchroides*) is found across Australia and nearby islands. It hovers over open country and grassland, and often hunts along roadsides and fields.
+
+    The scene is imaginary and the birds are stylised drawings.

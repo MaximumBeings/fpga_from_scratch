@@ -1,5 +1,10 @@
 # Contents
 
+![contents](assets/art/contents.svg)
+
+--8<-- "docs/assets/art/contents.md"
+
+
 The plan for the whole book. **Part 0 to Part 7 build the trading data path; Parts 8 to 11 are case studies from other domains.** Every chapter carries two running examples, figures, a Python golden model, tests in two simulators, a mutation run and self-check questions with answers (Appendix H). Status: all chapters are *planned*.
 
 ## Part 1 -- Foundations

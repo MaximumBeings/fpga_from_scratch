@@ -1,0 +1,37 @@
+== 1. a LUT4 is a 16-bit memory: the inputs are the address, the bitstream wrote the contents
+  function: y = (a AND b) XOR (c OR d), inputs a..d = bits 0..3 of the address
+  address (d c b a)  y   | address (d c b a)  y
+      0000          0   |     1000          1
+      0001          0   |     1001          1
+      0010          0   |     1010          1
+      0011          1   |     1011          0
+      0100          1   |     1100          1
+      0101          1   |     1101          1
+      0110          1   |     1110          1
+      0111          0   |     1111          0
+  the 16 bits, address 15 down to 0: 0111011101111000 = 0x7778: this number IS the logic; there is no AND or XOR gate in the fabric, only this memory
+  evaluating the LUT for a=1,b=1,c=0,d=0: address 0b0011 = 3 -> 1 (AND is 1, OR is 0, 1 XOR 0 = 1)
+
+== 2. a function of six inputs: parity of x0..x5. One LUT4 holds four inputs; Shannon expansion splits the rest
+  mapped to 5 LUT4s; exhaustive check against the truth table (64 inputs): True
+    LUT0: inputs ['x2', 'x3', 'x4', 'x5'], table 0110100110010110
+    LUT1: inputs ['x2', 'x3', 'x4', 'x5'], table 1001011001101001
+    LUT2: inputs ['x1', 'LUT0', 'LUT1'], table 11100100
+    LUT3: inputs ['x1', 'LUT1', 'LUT0'], table 11100100
+    LUT4: inputs ['x0', 'LUT2', 'LUT3'], table 11100100
+  the best possible is 2 LUTs (xor of four inputs, then xor of that and the other two); the mapper is not optimal, and Yosys's ABC finds the better answer below
+
+== 3. the little mapper against Yosys (synth_ice40 and synth_ecp5): LUT counts for nine functions, written as truth-table lookups
+  function                   inputs  naive mapper  Yosys iCE40   Yosys ECP5 (LUT4 + LUT5/6 muxes)
+  parity6                         6         5            2              4 + 3 muxes
+  and6                            6         3            2              4 + 3 muxes
+  majority5                       5         3            3              2 + 1 muxes
+  majority7                       7        10            9              8 + 7 muxes
+  mux4 (2 select + 4 data)        6         3            2              4 + 3 muxes
+  a > b, 3-bit                    6         5            2              4 + 3 muxes
+  carry out of 4-bit add          9         9            5              7 + 1 muxes
+  at least 3 of 8                 8        12           10             10 + 6 muxes
+  random 7-input                  7        15           13              8 + 7 muxes
+  the naive mapper is correct on every function (checked exhaustively) and uses from the same number of LUTs up to two and a half times as many as Yosys's iCE40 mapping (parity6: 5 against 2): technology mapping is an optimization problem, and ABC solves it far better than a recursive split
+  the ECP5 column is not comparable with the iCE40 one: ECP5 builds a 5- or 6-input function from LUT4s joined by multiplexers inside the slice, so Yosys reports LUT4s plus muxes, and the same function costs more LUT4s there
+  note: a function of 5 or 6 inputs costs more than one LUT: that is why FPGA designers keep logic shallow and why the fabric of some families adds muxes to combine LUT4s cheaply (ECP5's PFUMX and L6MUX21)

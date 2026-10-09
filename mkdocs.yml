@@ -28,6 +28,8 @@ theme:
     - toc.follow
     - search.suggest
     - content.code.copy
+  logo: assets/kestrel-logo.svg
+  favicon: assets/kestrel-favicon.svg
 
 markdown_extensions:
   - admonition
@@ -49,3 +51,7 @@ plugins:
 nav:
   - Home: index.md
   - Contents (the whole plan): contents.md
+  - "Part 1 -- Foundations":
+      - "1. What an FPGA Is: Lookup Tables, the Carry Chain, and the Open Flow": part01/01-what-an-fpga-is.md
+  - Appendices:
+      - "H. Answers to the Self-Check Questions": answers.md

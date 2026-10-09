@@ -1,5 +1,10 @@
 # FPGA from Scratch -- Under Development
 
+![index](assets/art/index.svg)
+
+--8<-- "docs/assets/art/index.md"
+
+
 An open-toolchain book on FPGA design. It starts from what an FPGA is and builds, step by step, a complete **high-frequency-trading data path** (Ethernet, UDP and TCP, exchange market data, an order book, triggers, pre-trade risk and order entry) as the main running case study; it then applies the same method to case studies in signal processing, radio, security, compression, control, vision, genomics, finance and machine learning.
 
 !!! note "Status"

@@ -1,0 +1,16 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the testbench notices the mistake.
+radd: subtracts instead of adding: caught
+radd: ORs the operands: caught
+radd: drops the carry out: caught
+radd: one register stage too few: caught
+radd: the second operand register takes a: caught
+radd_lut: the sum bit ignores the carry in: caught
+radd_lut: the carry forgets the propagate term: caught
+radd_lut: the carry-in of bit 0 is 1: caught
+radd_lut: the carry out is not connected: caught
+radd_lut: the second operand register takes a: caught
+
+registered adder: 10 of 10 broken circuits caught
+
+Changes that look like bugs and are not:
+EQUIVALENT: the carry uses OR instead of XOR as its propagate signal (a + b with a OR b is also correct: the generate term covers the case where both are 1): NOT CAUGHT

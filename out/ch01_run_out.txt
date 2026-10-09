@@ -1,0 +1,56 @@
+== 1+2. golden vectors (directed carry-chain patterns plus 200 random) and the testbench in two simulators, four widths
+  W= 8 Icarus    PASS: 224 vectors, W = 8, both adders match the golden sums (exit 0)
+  W= 8 Verilator PASS: 224 vectors, W = 8, both adders match the golden sums (exit 0)
+  W=16 Icarus    PASS: 240 vectors, W = 16, both adders match the golden sums (exit 0)
+  W=16 Verilator PASS: 240 vectors, W = 16, both adders match the golden sums (exit 0)
+  W=32 Icarus    PASS: 272 vectors, W = 32, both adders match the golden sums (exit 0)
+  W=32 Verilator PASS: 272 vectors, W = 32, both adders match the golden sums (exit 0)
+  W=64 Icarus    PASS: 336 vectors, W = 64, both adders match the golden sums (exit 0)
+  W=64 Verilator PASS: 336 vectors, W = 64, both adders match the golden sums (exit 0)
+
+== 3. the same two circuits (W = 16) through synthesis and place-and-route, two families, target clock 100 MHz
+  family  circuit     LUT4 flip-flops  carry cells  logic cells used  Fmax (MHz)
+  ice40   a + b         16         49           16         52 of 7680        188.7
+  ice40   hand carry    35         49            0         69 of 7680         86.4
+  ecp5    a + b          0         49            9         24 of 24288       342.0
+  ecp5    hand carry    62         49            0         63 of 24288        97.3
+  iCE40 HX8K (7,680 logic cells) and ECP5 LFE5U-25F (24,288 LUT4/FF pairs): both are real devices in nextpnr's databases. On ECP5 the carry cell (CCU2C) contains two LUT4s, so the '+' adder reports 0 plain LUT4s
+
+== 4. what the two devices contain, as nextpnr's own databases list them (resource: used by the 16-bit adder / available)
+  iCE40 HX8K, package ct256:
+    ICESTORM_LC:    52/ 7680     0%
+    ICESTORM_RAM:     0/   32     0%
+    SB_IO:    50/  256    19%
+    SB_GB:     1/    8    12%
+    ICESTORM_PLL:     0/    2     0%
+    SB_WARMBOOT:     0/    1     0%
+  ECP5 LFE5U-25F, package CABGA381:
+    TRELLIS_IO:    50/  197    25%
+    DCCA:     1/   56     1%
+    DP16KD:     0/   56     0%
+    MULT18X18D:     0/   28     0%
+    ALU54B:     0/   14     0%
+    EHXPLLL:     0/    2     0%
+    EXTREFB:     0/    1     0%
+    DCUA:     0/    1     0%
+    PCSCLKDIV:     0/    2     0%
+    IOLOGIC:     0/  128     0%
+    SIOLOGIC:     0/   69     0%
+    GSR:     0/    1     0%
+    JTAGG:     0/    1     0%
+    OSCG:     0/    1     0%
+    SEDGA:     0/    1     0%
+    DTR:     0/    1     0%
+    USRMCLK:     0/    1     0%
+    CLKDIVF:     0/    4     0%
+    ECLKSYNCB:     0/   10     0%
+    DLLDELD:     0/    8     0%
+    DDRDLL:     0/    4     0%
+    DQSBUFM:     0/    8     0%
+    TRELLIS_ECLKBUF:     0/    8     0%
+    ECLKBRIDGECS:     0/    2     0%
+    DCSC:     0/    2     0%
+    TRELLIS_FF:    49/24288     0%
+    TRELLIS_COMB:    24/24288     0%
+    TRELLIS_RAMW:     0/ 3036     0%
+  ICESTORM_LC and TRELLIS_COMB are the logic cells; ICESTORM_RAM (4 Kbit) and DP16KD (18 Kbit) the block RAMs; MULT18X18D the ECP5's 18x18 multipliers (the HX8K has none); PLLs make clocks; DCUA is the ECP5's multi-gigabit serial transceiver, the block real Ethernet needs (Part 2 models it at its interface and does not implement it)
