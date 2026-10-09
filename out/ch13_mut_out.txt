@@ -39,6 +39,7 @@ unmutated design passes the whole battery: True
   a timeout does not go back: caught by: tx_conn, closed loop 5%
   a timeout restarts the timer with the old RTO: caught by: tx_conn, closed loop 5%
   the retransmission is limited to MSS - 1: caught by: tx_conn, closed loop 5%
+  a timeout retransmits what was written, not what was outstanding: caught by: tx_conn, partial segment at a timeout
   WRITE replaces the data instead of adding: caught by: tx_conn, closed loop 5%
   tab: no bypass: caught by: tx_tab, closed loop
   tab: the bypass is taken for any connection: caught by: tx_tab, closed loop
@@ -51,4 +52,4 @@ unmutated design passes the whole battery: True
   tab: the scanner skips the connection just served: caught by: scanner lateness (timeouts 6, max 1)
   conn: the RTO starts at 0: caught by: tx_conn, closed loop 5%
   conn: the window starts at 0: caught by: tx_conn, closed loop 5%
-mutants caught: 51 of 51
+mutants caught: 52 of 52

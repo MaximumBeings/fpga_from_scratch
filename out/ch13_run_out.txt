@@ -22,7 +22,8 @@
 == 3b. tx_conn on traces the closed loop cannot make: a small window that changes with every ACK (400 bytes, halved or quartered at random), and open-loop FUZZ (ACKs at SND.UNA, at the edges of the data in flight, beyond it, before it, with windows of 0, 50, 100, 300, 65535 and random; WRITEs; POLLs; TICKs at random times, some far apart)
   trace                               runs  events  segments |    Icarus  Verilator
   window 400, updated by every ACK, 5%     6    9379       426 |      6 of 6       PASS
-  open-loop fuzz, 3,000 events           6   18000      3259 |      6 of 6       PASS
+  open-loop fuzz, 3,000 events           6   18000      3261 |      6 of 6       PASS
+  less than a segment outstanding at a timeout     6      66        36 |      6 of 6       PASS
 
 == 4. tx_tab with the timer scanner: K connections whose events are interleaved (cycle t x K + c), the timers checked by the scanner's own ticks (in every cycle with no outside event); the model replays the events in the order the RTL processed them
   connections RAM words outside events scanner ticks  timeouts |   Icarus  Verilator
@@ -39,4 +40,3 @@
            16            64         0        3.9        15               16
            64           256         0       29.9        63               64
   (a timer is checked once every N cycles when the scanner has the cycles to itself: the lateness lies between 0 and N - 1; outside events take cycles from it and raise the bound by their number; a timer wheel (Exercise 2) bounds it by the wheel's resolution instead)
-rc=0

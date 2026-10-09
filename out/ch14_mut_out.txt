@@ -1,0 +1,229 @@
+NOTE: this script deliberately breaks copies of the models and the RTL. 'caught' lines are EXPECTED. NOT CAUGHT lines are the finding: the bug the network never provokes.
+unmutated design passes the interop battery: True 
+
+-- family 1 and 2: the reference and the design's models, battery = interop.battery()
+  ref receiver: acknowledges one byte too many: caught by: bytes or completion, A, clean
+  ref receiver: keeps no out-of-order data: caught by: bytes or completion, A, clean
+  ref receiver: delivers the whole of an overlapping segment: caught by: bytes or completion, A, harsh: loss 15, reorder 30, dup 15
+  ref receiver: stores only segments that start at RCV.NXT: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  ref client: fast retransmit at the first duplicate ACK: caught by: time budget, B, loss 5%: 1504 > 1492 ticks
+  ref client: no fast retransmit at all: caught by: time budget, B, harsh: loss 15, reorder 30, dup 15: 11741 > 8092 ticks
+  ref client: no go-back-N after a timeout: caught by: bytes or completion, B, loss 5%
+  ref client: the SYN is never retransmitted: caught by: bytes or completion, B, harsh: loss 15, reorder 30, dup 15
+  ref client: the peer's FIN is not acknowledged: caught by: time budget, B, clean: 493 > 289 ticks
+  ref client: the FIN's sequence number is one too high: caught by: time budget, B, clean: 393 > 289 ticks
+  ref client: ignores the window: caught by: time budget, B, loss 5%: 1959 > 1492 ticks
+  ref client: the timeout is not reset by an ACK: caught by: time budget, B, loss 5%: 1795 > 1492 ticks
+  channel: never duplicates: caught by: the profile 'duplicate 10%' impaired nothing
+  channel: never delays: caught by: the profile 'reorder 20%' impaired nothing
+  channel: loses nothing: caught by: the profile 'loss 5%' impaired nothing
+  sender: avail counts from SND.UNA: caught by: invariant, A, clean: event 93: SND.UNA <= SND.NXT <= SND.MAX <= end
+  sender: the window limit ignores SND.NXT: caught by: invariant, A, loss 5%: event 186: new data stays inside the peer's window
+  sender: a retransmission is never flagged: caught by: invariant, A, loss 5%: event 167: retransmission flag = start below the old SND.MAX
+  sender: SND.MAX always follows SND.NXT: caught by: bytes or completion, A, loss 5%
+  sender: timing starts on a retransmission: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  sender: an ACK beyond SND.MAX is accepted: caught by: invariant, A, off-path noise 10%: event 5: SND.UNA <= SND.NXT <= SND.MAX <= end
+  sender: an ACK at or below SND.UNA is accepted as new: caught by: invariant, A, reorder 20%: event 66: SND.UNA never moves backwards
+  sender: SND.NXT is not pulled forward by an ACK: caught by: invariant, A, loss 5%: event 217: SND.UNA <= SND.NXT <= SND.MAX <= end
+  sender: a duplicate ACK does not update the window: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  sender: the timer is not stopped when everything is acknowledged: caught by: invariant, A, clean: event 81: the retransmission timer runs exactly while data is outstanding
+  sender: a new ACK does not restart the timer: caught by: time budget, C, loss 5%: 1787 > 1693 ticks
+  sender: a timeout does not back off: NOT CAUGHT [hand-checked scenarios: before this chapter FAIL, after FAIL]
+  sender: a timeout does not cancel the sample: caught by: time budget, A, loss 5%: 961 > 942 ticks
+  sender: a timeout does not go back: caught by: time budget, A, loss 5%: 1805 > 942 ticks
+  sender: a sample is taken from any ACK: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  sender: the RTO has no lower clamp: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  sender: the first SRTT is R x 4: NOT CAUGHT [hand-checked scenarios: before this chapter FAIL, after FAIL]
+  sender: the RTO leaves out the variance: NOT CAUGHT [hand-checked scenarios: before this chapter FAIL, after FAIL]
+  sender: a timeout retransmits what was written, not what was outstanding (the bug this chapter found): NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  sender: the timer fires one tick late: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  receiver: LISTEN sets RCV.NXT to seq, not seq + 1: caught by: bytes or completion, B, clean
+  receiver: SYN_RCVD takes any ACK as the third step: caught by: invariant, B, off-path noise 10%: a forged segment changed the receiver's state or delivered data
+  receiver: out-of-order data is delivered: caught by: invariant, B, loss 5%: data delivered from a segment that is not at RCV.NXT
+  receiver: data beyond the window is delivered: caught by: invariant, B, receive window 60 B, loss 5%: delivered more bytes than the window offered
+  receiver: no ACK for data: caught by: bytes or completion, B, receive window 60 B, loss 5%
+  receiver: a FIN does not advance RCV.NXT: caught by: bytes or completion, B, clean
+  receiver: LAST_ACK never closes: caught by: bytes or completion, B, clean
+  receiver: CLOSE in CLOSE_WAIT goes to FIN_WAIT_1: caught by: bytes or completion, B, clean
+  receiver: the acceptability test accepts everything: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  receiver: an unacceptable segment is not acknowledged: NOT CAUGHT [hand-checked scenarios: before this chapter FAIL, after FAIL]
+  receiver: an ACK for unsent data is not challenged: caught by: invariant, B, off-path noise 10%: a forged segment changed the receiver's state or delivered data
+  receiver: a retransmitted FIN is not acknowledged again: NOT CAUGHT [hand-checked scenarios: before this chapter pass, after FAIL]
+  receiver: the SYN-ACK acknowledges seq: caught by: bytes or completion, B, clean
+  model/ref_stack.py: caught 14 of 15
+  model/tx_gold.py: caught 11 of 20
+  model/tcp_gold.py: caught 10 of 13
+
+-- family 3: the RTL, battery = the traces recorded in the pairings only (no fuzz, no directed lives)
+  avail counts from SND.UNA: caught by: tx_conn, A, loss 5%
+  the window limit ignores SND.NXT: NOT CAUGHT
+  a negative window limit is not clamped: NOT CAUGHT
+  the segment is MSS - 1 when data is plentiful: caught by: tx_conn, A, loss 5%
+  a retransmission is never flagged: caught by: tx_conn, A, loss 5%
+  SND.MAX always follows SND.NXT: caught by: tx_conn, A, loss 5%
+  timing starts on a retransmission: caught by: tx_conn, A, loss 5%
+  the timed sequence number is SND.NXT before sending: NOT CAUGHT
+  the sample's start time is not recorded: caught by: tx_conn, A, loss 5%
+  a send restarts a running timer: caught by: tx_conn, A, loss 5%
+  a send starts the timer at now: caught by: tx_conn, A, loss 5%
+  an ACK beyond SND.MAX is accepted: caught by: tx_conn, A, off-path noise 10%
+  an ACK at SND.UNA or before is accepted as new: caught by: tx_conn, A, loss 5%
+  SND.NXT is not pulled forward by an ACK: NOT CAUGHT
+  the window is not updated by a new ACK: caught by: tx_conn, A, loss 5%
+  a sample is taken from any ACK: NOT CAUGHT
+  a sample is taken only when the ACK equals the timed number: NOT CAUGHT
+  the first sample does not set 'have': caught by: tx_conn, A, loss 5%
+  the first SRTT is R x 4: caught by: tx_conn, A, loss 5%
+  the first RTTVAR is R, not R / 2: caught by: tx_conn, A, loss 5%
+  the error has the wrong sign: NOT CAUGHT
+  SRTT adds |err|: NOT CAUGHT
+  RTTVAR decays by 1/8: NOT CAUGHT
+  the error's magnitude is the signed error: NOT CAUGHT
+  the RTO has no lower clamp: NOT CAUGHT
+  the RTO has no upper clamp: NOT CAUGHT
+  the backed-off RTO persists after an ACK without a sample: caught by: tx_conn, A, loss 5%
+  the timer is not stopped when everything is acknowledged: caught by: tx_conn, A, loss 5%
+  the timer is stopped when SND.NXT is reached: NOT CAUGHT
+  an ACK restarts the timer without the RTO: caught by: tx_conn, A, loss 5%
+  a duplicate ACK does not update the window: NOT CAUGHT
+  the timer fires one tick late: caught by: tx_conn, A, loss 5%
+  the backed-off RTO is not clamped: NOT CAUGHT
+  a timeout does not back off: caught by: tx_conn, A, loss 5%
+  a timeout does not cancel the sample (Karn): NOT CAUGHT
+  a timeout retransmits from SND.NXT: caught by: tx_conn, A, loss 5%
+  a timeout does not go back: caught by: tx_conn, A, loss 5%
+  a timeout restarts the timer with the old RTO: caught by: tx_conn, A, loss 5%
+  the retransmission is limited to MSS - 1: caught by: tx_conn, A, loss 5%
+  a timeout retransmits what was written, not what was outstanding: NOT CAUGHT
+  WRITE replaces the data instead of adding: caught by: tx_conn, A, loss 5%
+  conn: the RTO starts at 0: caught by: tx_conn, A, loss 5%
+  conn: the window starts at 0: caught by: tx_conn, A, loss 5%
+  rtl/tx.sv (Chapter 13's mutants): caught 26 of 43
+  CLOSED: a RST is answered [occurrence 1 of 2]: NOT CAUGHT
+  CLOSED: a RST is answered [occurrence 2 of 2]: NOT CAUGHT
+  CLOSED: the reset for an ACK segment takes seq instead of ack [occurrence 1 of 2]: NOT CAUGHT
+  CLOSED: the reset for an ACK segment takes seq instead of ack [occurrence 2 of 2]: NOT CAUGHT
+  CLOSED: the reset's ACK ignores the segment length: NOT CAUGHT
+  CLOSED: the reset's ACK ignores the segment length (second design): NOT CAUGHT
+  LISTEN: a SYN with ACK is accepted [occurrence 1 of 2]: NOT CAUGHT
+  LISTEN: a SYN with ACK is accepted [occurrence 2 of 2]: NOT CAUGHT
+  LISTEN: the SYN-ACK acknowledges seq, not seq + 1: caught by: tcp_conn, B, loss 5%
+  LISTEN: RCV.NXT is seq, not seq + 1: caught by: tcp_conn, B, loss 5%
+  LISTEN: SND.NXT does not advance past the SYN: caught by: tcp_conn, B, loss 5%
+  LISTEN: a RST is answered [occurrence 1 of 2]: NOT CAUGHT
+  LISTEN: a RST is answered [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: any ACK is accepted [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: any ACK is accepted [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: a bad ACK with RST is answered [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: a bad ACK with RST is answered [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: a RST without ACK closes [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: a RST without ACK closes [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: SYN + ACK does not reach ESTABLISHED [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: SYN + ACK does not reach ESTABLISHED [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: SND.UNA is not updated by the ACK [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: SND.UNA is not updated by the ACK [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: simultaneous open sends no SYN-ACK [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: simultaneous open sends no SYN-ACK [occurrence 2 of 2]: NOT CAUGHT
+  SYN_SENT: simultaneous open is marked passive [occurrence 1 of 2]: NOT CAUGHT
+  SYN_SENT: simultaneous open is marked passive [occurrence 2 of 2]: NOT CAUGHT
+  sync: the acceptability test ignores the window for empty segments: caught by: tcp_conn, B, off-path noise 10%
+  sync: the zero-window rule accepts any empty segment: NOT CAUGHT
+  sync: the acceptability test ignores the segment's last byte [occurrence 1 of 2]: NOT CAUGHT
+  sync: the acceptability test ignores the segment's last byte [occurrence 2 of 2]: NOT CAUGHT
+  sync: the acceptability test ignores the segment's first byte [occurrence 1 of 2]: NOT CAUGHT
+  sync: the acceptability test ignores the segment's first byte [occurrence 2 of 2]: NOT CAUGHT
+  sync: a window of one byte beyond [occurrence 1 of 4]: NOT CAUGHT
+  sync: a window of one byte beyond [occurrence 2 of 4]: NOT CAUGHT
+  sync: a window of one byte beyond [occurrence 3 of 4]: NOT CAUGHT
+  sync: a window of one byte beyond [occurrence 4 of 4]: NOT CAUGHT
+  sync: the last byte is one beyond [occurrence 1 of 2]: NOT CAUGHT
+  sync: the last byte is one beyond [occurrence 2 of 2]: NOT CAUGHT
+  sync: an unacceptable RST is answered [occurrence 1 of 2]: NOT CAUGHT
+  sync: an unacceptable RST is answered [occurrence 2 of 2]: NOT CAUGHT
+  sync: an unacceptable segment is not answered [occurrence 1 of 2]: caught by: tcp_conn, B, reorder 20%
+  sync: an unacceptable segment is not answered [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  sync: a RST in the window anywhere resets: NOT CAUGHT
+  sync: a RST at RCV.NXT does not reset (second design): NOT CAUGHT
+  sync: a RST in SYN_RCVD goes to CLOSED even if passive [occurrence 1 of 2]: NOT CAUGHT
+  sync: a RST in SYN_RCVD goes to CLOSED even if passive [occurrence 2 of 2]: NOT CAUGHT
+  sync: a SYN in the window is not challenged [occurrence 1 of 2]: caught by: tcp_conn, B, off-path noise 10%
+  sync: a SYN in the window is not challenged [occurrence 2 of 2]: NOT CAUGHT
+  sync: SYN_RCVD accepts ACK = SND.UNA [occurrence 1 of 2]: NOT CAUGHT
+  sync: SYN_RCVD accepts ACK = SND.UNA [occurrence 2 of 2]: NOT CAUGHT
+  sync: SYN_RCVD does not answer a bad ACK with a RST [occurrence 1 of 2]: caught by: tcp_conn, B, off-path noise 10%
+  sync: SYN_RCVD does not answer a bad ACK with a RST [occurrence 2 of 2]: NOT CAUGHT
+  sync: an ACK for data not yet sent is accepted: NOT CAUGHT
+  sync: an old ACK moves SND.UNA back: caught by: tcp_conn, B, off-path noise 10%
+  sync: FIN_WAIT_1 does not move on when its FIN is acknowledged [occurrence 1 of 2]: NOT CAUGHT
+  sync: FIN_WAIT_1 does not move on when its FIN is acknowledged [occurrence 2 of 2]: NOT CAUGHT
+  sync: CLOSING does not move on [occurrence 1 of 2]: NOT CAUGHT
+  sync: CLOSING does not move on [occurrence 2 of 2]: NOT CAUGHT
+  sync: LAST_ACK does not close [occurrence 1 of 2]: caught by: tcp_conn, B, loss 5%
+  sync: LAST_ACK does not close [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  sync: SND.UNA is not stored: caught by: tcp_conn, B, loss 5%
+  data: out-of-order data is delivered: caught by: tcp_conn, B, loss 5%
+  data: the delivered length is not limited by the window: NOT CAUGHT
+  data: the delivery is limited to ln < wnd (second design): NOT CAUGHT
+  data: RCV.NXT does not advance by the data (second design): caught by: tcp_tab2, interleaved
+  data: truncated data still lets the FIN through: NOT CAUGHT
+  data: the FIN is accepted out of order: NOT CAUGHT
+  data: a FIN behind a gap is accepted: NOT CAUGHT
+  data: the ACK for data acknowledges the old RCV.NXT [occurrence 1 of 2]: caught by: tcp_conn, B, loss 5%
+  data: the ACK for data acknowledges the old RCV.NXT [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  data: no ACK for data [occurrence 1 of 2]: caught by: tcp_conn, B, loss 5%
+  data: no ACK for data [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  fin: the FIN does not advance RCV.NXT: caught by: tcp_conn, B, loss 5%
+  fin: ESTABLISHED + FIN goes to CLOSING [occurrence 1 of 2]: caught by: tcp_conn, B, loss 5%
+  fin: ESTABLISHED + FIN goes to CLOSING [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  fin: FIN_WAIT_2 + FIN goes to CLOSING [occurrence 1 of 2]: NOT CAUGHT
+  fin: FIN_WAIT_2 + FIN goes to CLOSING [occurrence 2 of 2]: NOT CAUGHT
+  fin: FIN_WAIT_1 + FIN goes to TIME_WAIT [occurrence 1 of 2]: NOT CAUGHT
+  fin: FIN_WAIT_1 + FIN goes to TIME_WAIT [occurrence 2 of 2]: NOT CAUGHT
+  fin: a retransmitted FIN is not acknowledged [occurrence 1 of 2]: NOT CAUGHT
+  fin: a retransmitted FIN is not acknowledged [occurrence 2 of 2]: NOT CAUGHT
+  app: OPEN_PASSIVE works in any state [occurrence 1 of 2]: NOT CAUGHT
+  app: OPEN_PASSIVE works in any state [occurrence 2 of 2]: NOT CAUGHT
+  app: OPEN_ACTIVE sends no SYN: NOT CAUGHT
+  app: OPEN_ACTIVE does not advance SND.NXT: NOT CAUGHT
+  app: OPEN_ACTIVE (second design) does not advance SND.NXT: NOT CAUGHT
+  app: OPEN_ACTIVE is refused in LISTEN [occurrence 1 of 2]: NOT CAUGHT
+  app: OPEN_ACTIVE is refused in LISTEN [occurrence 2 of 2]: NOT CAUGHT
+  app: CLOSE in CLOSE_WAIT goes to FIN_WAIT_1 [occurrence 1 of 2]: caught by: tcp_conn, B, loss 5%
+  app: CLOSE in CLOSE_WAIT goes to FIN_WAIT_1 [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  app: CLOSE in ESTABLISHED does not send the FIN [occurrence 1 of 2]: caught by: tcp_conn, B, loss 5%
+  app: CLOSE in ESTABLISHED does not send the FIN [occurrence 2 of 2]: caught by: tcp_tab2, interleaved
+  app: the FIN does not advance SND.NXT: caught by: tcp_conn, B, loss 5%
+  app: CLOSE in SYN_SENT does not close [occurrence 1 of 2]: NOT CAUGHT
+  app: CLOSE in SYN_SENT does not close [occurrence 2 of 2]: NOT CAUGHT
+  app: ABORT sends no RST [occurrence 1 of 2]: NOT CAUGHT
+  app: ABORT sends no RST [occurrence 2 of 2]: NOT CAUGHT
+  app: ABORT in LISTEN sends a RST [occurrence 1 of 2]: NOT CAUGHT
+  app: ABORT in LISTEN sends a RST [occurrence 2 of 2]: NOT CAUGHT
+  app: the timeout closes any state [occurrence 1 of 2]: NOT CAUGHT
+  app: the timeout closes any state [occurrence 2 of 2]: NOT CAUGHT
+  pre: the window compares the segment's last byte with the wrong base [occurrence 1 of 2]: NOT CAUGHT
+  pre: the window compares the segment's last byte with the wrong base [occurrence 2 of 2]: NOT CAUGHT
+  pre: the acceptability of an empty segment uses the last-byte difference: caught by: tcp_tab2, interleaved
+  pre: the zero-window rule is dropped: NOT CAUGHT
+  pre: ack_in allows ack = una: NOT CAUGHT
+  pre: ack_in allows ack = nxt + 1: NOT CAUGHT
+  pre: ack_fut is its own negation: NOT CAUGHT
+  pre: seq + 1 computed as seq: caught by: tcp_tab2, interleaved
+  pre: rcv + len + 1 computed as rcv + len: NOT CAUGHT
+  pre: rcv + wnd computed as rcv + len: NOT CAUGHT
+  pre: the segment length counts no FIN: NOT CAUGHT
+  pre: the segment length counts no SYN: NOT CAUGHT
+  tab2: no wait for an event of the same connection in stage 1: caught by: tcp_tab2, interleaved
+  tab2: no wait for an event of the same connection in stage 2: caught by: tcp_tab2, interleaved
+  tab2: no wait for the middle stage (4 stages): caught by: tcp_tab2, interleaved
+  tab2: the write goes to stage 1's connection: caught by: tcp_tab2, interleaved
+  tab2: stage b keeps the old state: caught by: tcp_tab2, interleaved
+  fast: a window of one less: NOT CAUGHT
+  fast: an ACK beyond SND.NXT is taken: NOT CAUGHT
+  fast: other flags are taken: NOT CAUGHT
+  fast: other states are taken: NOT CAUGHT
+  fast: any sequence number is taken: NOT CAUGHT
+  fast: RCV.NXT advances by one too many: NOT CAUGHT
+  fast: SND.UNA is not advanced: NOT CAUGHT
+  fast: an ACK is sent for an empty segment: NOT CAUGHT
+  rtl/tcp.sv (Chapter 12's mutants): caught 33 of 127

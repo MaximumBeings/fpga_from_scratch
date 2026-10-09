@@ -1,0 +1,11 @@
+ reorder |       A: reference receiver        |       C: Chapter 12 receiver       |  C / A
+         |    ticks  retx segs  segments   ok |    ticks  retx segs  segments   ok |  ticks
+    0.0% |      132        0.0      52.0   30 |      132        0.0      52.0   30 |    1.0
+    2.5% |      152        0.0      52.0   30 |      386       27.8      79.8   30 |    2.5
+    5.0% |      166        0.0      52.0   30 |      590       55.1     107.1   30 |    3.6
+   10.0% |      189        0.0      52.0   30 |     1180      121.5     173.5   30 |    6.3
+   20.0% |      212        0.0      52.0   30 |     2365      247.7     299.7   30 |   11.1
+   30.0% |      230        0.2      52.2   30 |     3776      363.2     415.0   30 |   16.4
+   40.0% |      232        0.0      52.0   30 |     4840      472.6     524.4   30 |   20.9
+
+(retx segs = segments the sender flagged as retransmissions; segments = every segment the sender put on the wire; the transfer is 52 segments)

@@ -123,6 +123,12 @@ if __name__ == "__main__":
     t.event(E_SEG, ACK, 10, 78, 0, 1000); assert t.state == ESTAB
     tx, _ = t.event(E_SEG, RST, 20, 0, 0, 1000); assert t.state == ESTAB and tx == (ACK, 78, 10)          # in window, not exact: challenge ACK
     tx, _ = t.event(E_SEG, RST, 10, 0, 0, 1000); assert t.state == CLOSED
+    # ---- added in Chapter 14: an unacceptable segment is only acknowledged; a second FIN is acknowledged again
+    t = TCB(); t.event(E_OPEN_A, iss=100); t.event(E_SEG, SYN | ACK, 500, 101, 0, 1000); t.event(E_CLOSE); assert t.state == FW1
+    tx, d = t.event(E_SEG, ACK, 500 + 1 + 5000, 102, 10, 1000); assert t.state == FW1 and t.una == 101 and tx == (ACK, 102, 501) and d == 0     # out of the window: its ACK field is not looked at
+    t.event(E_SEG, ACK, 501, 102, 0, 1000); t.event(E_SEG, FIN | ACK, 501, 102, 0, 1000); assert t.state == TIME_WAIT and t.rcv == 502
+    tx, _ = t.event(E_SEG, FIN | ACK, 502, 102, 0, 1000); assert tx == (ACK, 102, 502)                                                           # a further FIN at RCV.NXT: acknowledged again
+    # ---- end of the Chapter 14 additions
     print("tcp_gold hand-checked scenarios passed")
 # ---------------------------------------------------------------- stimulus
 def seg_near(rng, t, wnd):

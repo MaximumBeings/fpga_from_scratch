@@ -24,7 +24,7 @@ module tx_next #(parameter int MSS = 100, parameter int RTO_MIN = 100, parameter
         retx = ltf(nxt, mx); newmax = nxt + n32;
         r = now - rtt_t0; sr = srtt8 >> 3; err = r - sr; aerr = err[31] ? (32'd0 - err) : err;
         s8 = have ? srtt8 + err : (r << 3); v4 = have ? rv4 + aerr - (rv4 >> 2) : (r << 1);
-        rto2 = rto << 1; if (rto2 > RTO_MAX) rto2 = 32'(RTO_MAX); nretx = (en - una < 32'(MSS)) ? (en - una) : 32'(MSS);
+        rto2 = rto << 1; if (rto2 > RTO_MAX) rto2 = 32'(RTO_MAX); nretx = (mx - una < 32'(MSS)) ? (mx - una) : 32'(MSS);
         case (e)
             2'd0: n_en = en + a;
             2'd2: if (n32 != 32'd0) begin

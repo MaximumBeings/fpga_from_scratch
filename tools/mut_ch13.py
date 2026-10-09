@@ -43,7 +43,8 @@ MUT = [
  ("a timeout retransmits from SND.NXT", "tx_seq = una; tx_len = nretx[15:0]; tx_retx = 1'b1;", "tx_seq = nxt; tx_len = nretx[15:0]; tx_retx = 1'b1;"),
  ("a timeout does not go back", "tx_retx = 1'b1; n_nxt = una + nretx; end else n_nxt = una;", "tx_retx = 1'b1; end else n_nxt = una;"),
  ("a timeout restarts the timer with the old RTO", "n_deadline = now + rto2;", "n_deadline = now + rto;"),
- ("the retransmission is limited to MSS - 1", "nretx = (en - una < 32'(MSS)) ? (en - una) : 32'(MSS);", "nretx = (en - una < 32'(MSS)) ? (en - una) : 32'(MSS) - 32'd1;"),
+ ("the retransmission is limited to MSS - 1", "nretx = (mx - una < 32'(MSS)) ? (mx - una) : 32'(MSS);", "nretx = (mx - una < 32'(MSS)) ? (mx - una) : 32'(MSS) - 32'd1;"),
+ ("a timeout retransmits what was written, not what was outstanding", "nretx = (mx - una < 32'(MSS)) ? (mx - una) : 32'(MSS);", "nretx = (en - una < 32'(MSS)) ? (en - una) : 32'(MSS);"),
  ("WRITE replaces the data instead of adding", "2'd0: n_en = en + a;", "2'd0: n_en = a;"),
  ("tab: no bypass", "assign sv = fwd_r ? fwd_d : mem_q;", "assign sv = mem_q;"),
  ("tab: the bypass is taken for any connection", "fwd_r <= go0 && v1 && (cid0 == cid1);", "fwd_r <= go0 && v1;"),
@@ -57,6 +58,9 @@ MUT = [
  ("conn: the RTO starts at 0", "rto <= 32'(RTO_INIT);", "rto <= 32'd0;"),
  ("conn: the window starts at 0", "wnd <= 16'(WND0);", "wnd <= 16'd0;"),
 ]
+def partial_trace():
+    w = 50; ev = [(0, 0, g.WRITE, 1000, 0), (1, 0, g.ACK, 1000, w), (2, 0, g.POLL, 0, 0), (3, 0, g.POLL, 0, 0)]
+    return ev + [(c, 0, g.TICK, 0, 0) for c in (400, 1000, 2200, 4600)] + [(4700, 0, g.ACK, 1000 + w, w), (4701, 0, g.POLL, 0, 0), (4702, 0, g.POLL, 0, 0)]
 def battery(root):
     def sim(n, tab, cidw=2, **kw):
         d = (f"NC={n}", f"TAB={tab}", f"CIDW={cidw}", "MAXCYC=400000") + tuple(f"{k}={v}" for k, v in kw.items())
@@ -83,7 +87,7 @@ def battery(root):
             if typ == g.TICK and tx and on: late.append((now - dl) & g.M)
         return exp, late
     traces = [("closed loop 5%", [(c, 0, e, a, w) for c, e, a, w in g.transfer(11, 4000, loss=0.05, mss=100)["events"]]), ("closed loop 20%", [(c, 0, e, a, w) for c, e, a, w in g.transfer(12, 2500, loss=0.2, mss=100)["events"]]),
-              ("small window", [(c, 0, e, a, w) for c, e, a, w in g.transfer(13, 4000, loss=0.05, mss=100, wnd=400, wnd_var=True)["events"]]), ("fuzz", [(c, 0, e, a, w) for c, cid, e, a, w in g.fuzz_events(14, 2500)]), ("fuzz 2", [(c, 0, e, a, w) for c, cid, e, a, w in g.fuzz_events(15, 2500)])]
+              ("small window", [(c, 0, e, a, w) for c, e, a, w in g.transfer(13, 4000, loss=0.05, mss=100, wnd=400, wnd_var=True)["events"]]), ("fuzz", [(c, 0, e, a, w) for c, cid, e, a, w in g.fuzz_events(14, 2500)]), ("fuzz 2", [(c, 0, e, a, w) for c, cid, e, a, w in g.fuzz_events(15, 2500)]), ("partial segment at a timeout", partial_trace())]
     for nm, ev in traces:
         n = g.write_stim(os.path.join(root, "out", "tx_stim.hex"), ev)
         if sim(n, 0) != conn_exp(ev): return f"tx_conn, {nm}"

@@ -1,0 +1,11 @@
+ window |   B: reference client -> Ch12 receiver   |        C: Ch13 sender -> Ch12 receiver        
+  bytes |  finished    ticks  retx segs  segments |  finished    ticks  retx segs  segments  timeouts*
+     40 |      5/5    30862      128.0     129.0 |      0/5   400000       69.0     109.0       69.0
+     60 |      5/5    20542      168.0     170.0 |      5/5   378760      130.0     190.0      130.0
+     99 |      5/5    12382      101.0     103.0 |      5/5   221392       79.0     130.0       79.0
+    100 |      5/5     2182        0.0      52.0 |      5/5      572        0.0      52.0        0.0
+    150 |      5/5     1143        0.0      52.0 |      5/5      415        0.0      55.0        0.0
+    250 |      5/5      822        0.0      52.0 |      5/5      294        0.0      54.0        0.0
+   1000 |      5/5      343        0.0      52.0 |      5/5      172        0.0      52.0        0.0
+
+* each timeout of the Chapter 13 sender is one retransmitted segment, so the two columns agree; a run that does not finish is cut at 400,000 ticks and its tick count is the cut

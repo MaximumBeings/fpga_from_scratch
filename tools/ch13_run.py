@@ -14,6 +14,11 @@ def conn_expected(ev, **p):
     s = g.Sender(**p); out = []
     for c, cid, e, a, w in ev: tx = s.event(e, c, a, w); out.append(row(0, 0, 0, s, tx))
     return out
+def partial_trace(sd):
+    """Directed: the window is cut to 40 + 10 sd bytes (a duplicate ACK carries it), so the segment in flight is shorter than the MSS; then the timer expires four times (the RTO backs off 300, 600, 1200, 2400) and the last retransmission is acknowledged. A timeout must send what is outstanding (40 + 10 sd bytes), not a full MSS of data that was never sent. Added in Chapter 14, which found the bug."""
+    w = 40 + 10 * sd; ev = [(0, 0, g.WRITE, 1000, 0), (1, 0, g.ACK, 1000, w), (2, 0, g.POLL, 0, 0), (3, 0, g.POLL, 0, 0)]
+    ev += [(c, 0, g.TICK, 0, 0) for c in (400, 1000, 2200, 4600)] + [(4700, 0, g.ACK, 1000 + w, w), (4701, 0, g.POLL, 0, 0), (4702, 0, g.POLL, 0, 0)]
+    return ev
 def tab_events(K, seed, loss, total=3000):
     evs = []
     for c in range(K):
@@ -51,7 +56,7 @@ if __name__ == "__main__":
         print(f"  {loss * 100:4.0f}% {4:5d} {ne:7d} {ns:9d} | {ok:6d} of 4 {v:>10s}")
     print("\n== 3b. tx_conn on traces the closed loop cannot make: a small window that changes with every ACK (400 bytes, halved or quartered at random), and open-loop FUZZ (ACKs at SND.UNA, at the edges of the data in flight, beyond it, before it, with windows of 0, 50, 100, 300, 65535 and random; WRITEs; POLLs; TICKs at random times, some far apart)")
     print(f"  {'trace':34s} {'runs':>5s} {'events':>7s} {'segments':>9s} | {'Icarus':>9s} {'Verilator':>10s}")
-    for nm, mk in (("window 400, updated by every ACK, 5%", lambda sd: [(c, 0, e, a, w) for c, e, a, w in g.transfer(sd, 6000, loss=0.05, mss=100, wnd=400, wnd_var=True)["events"]]), ("open-loop fuzz, 3,000 events", lambda sd: [(c, 0, e, a, w) for c, cid, e, a, w in g.fuzz_events(sd, 3000)])):
+    for nm, mk in (("window 400, updated by every ACK, 5%", lambda sd: [(c, 0, e, a, w) for c, e, a, w in g.transfer(sd, 6000, loss=0.05, mss=100, wnd=400, wnd_var=True)["events"]]), ("open-loop fuzz, 3,000 events", lambda sd: [(c, 0, e, a, w) for c, cid, e, a, w in g.fuzz_events(sd, 3000)]), ("less than a segment outstanding at a timeout", lambda sd: partial_trace(sd))):
         ok = 0; ne = ns = 0; v = "-"
         for seed in range(6):
             ev = mk(seed); n = g.write_stim(os.path.join(R, "out", "tx_stim.hex"), ev); got, _ = sim(n, 0); exp = conn_expected(ev, mss=100); ok += got == exp; ne += len(ev); ns += sum(1 for x in exp if x[15])

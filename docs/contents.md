@@ -25,7 +25,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 ## Part 3 -- Reliable transport: TCP
 12. *(written)* Why orders use TCP: the state machine, segment acceptance, a table of connections, and what must be in hardware
 13. *(written)* A TCP send side: window, cumulative ACK, the RFC 6298 retransmit timer, a scanner for many timers
-14. Testing it against a deterministic reference stack with loss, reorder and duplication injected; formal safety properties
+14. *(written)* Testing it against an independent reference stack with loss, reorder, duplication and forged segments injected; run-time safety invariants (a formal proof is an exercise)
 15. Hot path and cold path: reconnects, head-of-line blocking, the hardware/software split
 
 ## Part 4 -- Market data

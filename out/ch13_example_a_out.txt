@@ -1,14 +1,14 @@
 == resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper (the 64-bit event shifted in serially, a 32-bit time counter, an output register); RAM = SB_RAM40_4K (iCE40) or DP16KD (ECP5)
   design                     | iCE40 LUT    FF  RAM   Fmax | ECP5 LUT CCU2C    FF  RAM   Fmax
-  tx_conn, 1 connection      |      2441   658    0   25.6 |     1703   511   702    0   37.4
-  tx_tab, 16 connections     |      3146  1268   22   25.2 |     3254   514   970    0   33.7
-  tx_tab, 64 connections     |      3151  1278   22   24.9 |     2914   518  1325   10   28.9
-  tx_tab, 256 connections    |      3165  1288   22   25.1 |     2923   520  1335   10   29.6
-  tx_tab, 1024 connections   | does not fit the iCE40 HX8K (131,072 bits of block RAM) |     2912   522  1345   19   28.9
+  tx_conn, 1 connection      |      2441   658    0   27.3 |     1703   511   702    0   36.9
+  tx_tab, 16 connections     |      3146  1268   22   24.9 |     3254   514   970    0   33.4
+  tx_tab, 64 connections     |      3151  1278   22   25.0 |     2914   518  1325   10   28.7
+  tx_tab, 256 connections    |      3165  1288   22   25.6 |     2923   520  1335   10   28.9
+  tx_tab, 1024 connections   | does not fit the iCE40 HX8K (131,072 bits of block RAM) |     2912   522  1345   19   29.7
   the state of one connection is 339 bits (ten 32-bit numbers, the 16-bit window, three flags); 1,024 connections = 347,136 bits
 
 == the end points of each critical path (nextpnr's last report for the clock)
-  tx_conn, 1 connection      ice40  c.rtt_t0                   -> c.deadline                     18.3 ns logic, 20.8 ns routing
-  tx_conn, 1 connection      ecp5   now                        -> c.deadline                     10.2 ns logic, 16.5 ns routing
-  tx_tab, 64 connections     ice40  t.mem.RDATA_0              -> t.n_have                       18.6 ns logic, 21.7 ns routing
-  tx_tab, 64 connections     ecp5   t.mem.DOB5                 -> t.fwd_d                        16.0 ns logic, 18.6 ns routing
+  tx_conn, 1 connection      ice40  c.rtt_t0                   -> c.deadline                     18.1 ns logic, 18.5 ns routing
+  tx_conn, 1 connection      ecp5   now                        -> c.deadline                     9.8 ns logic, 17.3 ns routing
+  tx_tab, 64 connections     ice40  t.mem.RDATA_12             -> t.n_have                       20.6 ns logic, 19.5 ns routing
+  tx_tab, 64 connections     ecp5   t.mem.DOB3                 -> t.n_have                       16.4 ns logic, 18.5 ns routing

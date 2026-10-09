@@ -49,7 +49,7 @@ class Sender:
         else:
             if self.timer_on and not lt(now, self.deadline):
                 self.rto = min((self.rto << 1) & M, self.rto_max); self.timing_on = 0
-                n = min(self.mss, (self.end - self.una) & M)
+                n = min(self.mss, (self.max - self.una) & M)                                       # what is outstanding, not what is written: bytes never sent are new data, not a retransmission (found by the interop run of Chapter 14)
                 if n > 0: tx = (self.una, n, 1); self.nxt = (self.una + n) & M
                 else: self.nxt = self.una
                 self.deadline = (now + self.rto) & M
@@ -100,6 +100,19 @@ if __name__ == "__main__":
     assert s.event(POLL, 100) == (1000, 1000, 0) and s.deadline == 100 + 300 + 0 or True
     s.event(TICK, 500); assert s.rto == 600 and s.nxt == 2000                                                         # timeout: backoff to 600, go back to una, retransmit
     assert s.timing_on == 0
+    # ---- added in Chapter 14: Karn's rule and the edges after the interop mutation run showed that no earlier check pinned them
+    k = Sender(isn=0, mss=1000, rto_init=300, rto_min=100, rto_max=6000); k.event(WRITE, 0, 3000); k.event(POLL, 0); k.event(POLL, 1)         # two segments in flight; the first is timed
+    assert k.timing_on and k.rtt_seq == 1000
+    k.event(ACK, 5, 500, 65535); assert k.una == 500 and k.timing_on and not k.have                                                      # an ACK below the timed number takes no sample
+    k.event(TICK, 304); assert k.rto == 300 and k.nxt == 2000                                                                            # the ACK restarted the timer at 5 + 300: one tick before the deadline nothing happens
+    k.event(TICK, 305); assert k.rto == 600 and k.nxt == 1500 and not k.timing_on                                                        # at the deadline: it fires, the sample is cancelled
+    k.event(POLL, 306); assert k.nxt == 2500 and k.max == 2500 and not k.timing_on                                                                         # a retransmission starts no sample
+    k.event(ACK, 400, 2000, 65535); assert not k.have and k.una == 2000                                                                                    # and its ACK takes none (Karn)
+    d = Sender(isn=0, mss=1000); d.event(WRITE, 0, 1000); d.event(POLL, 0); d.event(ACK, 10, 1000, 65535); assert d.srtt8 == 80 and d.rto == 100      # R = 10: SRTT + 4 RTTVAR = 30 is clamped up to RTO_MIN
+    d.event(WRITE, 11, 1000); d.event(ACK, 12, 1000, 4321); assert d.wnd == 4321                                                          # a duplicate ACK still carries the window
+    q = Sender(isn=0, mss=1000); q.event(WRITE, 0, 5000); q.event(ACK, 1, 0, 400); assert q.event(POLL, 2) == (0, 400, 0) and q.max == 400        # the window cuts the first segment to 400 bytes
+    assert q.event(TICK, 302) == (0, 400, 1) and q.nxt == 400 and q.max == 400                                                           # a timeout retransmits those 400, not a full MSS of data never sent (the bug Chapter 14 found)
+    # ---- end of the Chapter 14 additions
     print("tx_gold hand-checked scenarios passed")
     r = transfer(1, 20000, loss=0.0); assert r["delivered"] == 20000; r = transfer(2, 20000, loss=0.1); assert r["delivered"] == 20000 and r["retx"] > 0
     print("closed loop: lossless", transfer(1, 20000)["done_tick"], "ticks; 10% loss", r["done_tick"], "ticks,", r["retx"], "retransmissions")
