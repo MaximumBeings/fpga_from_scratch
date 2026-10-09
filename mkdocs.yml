@@ -57,5 +57,6 @@ nav:
       - "3. Timing and Clock Domains: Setup and Hold, Reading a Timing Report, Reset, Synchronizers, and the Asynchronous FIFO": part01/03-timing-and-cdc.md
       - "4. Latency as a Budget: Pipelines, Cut-Through Against Store-and-Forward, and Determinism": part01/04-latency-budget.md
       - "5. Resources: Fixed-Point Arithmetic, DSP Blocks, Block RAM, and Moving Registers": part01/05-resources.md
+      - "6. A Verification Harness: Vector Replay, Random and Constrained Stimulus, Coverage, Formal Properties, and Mutation Testing": part01/06-verification-harness.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

@@ -1,7 +1,10 @@
-// Chapter 6 testbench for sfifo: vector replay. Each line of out/fifo_vec.hex has the inputs for one cycle (wr, rd, data) and the golden model's outputs (rd_data, full, empty, count) as they must be BEFORE the clock edge. rd_data is compared only when the FIFO is not empty. Defines: BUG, NC. Prints PASS or the first mismatches.
+// Chapter 6 testbench for sfifo: vector replay. Each line of out/fifo_vec.hex has the inputs for one cycle (wr, rd, data) and the golden model's outputs (rd_data, full, empty, count) as they must be BEFORE the clock edge. rd_data is compared only when the FIFO is not empty. Defines: BUG, NC, VEC (the vector file, default out/fifo_vec.hex). Prints PASS or the first mismatches.
 `timescale 1ns/1ps
 `ifndef BUG
 `define BUG 0
+`endif
+`ifndef VEC
+`define VEC "out/fifo_vec.hex"
 `endif
 `ifndef NC
 `define NC 2000
@@ -12,7 +15,7 @@ module sfifo_tb;
     sfifo #(.W(8), .DEPTH(6), .BUG(`BUG)) dut (.clk(clk), .rst(rst), .wr_en(wr_en), .wr_data(wr_data), .rd_en(rd_en), .rd_data(rd_data), .full(full), .empty(empty), .count(count));
     always #5 clk = ~clk;
     initial begin
-        $readmemh("out/fifo_vec.hex", vec);
+        $readmemh(`VEC, vec);
         repeat (2) @(negedge clk); rst = 0;
         for (k = 0; k < NC; k++) begin
             @(negedge clk); wr_en = vec[k][32]; rd_en = vec[k][28]; wr_data = vec[k][27:20]; #1;

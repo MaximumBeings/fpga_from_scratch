@@ -1,0 +1,43 @@
+NOTE: this script deliberately breaks copies of the RTL. 'killed by' lines are EXPECTED: they show a technique notices the mistake.
+unmutated design (bug-free copy) passes all five levels: True;  generated mutants: 30
+  mutant                                                                               killed by
+  line 18: == replaced by !=: assign full = (count == DEP);                            directed
+  line 18: limit DEP replaced by DEPM1: assign full = (count == DEP);                  directed
+  line 19: == replaced by !=: assign empty = (count == '0);                            directed
+  line 19: '0 replaced by '1: assign empty = (count == '0);                            directed
+  line 22: && replaced by ||: do_wr = wr_en && !full; do_rd = rd_en && !empty;         directed
+  line 22: && replaced by ||: do_wr = wr_en && !full; do_rd = rd_en && !empty;         directed
+  line 22: negation removed: do_wr = wr_en && !full; do_rd = rd_en && !empty;          directed
+  line 22: negation removed: do_wr = wr_en && !full; do_rd = rd_en && !empty;          directed
+  line 22: term '&& !full' removed: do_wr = wr_en && !full; do_rd = rd_en && !empty;   directed
+  line 22: term '&& !empty' removed: do_wr = wr_en && !full; do_rd = rd_en && !empty;  directed
+  line 25: '0 replaced by '1: if (rst) begin wp <= '0; rp <= '0; count <= '0; end      directed
+  line 25: '0 replaced by '1: if (rst) begin wp <= '0; rp <= '0; count <= '0; end      directed
+  line 25: '0 replaced by '1: if (rst) begin wp <= '0; rp <= '0; count <= '0; end      directed
+  line 27: == replaced by !=: if (do_wr) begin mem[wp[PW-1:0]] <= wr_data; wp <= (wp = directed
+  line 27: + 1 replaced by - 1: if (do_wr) begin mem[wp[PW-1:0]] <= wr_data; wp <= (wp directed
+  line 27: 1'b1 replaced by 1'b0: if (do_wr) begin mem[wp[PW-1:0]] <= wr_data; wp <= ( directed
+  line 27: '0 replaced by '1: if (do_wr) begin mem[wp[PW-1:0]] <= wr_data; wp <= (wp = directed
+  line 27: wrap point LAST replaced by LATE: if (do_wr) begin mem[wp[PW-1:0]] <= wr_da directed
+  line 28: == replaced by !=: if (do_rd) rp <= (rp == LAST) ? '0 : rp + 1'b1;          directed
+  line 28: + 1 replaced by - 1: if (do_rd) rp <= (rp == LAST) ? '0 : rp + 1'b1;        directed
+  line 28: 1'b1 replaced by 1'b0: if (do_rd) rp <= (rp == LAST) ? '0 : rp + 1'b1;      directed
+  line 28: '0 replaced by '1: if (do_rd) rp <= (rp == LAST) ? '0 : rp + 1'b1;          directed
+  line 28: wrap point LAST replaced by LATE: if (do_rd) rp <= (rp == LAST) ? '0 : rp + directed
+  line 30: != replaced by ==: 2'b10: if (count != DEP) count <= count + 1'b1;          directed
+  line 30: + 1 replaced by - 1: 2'b10: if (count != DEP) count <= count + 1'b1;        directed
+  line 30: 1'b1 replaced by 1'b0: 2'b10: if (count != DEP) count <= count + 1'b1;      directed
+  line 30: limit DEP replaced by DEPM1: 2'b10: if (count != DEP) count <= count + 1'b1 directed
+  line 30: guard 'count != DEP' removed: 2'b10: if (count != DEP) count <= count + 1'b SURVIVES; proved equivalent for 14 cycles
+  line 31: - 1 replaced by + 1: 2'b01: count <= count - 1'b1;                          directed
+  line 31: 1'b1 replaced by 1'b0: 2'b01: count <= count - 1'b1;                        directed
+
+cumulative kills (a mutant is counted at the first level that kills it):
+  directed             kills  29   cumulative  29 of 30  (97%)
+  uniform 500          kills   0   cumulative  29 of 30  (97%)
+  constrained 500      kills   0   cumulative  29 of 30  (97%)
+  uniform 5000         kills   0   cumulative  29 of 30  (97%)
+  constrained 5000     kills   0   cumulative  29 of 30  (97%)
+  formal (12 cycles)   kills   0   cumulative  29 of 30  (97%)
+  survivors proved equivalent: 1;  survivors NOT equivalent (gaps in the tests): 0
+  mutation score over the non-equivalent mutants: 29 of 29 (100%)

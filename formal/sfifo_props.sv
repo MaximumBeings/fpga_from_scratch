@@ -1,6 +1,6 @@
 // Chapter 6: formal properties of sfifo, for Yosys's SAT engine. The wrapper instantiates the design, drives it with free (unconstrained) inputs, and asserts what the specification says. Yosys treats every undriven input as "any value, any cycle".
 // Properties: (1) count never exceeds DEPTH, (2) full and empty agree with count, (3) a model of the occupancy kept in the wrapper agrees with count (so a write/read that changes the count the wrong way is caught), (4) a tagged word: pick any word (an $anyconst index K) and assert that the K-th word read is the K-th word written.
-module sfifo_props #(parameter int BUG = 0, parameter int DEPTH = 6) (input logic clk, input logic wr_en, input logic [7:0] wr_data, input logic rd_en);
+module sfifo_props #(parameter int BUG = 0, parameter int DEPTH = 6, parameter int TAG = 1) (input logic clk, input logic wr_en, input logic [7:0] wr_data, input logic rd_en);
     logic rst; logic [7:0] rd_data; logic full, empty; logic [2:0] count;
     sfifo #(.W(8), .DEPTH(DEPTH), .BUG(BUG)) dut (.clk(clk), .rst(rst), .wr_en(wr_en), .wr_data(wr_data), .rd_en(rd_en), .rd_data(rd_data), .full(full), .empty(empty), .count(count));
     logic started = 1'b0; logic [2:0] occ = 3'd0;                     // the wrapper's own occupancy model
@@ -19,6 +19,6 @@ module sfifo_props #(parameter int BUG = 0, parameter int DEPTH = 6) (input logi
         assert (full == (count == DEPTH[2:0]));
         assert (empty == (count == 3'd0));
         assert (count == occ);
-        if (!empty && nr == k && tagged) assert (rd_data == tag);
+        if (TAG != 0 && !empty && nr == k && tagged) assert (rd_data == tag);
     end
 endmodule

@@ -1,0 +1,50 @@
+== 1. lint gate
+  sfifo  Verilator warnings: 0   Yosys check problems: 0
+
+== 2. simulator speed on the same vector file (1,000,000 cycles of constrained-random stimulus; run time only, compile time excluded)
+  Icarus (SystemVerilog testbench):  PASS: BUG=0, 1000000 cycles                        0.23 million cycles per second
+  Verilator (C++ driver):            PASS: 1000000 cycles x 1, 15.68 million cycles p   2.41 million cycles per second (includes reading the file)
+  ratio: 11 x faster in Verilator
+
+== 3. the six injected bugs against four techniques ('found' = a mismatch, or a counterexample, or a failed assertion)
+  bug what                                              directed 44 uniform 2000 constrained 2000   formal (20 cycles)
+    1 write when full overwrites the oldest word        at cycle 13  at cycle 52     at cycle 312          found  0.5s
+    2 read+write with one word held: count goes to 0    at cycle 22   at cycle 2      at cycle 60          found  0.5s
+    3 write pointer wraps one word late                 at cycle 16  at cycle 16      at cycle 60          found  0.5s
+    4 read+write when empty loses the word                   missed   at cycle 8       at cycle 3          found  0.5s
+    5 read when empty underflows the count              at cycle 20   at cycle 8       at cycle 1          found  0.4s
+    6 a write of 0xA5 at depth-1 is lost                     missed at cycle 955     at cycle 323          found  0.4s
+
+  how many cycles until the first mismatch, over 40 seeds (stimulus cut off at 20,000 cycles; 'not found' counts 20,000):
+  bug  uniform: median    worst  not found |  constrained: median    worst  not found
+    1               56      420          0 |                   56      342          0
+    2               10      184          0 |                    8      387          0
+    3               17       28          0 |                   18      100          0
+    4                4      176          0 |                    3      162          0
+    5                2      155          0 |                    1      161          0
+    6             2226     9765          0 |                  124     1332          0
+
+== 4. functional coverage: bins hit on the golden model's state (18 bins)
+  stimulus                    bins hit   bins missed
+  directed (44 cycles)         12 of 18   read+write when empty, read+write when full, write of 0xA5 at depth-1, write of 0x00 at depth-1, full for 3 cycles running, read+write with 3 words
+  uniform 200 cycles           15 of 18   write of 0xA5 at depth-1, write of 0x00 at depth-1, empty for 3 cycles running
+  constrained 200 cycles       11 of 18   occupancy 5, occupancy 6, write when full, read+write when full, write of 0xA5 at depth-1, write of 0x00 at depth-1, full for 3 cycles running
+  uniform 2000 cycles          18 of 18   -
+  constrained 2000 cycles      18 of 18   -
+
+== 5. formal (Yosys SAT): shortest counterexample, unbounded proof by induction, bounded proof of the tagged word
+  bug   shortest counterexample (cycles)
+    1                                  9
+    2                                  4
+    3                                  9
+    4                                  3
+    5                                  3
+    6                                  8
+  correct design, count/full/empty properties, induction (unbounded): proved in 0.04 s
+    bug 1: induction on the same properties: FAILS
+    bug 2: induction on the same properties: FAILS
+    bug 3: induction on the same properties: proved
+    bug 4: induction on the same properties: FAILS
+    bug 5: induction on the same properties: FAILS
+    bug 6: induction on the same properties: FAILS
+  correct design, all properties including the tagged word, 20 cycles from reset: proved in 77.6 s
