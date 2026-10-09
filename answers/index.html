@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part01/06-verification-harness/">
+        <link rel="prev" href="../part02/07-frames-and-crc/">
       
       
       
@@ -514,6 +514,95 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 2 -- Ethernet
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 2 -- Ethernet
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part02/07-frames-and-crc/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    7. Frames and the CRC: Ethernet Frame Check, Parallel CRC-32 at 64 Bits per Beat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -532,10 +621,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -553,8 +642,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -762,6 +851,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 7
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-7-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 7 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -930,6 +1041,28 @@
     <span class="md-ellipsis">
       
         Chapter 6 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 7
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-7-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 7 -- hints for the exercises
       
     </span>
   </a>
@@ -1138,6 +1271,39 @@
 <li>The tagged-word property needs invariants relating the pointers, the count and the position of the tagged word (for example, "if the tag is stored, it is at index <code>(rp + (k - nr)) mod DEPTH</code> and <code>count &gt; k - nr</code>"); without something like that induction fails for lack of reachable-state information.</li>
 <li>An operator such as "replace <code>&amp;&amp; !empty</code> with <code>&amp;&amp; (!empty || wr_en)</code>" produces bug 4's behaviour: a read accepted when a write is simultaneous. Count how many generated mutants the new operator adds and whether the directed test kills them.</li>
 <li>Add <code>(1, 1, x)</code> on an empty FIFO and <code>(1, 0, 0xA5)</code> at five words to <code>directed()</code>; the directed test then finds all six; coverage rises to 15 or 16 bins (the 3-cycle full and empty runs need more cycles).</li>
+</ol>
+<h2 id="chapter-7">Chapter 7<a class="headerlink" href="#chapter-7" title="Permanent link">&para;</a></h2>
+<p><strong>1. Which four conventions define the Ethernet CRC-32 on the wire, and what happens to the result if any one is wrong?</strong></p>
+<p>Worked answer: bits are processed least-significant first (the reflected polynomial <code>0xEDB88320</code>), the register starts at all ones, the result is inverted, and it is sent low byte first. Get any one wrong and the value differs from every other implementation's, so a frame sent by one end fails the check at the other, though the design may look self-consistent in a closed test.</p>
+<p><strong>2. What is the residue, and why does a receiver not compare the CRC with the FCS field?</strong></p>
+<p>Worked answer: running the CRC over a frame followed by its own FCS always leaves <code>0x2144DF1C</code>. The receiver runs the CRC over every byte it received, FCS included, and tests for that one constant: no separate comparison, no need to find the FCS field when the frame length is not yet known.</p>
+<p><strong>3. Why is the CRC register update linear over GF(2), and what does that make possible?</strong></p>
+<p>Worked answer: each step shifts and XORs the register with a constant that is selected by one bit; with addition as XOR the new register bits are XORs of old register bits and data bits, and after N bits the same is true with larger sets. Linearity lets N steps be written as one XOR network, lets the state part and the data part be computed separately (pipelining), and gives the basis-vector proof.</p>
+<p><strong>4. How does the generator find the XOR equations without doing any algebra by hand?</strong></p>
+<p>Worked answer: it runs the bit-serial algorithm with each register bit held as a set of variables (an integer bit mask): the shift moves the sets, the conditional XOR replaces a set with the symmetric difference. After the N steps the sets are the equations.</p>
+<p><strong>5. Why can only the last beat of a frame be partial, and what does the design do for it?</strong></p>
+<p>Worked answer: a stream of bytes is cut into beats of W/8 bytes, so every beat is full except possibly the last. The generator emits one update function per byte count (1 to 8) and the design selects by <code>in_nbytes</code>; the pipelined design moves that selection out of the feedback loop.</p>
+<p><strong>6. What do <code>A_k</code> and <code>B_k</code> stand for, and why does separating them allow pipelining?</strong></p>
+<p>Worked answer: <code>A_k</code> is the 32 x 32 matrix applied to the old register, <code>B_k</code> the matrix applied to the k data bytes, and new state = <code>A_k(state) ^ B_k(data)</code>. <code>B</code> depends only on the input, so it can be computed in as many stages as wanted; only <code>A_8</code> and one XOR remain in the loop through the state register, and that loop is what limits the clock.</p>
+<p><strong>7. Why was the SAT proof of the 64-bit update abandoned, and what replaced it? What does the proof need to assume?</strong></p>
+<p>Worked answer: the miter has 96 free input bits and long XOR chains, which SAT solvers handle badly (no result in 100 seconds even for two bytes). It was replaced by a basis proof: the circuits are affine (only XOR and NOT gates after mapping) and give zero for zero input, hence linear, and a linear function that matches on the 96 unit inputs matches everywhere. It assumes that the mapped netlist really is what the RTL describes (the gate-type check is on the mapped netlist of the same source).</p>
+<p><strong>8. XOR and NOT gates only: why is that "affine", and why does the all-zero test make it linear?</strong></p>
+<p>Worked answer: XOR gates preserve linearity; a NOT is XOR with the constant 1, so a network of XORs and NOTs is a linear function plus a constant. If the all-zero input gives zero, the constant is zero.</p>
+<p><strong>9. Why do idle cycles carry random junk in the stimulus? Which mutant needed it?</strong></p>
+<p>Worked answer: the interface says the data, byte count and last signals are don't-cares when <code>valid</code> is low, so a correct design must ignore them. With zeros on idle cycles a design that forgot to gate its update on <code>valid</code> still held its state (a byte count of zero is a no-op), and the mutant that removed the <code>in_valid</code> gate survived until the idle cycles carried junk.</p>
+<p><strong>10. Writing the same XOR as a tree instead of a chain doubled the clock. Why did the tool not do it?</strong></p>
+<p>Worked answer: the technology mapper used here optimises area first and keeps the structure it is given for XORs: a left-to-right chain of 34 inputs became a chain of LUTs (11 levels on the critical path), while an explicit tree of 4-input groups needs 3. A delay-driven script might restructure it; the open flow's default did not.</p>
+<p><strong>11. 54 corruptions were missed with a 16-bit check and none with 32 bits. What does the ratio say, and what would you need to see a 32-bit miss?</strong></p>
+<p>Worked answer: a random corruption passes an n-bit check with probability about 2^-n: 4,000,000 / 65,536 = 61 expected, 54 seen. At 32 bits the expectation is 4,000,000 / 2^32 = 0.001, so seeing one would take about four billion corruptions.</p>
+<p><strong>12. The pipelined design reaches 7.9 Gbit/s on ECP5. What limits it now and what would you do about it?</strong></p>
+<p>Worked answer: the critical path is the last stage: the choice of one of eight <code>A_k</code> matrices applied to the snapshot and the XOR with <code>B_k</code> (about five LUT levels, not in a loop). Cut it into two registered stages (for example, compute all eight <code>A_k</code> products' needed parts first, or split the multiplexer from the XOR); the loop stays at three levels, and the clock should rise towards the 156.25 MHz a 64-bit 10GbE datapath needs.</p>
+<h2 id="chapter-7-hints-for-the-exercises">Chapter 7 -- hints for the exercises<a class="headerlink" href="#chapter-7-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Register the output of the eight-way <code>A_k</code> selection (<code>ak</code>) in one stage and do the XOR with <code>B_k</code> and the comparison in the next; the path is then a 20-input XOR with a mux in front (about four levels). Measure on ECP5; the loop remains at 3 levels, so a result near 150 MHz is plausible but not guaranteed.</li>
+<li>The FCS is the registered final <code>~st</code> after the last data byte; if the last beat has k bytes (k &lt; W/8) the FCS bytes fit in the same beat when k + 4 &lt;= W/8, otherwise a second beat is needed. Test both cases for every k.</li>
+<li><code>W = 128</code> means 16 bytes per beat: the generator's <code>d</code> input becomes 128 bits and the functions go up to <code>step16</code>; the row weights grow to about 80; expect a lower clock and many more LUTs.</li>
+<li>The Hamming distance of this CRC at short lengths is large (every 3-bit error was detected in the 12-byte frame); the search for undetected 4-, 5- and 6-bit patterns is a sampling problem: undetected patterns are rare, so use the linearity (an error is undetected iff the CRC of the error pattern alone, with zero initial value and no final inversion, is zero).</li>
+<li>Candidates: a mutant in code that the interface rule makes unreachable (equivalent), or a frame length the stimulus never produces (the stimulus covers 1 to 200 bytes randomly and 1 to 80 exhaustively, so a 1,500-byte frame would be the missing test).</li>
 </ol>
 
 
