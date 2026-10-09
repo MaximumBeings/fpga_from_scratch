@@ -1,0 +1,26 @@
+== 1. the fixed-point RTO (SRTT x 8 and RTTVAR x 4 as integers, G = 1 tick) against RFC 6298 in floating point, 200 random round-trip times per series; RTO clamped to [100, 6000] ticks
+   RTT range (ticks)  series  max |fixed - float|  mean |diff|  max diff / RTO
+        20 .. 60           50              3.47 ticks        0.080           3.35%
+        50 .. 400          50              3.75 ticks        1.454           0.88%
+       300 .. 3000         50              3.78 ticks        1.430           0.13%
+         1 .. 20           50              0.00 ticks        0.000           0.00%
+  the difference is the truncation of the shifts (SRTT = srtt8 >> 3 loses up to 7/8 of a tick, RTTVAR = rv4 >> 2 up to 3/4 of a tick per update); it does not accumulate because the integers carry the fractions
+
+== 2. a transfer of 20,000 bytes (200 segments of 100) over a channel with round trip 40 +- 10 ticks, the one-way loss shown, in both directions; 10 seeds each
+   loss |  mean ticks  max ticks  mean retx segments  retx / loss-free segments  ideal ticks (loss-free)
+   0.0% |         434        443                   0                      0.00x                      434
+   0.5% |         657       1395                 100                      0.50x                      434
+   1.0% |         848       1737                 200                      1.00x                      434
+   2.0% |        1224       1925                 359                      1.80x                      434
+   5.0% |        2927       4306                1148                      5.74x                      434
+  10.0% |        5112       7273                2288                     11.44x                      434
+  20.0% |       35515     251121                4907                     24.54x                      434
+  go-back-N resends everything after the loss: a loss of one segment in a flight of 100 costs about a hundred retransmissions; fast retransmit and selective acknowledgements (not modelled) avoid it
+
+== 3. the RTO the estimator settles on against the round-trip jitter (RTT 100 +- jitter, 1000 samples)
+   jitter  final SRTT  final RTTVAR  final RTO  RTO / mean RTT
+        0       100.0           0.8        103           1.03x
+        5       100.6           3.2        113           1.13x
+       20       105.1           6.5        131           1.31x
+       50        98.2          20.2        179           1.79x
+       90        99.8          53.8        314           3.14x

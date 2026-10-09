@@ -66,5 +66,6 @@ nav:
       - "11. Egress: Building UDP Frames, Store-and-Forward Against Cut-Through, and a Token-Bucket Pacer": part02/11-egress.md
   - "Part 3 -- Reliable transport: TCP":
       - "12. The TCP State Machine: Segment Acceptance in Hardware, a Table of Connections, and What Must Be on the Hot Path": part03/12-tcp-state-machine.md
+      - "13. The TCP Send Side: Window, Cumulative ACK, the RFC 6298 Retransmission Timer, and a Scanner for Many Timers": part03/13-send-side-and-timers.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

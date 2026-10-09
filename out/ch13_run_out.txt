@@ -1,0 +1,42 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  tx_next  Verilator warnings: 0   Yosys check problems: 0
+  tx_conn  Verilator warnings: 0   Yosys check problems: 0
+  tx_tab   Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model: RFC 6298 by hand, and the closed loop (sender, lossy FIFO channel with random delay, in-order receiver); every byte must arrive in order
+  tx_gold hand-checked scenarios passed
+  closed loop: lossless 439 ticks; 10% loss 5283 ticks, 2585 retransmissions
+  one-way loss   bytes  delivered   ticks  retransmitted segments  segments
+            0%   20000      20000     429                       0       200
+            1%   20000      20000     746                     146       346
+            5%   20000      20000    1608                     442       642
+           20%   20000      20000   11436                    4623      4823
+
+== 3. tx_conn against the model: the events of a closed-loop transfer, every state variable and the segment after every event
+   loss seeds  events  segments |    Icarus  Verilator
+     0%     4     632       240 |      4 of 4       PASS
+     1%     4     771       247 |      4 of 4       PASS
+     5%     4    2432       656 |      4 of 4       PASS
+    20%     4  115915      2313 |      4 of 4       PASS
+
+== 3b. tx_conn on traces the closed loop cannot make: a small window that changes with every ACK (400 bytes, halved or quartered at random), and open-loop FUZZ (ACKs at SND.UNA, at the edges of the data in flight, beyond it, before it, with windows of 0, 50, 100, 300, 65535 and random; WRITEs; POLLs; TICKs at random times, some far apart)
+  trace                               runs  events  segments |    Icarus  Verilator
+  window 400, updated by every ACK, 5%     6    9379       426 |      6 of 6       PASS
+  open-loop fuzz, 3,000 events           6   18000      3259 |      6 of 6       PASS
+
+== 4. tx_tab with the timer scanner: K connections whose events are interleaved (cycle t x K + c), the timers checked by the scanner's own ticks (in every cycle with no outside event); the model replays the events in the order the RTL processed them
+  connections RAM words outside events scanner ticks  timeouts |   Icarus  Verilator
+            2         2            138           644         3 |      YES          -
+            4         4            270          1963         7 |      YES       PASS
+           13        16            771          6442        36 |      YES          -
+           50        64           3112        109518       224 |      YES          -
+  4 open-loop fuzz streams, interleaved: 4779 outside events, 403462 scanner ticks, 241 timeouts: equal to the model: YES
+
+== 5. how late is the scanner? N connections, each sends one window of data at start and then nothing; its retransmission timer (300 ticks, then backed off) fires when the scanner reaches it: lateness = the cycle of the TICK that fired it minus the deadline
+  connections timeouts seen  min late  mean late  max late  derived bound N
+            2             8         0        0.1         1                2
+            4            16         0        0.4         3                4
+           16            64         0        3.9        15               16
+           64           256         0       29.9        63               64
+  (a timer is checked once every N cycles when the scanner has the cycles to itself: the lateness lies between 0 and N - 1; outside events take cycles from it and raise the bound by their number; a timer wheel (Exercise 2) bounds it by the wheel's resolution instead)
+rc=0

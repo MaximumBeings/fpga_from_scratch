@@ -1,0 +1,54 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  avail counts from SND.UNA: caught by: tx_conn, fuzz
+  the window limit ignores SND.NXT: caught by: tx_conn, fuzz
+  a negative window limit is not clamped: caught by: tx_conn, fuzz
+  the segment is MSS - 1 when data is plentiful: caught by: tx_conn, closed loop 5%
+  a retransmission is never flagged: caught by: tx_conn, closed loop 5%
+  SND.MAX always follows SND.NXT: caught by: tx_conn, closed loop 5%
+  timing starts on a retransmission: caught by: tx_conn, closed loop 5%
+  the timed sequence number is SND.NXT before sending: caught by: tx_conn, small window
+  the sample's start time is not recorded: caught by: tx_conn, closed loop 5%
+  a send restarts a running timer: caught by: tx_conn, closed loop 5%
+  a send starts the timer at now: caught by: tx_conn, closed loop 5%
+  an ACK beyond SND.MAX is accepted: caught by: tx_conn, fuzz
+  an ACK at SND.UNA or before is accepted as new: caught by: tx_conn, closed loop 5%
+  SND.NXT is not pulled forward by an ACK: caught by: tx_conn, fuzz
+  the window is not updated by a new ACK: caught by: tx_conn, small window
+  a sample is taken from any ACK: caught by: tx_conn, closed loop 5%
+  a sample is taken only when the ACK equals the timed number: caught by: tx_conn, fuzz
+  the first sample does not set 'have': caught by: tx_conn, closed loop 5%
+  the first SRTT is R x 4: caught by: tx_conn, closed loop 5%
+  the first RTTVAR is R, not R / 2: caught by: tx_conn, closed loop 5%
+  the error has the wrong sign: caught by: tx_conn, small window
+  SRTT adds |err|: caught by: tx_conn, small window
+  RTTVAR decays by 1/8: caught by: tx_conn, small window
+  the error's magnitude is the signed error: caught by: tx_conn, small window
+  the RTO has no lower clamp: caught by: tx_conn, small window
+  the RTO has no upper clamp: caught by: tx_tab, fuzz
+  the backed-off RTO persists after an ACK without a sample: caught by: tx_conn, closed loop 5%
+  the timer is not stopped when everything is acknowledged: caught by: tx_conn, closed loop 5%
+  the timer is stopped when SND.NXT is reached: caught by: tx_conn, fuzz
+  an ACK restarts the timer without the RTO: caught by: tx_conn, closed loop 5%
+  a duplicate ACK does not update the window: caught by: tx_conn, fuzz
+  the timer fires one tick late: caught by: tx_conn, closed loop 5%
+  the backed-off RTO is not clamped: caught by: tx_conn, fuzz
+  a timeout does not back off: caught by: tx_conn, closed loop 5%
+  a timeout does not cancel the sample (Karn): caught by: tx_conn, closed loop 5%
+  a timeout retransmits from SND.NXT: caught by: tx_conn, closed loop 5%
+  a timeout does not go back: caught by: tx_conn, closed loop 5%
+  a timeout restarts the timer with the old RTO: caught by: tx_conn, closed loop 5%
+  the retransmission is limited to MSS - 1: caught by: tx_conn, closed loop 5%
+  WRITE replaces the data instead of adding: caught by: tx_conn, closed loop 5%
+  tab: no bypass: caught by: tx_tab, closed loop
+  tab: the bypass is taken for any connection: caught by: tx_tab, closed loop
+  tab: the scanner does not move on: caught by: scanner lateness (timeouts 3, max 0)
+  tab: the scanner injects POLL, not TICK: caught by: tx_tab, closed loop
+  tab: the scanner is not used: caught by: scanner lateness (timeouts 12, max 14)
+  tab: the write goes to the next connection: caught by: tx_tab, closed loop
+  tab: the RAM starts with RTO 0: caught by: tx_tab, closed loop
+  tab: the RAM starts with window 0: caught by: tx_tab, closed loop
+  tab: the scanner skips the connection just served: caught by: scanner lateness (timeouts 6, max 1)
+  conn: the RTO starts at 0: caught by: tx_conn, closed loop 5%
+  conn: the window starts at 0: caught by: tx_conn, closed loop 5%
+mutants caught: 51 of 51
