@@ -379,3 +379,61 @@ Worked answer: the critical path is the last stage: the choice of one of eight `
 3. `W = 128` means 16 bytes per beat: the generator's `d` input becomes 128 bits and the functions go up to `step16`; the row weights grow to about 80; expect a lower clock and many more LUTs.
 4. The Hamming distance of this CRC at short lengths is large (every 3-bit error was detected in the 12-byte frame); the search for undetected 4-, 5- and 6-bit patterns is a sampling problem: undetected patterns are rare, so use the linearity (an error is undetected iff the CRC of the error pattern alone, with zero initial value and no final inversion, is zero).
 5. Candidates: a mutant in code that the interface rule makes unreachable (equivalent), or a frame length the stimulus never produces (the stimulus covers 1 to 200 bytes randomly and 1 to 80 exhaustively, so a 1,500-byte frame would be the missing test).
+
+## Chapter 8
+
+**1. What is the inter-frame gap and why does the transmitter count 12 cycles of idle?**
+
+Worked answer: the gap is the minimum idle time of 96 bit times between frames, which is 12 byte times on a byte interface. It gives the receiving end time to finish a frame and be ready for the next. The transmitter loads 11 after the FCS and counts down so that the next preamble starts no earlier than 12 cycles after the last FCS byte; the test measured a minimum gap of 12 at all three source speeds.
+
+**2. How does `mac_rx` find the start of a frame, and what does it do with a run that does not fit the pattern?**
+
+Worked answer: inside a `dv` run it needs at least one `0x55` followed by `0xD5`. Anything else (no preamble byte, no SFD, a run that ends first) sends it to the ignore state until `dv` falls, so nothing is reported for that run.
+
+**3. Why does the receiver hold each data byte for one cycle?**
+
+Worked answer: the FCS is the last four bytes and the receiver cannot know a byte is among them until the frame ends. A four-byte delay line lets it release a byte only when four more have arrived, so the FCS never leaves; the one-cycle hold gives the last released byte its `last` mark in the same cycle the frame ends.
+
+**4. Why compare the CRC register with `0xDEBB20E3` and not with `0x2144DF1C`?**
+
+Worked answer: the register is not inverted at the end. `0x2144DF1C` is the residue after the final inversion; the un-inverted register holds its complement, `0xDEBB20E3`. Comparing the wrong constant makes every good frame look bad.
+
+**5. Why does a receive MAC output have no `ready`, and what is the consequence for the buffer behind it?**
+
+Worked answer: the PHY cannot be paused; bytes arrive at a fixed rate. The buffer behind must accept every byte, so it must hold the largest frame it will commit, and when it cannot it must drop a whole frame and count it.
+
+**6. What does the frame buffer do with a bad frame, and why is it better than dropping the bad frame at the output?**
+
+Worked answer: the write pointer rolls back to the commit pointer, so the bad frame's bytes never become visible and take no space for later. Dropping at the output would hold the space until the frame reached the reader and would need the reader to know the verdict.
+
+**7. Why is the commit pointer shown to the reader one cycle late, and why can the MAC never trigger the problem?**
+
+Worked answer: with a synchronous-read memory the data is available a cycle after the address; showing the new commit pointer at once would let the reader see an entry whose data has not yet been read out. The mutant that removes the delay only fails when a frame of one or two bytes is read right after commit; the MAC's frames are at least 60 bytes, so only the unit test with short frames exposed it.
+
+**8. What does the loss guard add, and what property does it give?**
+
+Worked answer: when the crossing FIFO is full the guard remembers that the frame lost a byte, drops the rest, and forces a terminator with the bad flag, so the downstream buffer rolls the frame back. The property: loss costs whole frames and never corrupts one.
+
+**9. Derive the condition (a) for a core clock too slow for a crossing FIFO of depth D.**
+
+Worked answer: in a frame of N bytes the PHY writes N bytes in N·Tphy while the core reads N bytes in N·Tcore. The pile-up is N·(1 − Tphy/Tcore) bytes, and it must stay below D. With N = 1518, D = 16 and Tphy = 8000 ps, Tcore may exceed Tphy by about 1%; the measured edge, with synchronizer latency, lay between 8050 and 8100 ps.
+
+**10. Why is condition (b) independent of the depth, and why does it matter in the 64-byte case?**
+
+Worked answer: (b) compares average rates over many frames: if the core is slower than the PHY, any finite buffer eventually overflows however deep it is. It matters with back-to-back minimum frames because the within-frame pile-up is tiny there, so (a) never trips, but (b) still sets a limit.
+
+**11. Why must the transmit buffer hold the largest frame? What happens if it does not?**
+
+Worked answer: the transmitter must not start a frame it cannot finish, and it has no way to pause the wire. The buffer holds the whole frame before the transmitter starts; if it cannot, the frame is dropped whole (the overflow counter), and a frame that started and ran dry would be an underrun, which the sticky flag reports.
+
+**12. Name two survivors of the first mutation run and the test that closed each.**
+
+Worked answer: (i) start accepted with no preamble byte, closed by a frame kind with a junk byte before the SFD; (ii) minimum length 63, closed by frames of exactly the boundary lengths. Others: the frame-buffer pointer mutants, closed by the unit test with frames of 1 byte to twice the buffer; the loss-guard mutants, closed by the 40-pair recovery test.
+
+## Chapter 8 -- hints for the exercises
+
+1. Register the full flag (computed from the next write pointer) and the incremented read/write pointers one stage ahead; the added latency is a cycle and a few flip-flops. Re-run the unit test with frames of 1 byte to twice the buffer to check nothing else changed.
+2. Sweep the core period in steps of 10 ps for each depth with a single 60-byte frame; the difference between the nominal depth and the measured one in bytes, times the byte period, divided by the core period, gives the number of cycles to compare with the two-flop synchronizers on each pointer.
+3. When the PHY clock is faster, the transmit side underruns: the asynchronous FIFO empties mid-frame. The cure is to start only when the whole frame is present (the commit pointer crosses as a Gray code) or to run the core at least as fast as the PHY.
+4. A PAUSE frame is an ordinary good frame with a fixed destination address and type; the receiver needs those 14 bytes before the verdict, so decode in the receive path, not the byte stage; the transmitter stops when its counter, in units of 512 bit times, is non-zero.
+5. Candidates: a mutant in the unreachable top bit of the saturating byte counter (equivalent), or a frame of exactly 1,522 bytes passing through the transmit side (a boundary the transmit tests do not use).

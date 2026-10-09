@@ -1,0 +1,35 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  rx: the SFD value is 0xD4: caught by: mac_rx seed 3
+  rx: a start needs no preamble byte (IDLE goes straight to PRE on any byte): caught by: mac_rx seed 3
+  rx: a frame with a bad first byte is not ignored: caught by: mac_rx seed 5
+  rx: the FCS delay line is three bytes, not four: caught by: mac_rx seed 3
+  rx: the minimum length is 63: caught by: mac_rx seed 3
+  rx: the minimum length is 65: caught by: mac_rx seed 3
+  rx: the maximum length is 1523: caught by: mac_rx seed 3
+  rx: the maximum length is not checked: caught by: mac_rx seed 3
+  rx: rx_er is not remembered: caught by: mac_rx seed 3
+  rx: the residue constant is wrong: caught by: mac_rx seed 3
+  rx: the CRC register is not restarted at the SFD: caught by: mac_rx seed 3
+  rx: the end of the frame does not mark last: caught by: mac_rx seed 3
+  rx: bad is never raised: caught by: mac_rx seed 3
+  rx: the held byte is dropped at the end of the frame: caught by: mac_rx seed 3
+  fifo: a bad frame is committed: caught by: rx path, fast core: not all good frames delivered exactly
+  fifo: a committed frame is visible at once (no cptr_r delay): caught by: frame_fifo unit, spaced
+  fifo: full is detected one byte late: caught by: frame_fifo unit, spaced
+  fifo: an overflowing frame is not rolled back at its last byte: caught by: frame_fifo unit, spaced
+  fifo: the read address does not advance with out_ready: caught by: rx path, fast core: not all good frames delivered exactly
+  fifo: the last flag is dropped from the stored word: caught by: rx path, fast core: not all good frames delivered exactly
+  tx: preamble is six bytes: caught by: tx wire format, source 100%
+  tx: padding stops at 59 bytes: caught by: tx wire format, source 100%
+  tx: padding threshold is 61 (a 60-byte frame is padded): caught by: tx wire format, source 100%
+  tx: the FCS is not inverted: caught by: tx wire format, source 100%
+  tx: the FCS is sent high byte first: caught by: tx wire format, source 100%
+  tx: the gap is 11 cycles: caught by: tx gap (min 11)
+  tx: the gap is 13 cycles: caught by: tx gap (min 13)
+  tx: the padding bytes are not included in the CRC: caught by: tx wire format, source 100%
+  tx: the CRC is not restarted for each frame: caught by: tx wire format, source 100%
+  path: a lost byte does not mark the frame bad: caught by: rx path, slow core: a corrupt frame was delivered
+  path: a lost last byte gets no terminator: caught by: rx path, recovery after a loss
+  path: the loss flag is not cleared at the end of a frame: caught by: rx path, recovery after a loss
+mutants caught: 32 of 32

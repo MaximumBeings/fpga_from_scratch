@@ -1,0 +1,40 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  mac_rx       Verilator warnings: 0   Yosys check problems: 0
+  frame_fifo   Verilator warnings: 0   Yosys check problems: 0
+  mac_tx       Verilator warnings: 0   Yosys check problems: 0
+  mac_rx_path  Verilator warnings: 0   Yosys check problems: 0
+  mac_tx_path  Verilator warnings: 0   Yosys check problems: 0
+
+== 2. mac_rx against the specification: every frame reported (bytes without FCS, bad flag) must equal the model's, in order
+  mix                              seeds    frames (good/bad)   Icarus  Verilator
+  default (60% good, faults)           8        500 / 221         8 of 8        PASS
+  fault-heavy (30% good)               8        298 / 408         8 of 8        PASS
+
+== 3. mac_rx_path across clocks (PHY clock 8,000 ps = 125 MHz; core clock and consumer speed as shown; 120 frames offered, 113 recognised by the specification, 86 of them good): delivered against the spec's good frames
+  core period  consumer   buffer | delivered of 86  exact+ordered      ok bad ovf lost
+      6400 ps      100%   2048 B |        86                   YES            86 27 0 0
+      6400 ps       60%   2048 B |        80                   YES            80 27 6 0
+      8000 ps      100%   2048 B |        86                   YES            86 27 0 0
+      8200 ps      100%   2048 B |        62                   YES          62 51 0 827
+      9000 ps      100%   2048 B |        56                   YES         56 57 0 5129
+      6400 ps      100%    256 B |        59                   YES           59 19 35 0
+      6400 ps      100%    512 B |        62                   YES           62 19 32 0
+  recovery: 40 pairs of (a maximum frame, a gap, a small good frame), core 8,600 ps (the big ones overflow the crossing FIFO, the small ones fit): delivered 40 frames; all 40 small frames delivered exactly: True; nothing corrupt: True
+  'exact+ordered' = every delivered frame is byte-exact and the frames are a subsequence of the good frames: nothing corrupt, only whole frames missing
+
+== 3b. frame_fifo alone (buffer of 16 and 32 bytes, so 15 and 31 can be held): frames of 1 byte to twice the buffer, 20% marked bad, with the source spaced so that the buffer is empty at each start (exact) and back to back with a slow reader (property)
+   16 B, reader 100%, spaced: delivered 83 frames = exactly the good frames that fit, in order: True;  counters ok/bad/ovf [83, 21, 16] expected [83, 21, 16]: True
+   32 B, reader 100%, spaced: delivered 74 frames = exactly the good frames that fit, in order: True;  counters ok/bad/ovf [74, 21, 25] expected [74, 21, 25]: True
+   16 B, reader 50%, back to back: delivered 57 frames, all byte-exact and in order: True;  ok + bad + ovf = 120 of 120 offered
+   32 B, reader 30%, back to back: delivered 51 frames, all byte-exact and in order: True;  ok + bad + ovf = 120 of 120 offered
+
+== 4. mac_tx_path: the wire format and the gaps (24 frames of 14 to 1,518 bytes, including the padding boundary; source at three speeds)
+  source speed  wire frames exact  min gap  underruns
+          100%                YES       12          0
+           40%                YES       12          0
+           10%                YES       12          0
+  the wire format is the specification's byte sequence: 7 x 0x55, 0xD5, the body padded with zeros to 60 bytes, the FCS (zlib.crc32, low byte first); min gap 12 cycles = the inter-frame gap
+
+== 5. loopback: transmitter output into the receive path (equal PHY clocks, core clock 6,400 ps): the frames delivered must equal the padded bodies
+  source 100%: 24 of 24 frames delivered, all equal to the padded bodies in order: True
+  source  40%: 24 of 24 frames delivered, all equal to the padded bodies in order: True

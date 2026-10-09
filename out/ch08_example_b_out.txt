@@ -1,0 +1,13 @@
+== 60 back-to-back frames of 1,518 bytes (preamble and SFD before, minimum 12-byte gap after); PHY clock 8,000 ps; the crossing FIFO is 16 or 64 bytes deep
+  core period  core MHz | derived: bytes piled up in a frame |  depth 16: delivered  lost bytes  corrupt? |  depth 64: delivered  lost bytes  corrupt?
+      6400 ps    156.25 |                                0.0 |               60 /60           0        NO |               60 /60           0        NO
+      8000 ps    125.00 |                                0.0 |               60 /60           0        NO |               60 /60           0        NO
+      8050 ps    124.22 |                                9.4 |               60 /60           0        NO |               60 /60           0        NO
+      8100 ps    123.46 |                               18.7 |                0 /60         452        NO |               60 /60           0        NO
+      8200 ps    121.95 |                               36.9 |                0 /60        1554        NO |                2 /60         776        NO
+      8350 ps    119.76 |                               63.5 |                0 /60        3140        NO |                0 /60        2396        NO
+      8400 ps    119.05 |                               72.1 |                0 /60        3657        NO |                0 /60        2921        NO
+  derived (a), depth 16: core period < 8000 / (1 - 16 / 1514) = 8085 ps
+  derived (a), depth 64: core period < 8000 / (1 - 64 / 1514) = 8353 ps
+  derived (b), any depth: core period <= 8000 x (1514 + 24) / 1514 = 8127 ps
+  the measured losses begin where the first limit that applies is crossed: depth 16 between 8,050 and 8,100 ps (limit (a)), depth 64 between 8,100 and 8,200 ps (limit (b)). A core clock FASTER than the PHY byte rate (6,400 ps here) never loses anything. 'corrupt?' = a delivered frame that is not byte-exact or out of order.

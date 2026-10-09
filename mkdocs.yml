@@ -60,5 +60,6 @@ nav:
       - "6. A Verification Harness: Vector Replay, Random and Constrained Stimulus, Coverage, Formal Properties, and Mutation Testing": part01/06-verification-harness.md
   - "Part 2 -- Ethernet":
       - "7. Frames and the CRC: Ethernet Frame Check, Parallel CRC-32 at 64 Bits per Beat": part02/07-frames-and-crc.md
+      - "8. The MAC Datapath: Receive and Transmit at the Byte Interface, a Block-RAM Frame Buffer, and the Clock Boundary": part02/08-mac-datapath.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

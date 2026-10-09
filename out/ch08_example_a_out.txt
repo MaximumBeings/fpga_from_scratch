@@ -1,0 +1,13 @@
+== resources and clock of the MAC pieces (Yosys + nextpnr, seed 1, asked for 300 MHz); 'RAM' = SB_RAM40_4K (iCE40, 4 kbit) or DP16KD (ECP5, 18 kbit); Fmax = the SLOWEST clock domain of the module
+  module                 | iCE40 LUT    FF  RAM  Fmax MHz | ECP5 LUT    FF  RAM  Fmax MHz
+  mac_rx                 |       152    68    0     139.2 |      141   100    0     179.2
+  mac_tx                 |       211    35    0     109.7 |      264    67    0     136.5
+  frame_fifo 256 B       |       130   109    1      82.1 |      110   109    1     137.0
+  frame_fifo 2 KB        |       148   124    5      75.3 |      169   124    1     116.1
+  mac_rx_path (2 KB)     |       496   408    5      80.8 |      519   280    1     112.9
+  mac_tx_path (2 KB)     |       316   143    5      94.7 |      322   175    1      92.9
+
+  per clock domain of the receive path (mac_rx_path, 2 KB buffer):
+    ice40: core_clk 80.8 MHz, rx_clk 107.4 MHz
+    ecp5: core_clk 112.9 MHz, rx_clk 124.8 MHz
+  GMII at 1 Gbit/s needs 125 MHz (one byte per clock); a 64-bit 10GbE datapath needs 156.25 MHz. Compare the Fmax column with those.

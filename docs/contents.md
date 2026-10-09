@@ -5,7 +5,7 @@
 --8<-- "docs/assets/art/contents.md"
 
 
-The plan for the whole book. **Part 0 to Part 7 build the trading data path; Parts 8 to 11 are case studies from other domains.** Every chapter carries two running examples, figures, a Python golden model, tests in two simulators, a mutation run and self-check questions with answers (Appendix H). Status: **Chapters 1 to 7 are written** (each marked *written* below); the rest are *planned*.
+The plan for the whole book. **Part 0 to Part 7 build the trading data path; Parts 8 to 11 are case studies from other domains.** Every chapter carries two running examples, figures, a Python golden model, tests in two simulators, a mutation run and self-check questions with answers (Appendix H). Status: **Chapters 1 to 8 are written** (each marked *written* below); the rest are *planned*.
 
 ## Part 1 -- Foundations
 1. *(written)* What an FPGA is: LUTs, flip-flops, carry chains, block RAM, DSP slices, clocks, I/O, and the open flow used here
@@ -17,7 +17,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 
 ## Part 2 -- Wire to bytes: Ethernet
 7. *(written)* Frames and the CRC: parallel CRC-32 at 64 bits per beat
-8. The MAC datapath: AXI-Stream, FIFOs, clock crossing, the PHY modeled at its interface
+8. *(written)* The MAC datapath: AXI-Stream, FIFOs, clock crossing, the PHY modeled at its interface
 9. VLAN, IPv4 and UDP at line rate: parsing across beat boundaries, checksums, drop rules
 10. Filtering: address and port matching, hash filters, small CAMs, multicast groups
 11. Egress: frame building, padding, checksums, pacing
