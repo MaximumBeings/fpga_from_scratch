@@ -1,0 +1,19 @@
+== 1. keys the control plane could not place (% of the keys offered), same 512 slots: one table of 512, or two tables of 256; mean of 20 seeds; each key may use one slot (one table) or one slot in each table (two tables)
+   load |  1 x 512 random  derived  1 x 512 seq  1 x 512 mcast  1 x 512 stride |  2 x 256 random  2 x 256 seq  2 x 256 mcast  2 x 256 stride
+    25% |           11.5%    11.4%         0.0%          11.1%            0.0% |            1.3%         0.0%           1.0%            0.0%
+    50% |           21.3%    21.2%         0.0%          21.4%            0.0% |            6.2%         0.0%           6.1%            0.0%
+    70% |           28.1%    28.0%         0.0%          28.3%            0.0% |           12.4%         0.0%          12.1%           10.6%
+    80% |           31.1%    31.1%         0.0%          31.5%            0.0% |           15.6%         0.0%          15.7%           21.8%
+    90% |           33.8%    34.0%         0.0%          34.4%            0.0% |           19.2%         0.0%          19.3%           30.4%
+    95% |           35.3%    35.4%         0.0%          35.7%            0.0% |           21.1%         0.0%          21.2%           34.2%
+  derived (one table, random keys): n keys into m slots leave m(1 - (1 - 1/m)^n) slots occupied, so n minus that many keys find theirs taken.
+
+== 2. false positives of a table that stores only the low KW bits of each key (two tables of 256, 80% full; 400,000 random keys that are not members)
+   KW |  random keys: false hits       rate    derived derived, hash 2 rank |  stride keys: false hits       rate   rank of hash 1, hash 2
+    8 |           4618 of  400000   1.15e-02   5.40e-03             1.16e-02 |           1538 of  400000   3.84e-03   8, 6
+   12 |            283 of  400000   7.08e-04   3.28e-04             7.51e-04 |             98 of  400000   2.45e-04   8, 6
+   16 |             17 of  400000   4.25e-05   2.06e-05             4.63e-05 |              9 of  400000   2.25e-05   8, 6
+   20 |              0 of  400000   0.00e+00   1.29e-06             2.77e-06 |              1 of  400000   2.50e-06   8, 6
+   32 |              0 of  400000   0.00e+00   0.00e+00             0.00e+00 |              0 of  400000   0.00e+00   (exact: no false positives)
+  derived = (occupancy of table 0 + occupancy of table 1) x 2^-KW: a probe finds an occupied slot with probability = occupancy, and the stored fingerprint then equals the key's with probability 2^-KW, IF the fingerprint bits are independent of the hash.
+  derived, hash 2 rank: the second hash is linear in the key bits, and when the low KW bits of two keys agree the hash difference is a linear function of the remaining bits; if that map has rank r < 8 the two keys also collide in the second table with probability 2^-r, not 2^-8, so the table-1 term is multiplied by 2^(8 - r).

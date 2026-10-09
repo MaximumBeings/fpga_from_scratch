@@ -62,5 +62,6 @@ nav:
       - "7. Frames and the CRC: Ethernet Frame Check, Parallel CRC-32 at 64 Bits per Beat": part02/07-frames-and-crc.md
       - "8. The MAC Datapath: Receive and Transmit at the Byte Interface, a Block-RAM Frame Buffer, and the Clock Boundary": part02/08-mac-datapath.md
       - "9. Headers at Line Rate: A Byte-Serial VLAN, IPv4 and UDP Filter, the Internet Checksum, and Why the First Version Ran at Half the Clock": part02/09-headers-at-line-rate.md
+      - "10. Match Engines: CAM, Ternary CAM, Range Matcher and Hash Tables, What Each Costs, and Where a Cheap Hash Fails": part02/10-match-engines.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

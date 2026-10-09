@@ -1,0 +1,56 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  match_cam  Verilator warnings: 0   Yosys check problems: 0
+  hash_tab   Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model's hand-checked cases (priority and the range edges)
+  ternary 10.0.0.0/8 in slot 0 and 10.1.0.0/16 in slot 1: 10.1.2.3 -> (1, 1) (the LOWEST slot wins, though slot 1 is more specific); 11.0.0.0 -> (0, 0)
+  range [80, 90]: 80 -> (1, 7), 90 -> (1, 7), 79 -> (0, 0), 91 -> (0, 0); an empty range [90, 80]: 85 -> (0, 0)
+
+== 3. the CAM engines against the specification (writes, deletes and queries interleaved; idle cycles carry junk; every query's expected result is taken at that point of the sequence)
+  engine         slots  queries   hits multi-match | Icarus 6 seeds  Verilator
+  exact CAM          8     2603   1150          98 |           6 of 6       PASS
+  exact CAM         16     2623   1224         234 |           6 of 6       PASS
+  exact CAM         32     2604   1225         363 |           6 of 6       PASS
+  ternary CAM        8     2570   1821         804 |           6 of 6       PASS
+  ternary CAM       16     2580   2197        1451 |           6 of 6       PASS
+  ternary CAM       32     2570   2418        2110 |           6 of 6       PASS
+  range matcher      8     2651   2334        1743 |           6 of 6       PASS
+  range matcher     16     2597   2497        2254 |           6 of 6       PASS
+  range matcher     32     2612   2576        2512 |           6 of 6       PASS
+
+== 4. the hash engines against the control plane's structure (the table is cleared, filled to a load, queried, 25% deleted, refilled, queried again)
+  tables x slots stored key key type   load  placed  failed  queries   hits | Icarus 4 seeds  Verilator
+  1 x 128            32 bit   random    80%      73      49     2000   1017 |           4 of 4       PASS
+  1 x 128            32 bit      seq    80%     105       9     2000   1073 |           4 of 4       PASS
+  1 x 128            32 bit    mcast    80%      72      49     2000   1004 |           4 of 4       PASS
+  1 x 128            32 bit   stride    80%     105       9     2000   1073 |           4 of 4       PASS
+  2 x 64             32 bit   random    80%      87      31     2000   1042 |           4 of 4       PASS
+  2 x 64             32 bit      seq    80%      88      27     2000   1065 |           4 of 4       PASS
+  2 x 64             32 bit    mcast    80%      90      28     2000   1030 |           4 of 4       PASS
+  2 x 64             32 bit   stride    80%      61      62     2000    921 |           4 of 4       PASS
+  2 x 64             16 bit   random    80%      87      31     2000   1161 |           4 of 4       PASS
+  2 x 64             16 bit      seq    80%      88      27     2000   1204 |           4 of 4       PASS
+  2 x 64             16 bit    mcast    80%      90      28     2000   1155 |           4 of 4       PASS
+  2 x 64             16 bit   stride    80%      61      62     2000   1083 |           4 of 4       PASS
+  1 x 128            12 bit   random    80%      73      49     2000   1209 |           4 of 4       PASS
+  1 x 128            12 bit      seq    80%     105       9     2000   1267 |           4 of 4       PASS
+  1 x 128            12 bit    mcast    80%      72      49     2000   1194 |           4 of 4       PASS
+  1 x 128            12 bit   stride    80%     105       9     2000   1306 |           4 of 4       PASS
+  (placed and failed are per run, rounded down: 'failed' = keys the control plane could not place in either slot; the hardware must answer miss for them. 'stride' = multiples of 4,096, 'mcast' = 224.0.0.0/4, 'seq' = consecutive addresses.)
+
+== 5. latency and throughput: a query in every cycle
+  exact CAM      : 300 queries in 300 consecutive cycles, 300 results, all equal to the model: True; latency (first query to its result): 2 cycles
+  range matcher  : 300 queries in 300 consecutive cycles, 300 results, all equal to the model: True; latency (first query to its result): 2 cycles
+  two-table hash : 300 queries in 300 consecutive cycles, 300 results, all equal to the model: True; latency (first query to its result): 2 cycles
+
+== 6. multicast: a node subscribes to 40 IPv4 groups (224.0.0.0/4: 28 free bits). A MAC-level filter sees only the 23 low bits of the group (the MAC address 01:00:5E + 23 bits); an IP-level filter sees all 28.
+  filter                     traffic                 frames  accepted | RTL = model
+  IP level (28 bits)         subscriptions stored: 39 of 40 distinct keys (40 groups)
+  IP level (28 bits)         members                    300       291 |         YES
+  IP level (28 bits)         random other groups        300         0 |         YES
+  IP level (28 bits)         aliases of members         300         0 |         YES
+  MAC level (23 bits)        subscriptions stored: 40 of 40 distinct keys (40 groups)
+  MAC level (23 bits)        members                    300       300 |         YES
+  MAC level (23 bits)        random other groups        300         0 |         YES
+  MAC level (23 bits)        aliases of members         300       300 |         YES
+  with the 28-bit key, only members are accepted (a key the table could not place, if any, is a miss for a member); with the 23-bit key every alias of a member is accepted: five bits of the group are lost on the wire, and no filter behind the MAC can recover them. The frame must be checked again at the IP level.

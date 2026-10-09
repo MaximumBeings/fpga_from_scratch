@@ -495,3 +495,61 @@ Worked answer: it contains Chapter 8's `frame_fifo`, whose pointer arithmetic (t
 3. The option type is the first byte of the options (IP byte 20), and each option has a length byte, except the two single-byte options (end of list `0x00` and no operation `0x01`); the state machine must walk the options to find the types, which needs a counter and a remembered "refuse" flag. The stimulus needs both types, both as the first and as a later option, with options before the source route, and a frame with a `0x83` byte inside the data of another option (which must not be taken for an option).
 4. The update is `HC' = ~(~HC + ~m + m')` in ones' complement, where `m` and `m'` are the old and new 16-bit words containing the TTL. Run all 65,536 old checksums against every TTL and compare with the full recomputation of the header; the boundary to look at is where the sum folds to `0x0000` or `0xFFFF`.
 5. Candidates: a mutant in the saturation of the byte counter (`ipc[11]`), which no frame of up to 1,522 bytes reaches (equivalent for the stimulus, a limit of the design), or in the `uact` guard of the segment counter (equivalent, the counter is reloaded before it is used).
+
+## Chapter 10
+
+**1. What is the difference between a CAM and a RAM, and what does a CAM cost per entry in an FPGA?**
+
+Worked answer: a RAM is addressed by position and returns the content; a CAM is addressed by content and returns the position or value of the entry that equals (or matches) the key, by comparing the key with every entry at once. In an FPGA that means a comparator and registers per entry: 34 to 54 LUTs and about 35 flip-flops per slot for a 32-bit exact CAM (twice the flip-flops for a ternary one), measured.
+
+**2. What does a 1 bit and a 0 bit in a TCAM mask mean, and does the stored key have to be zero where the mask is zero?**
+
+Worked answer: a 1 means the key bit must equal the stored bit; a 0 means "don't care". The stored key need not be zero where the mask is zero: the compare is `((key ^ q) & mask) == 0`, which ignores those bits. The stimulus stores random key bits there to make sure of it.
+
+**3. Two ternary entries match a key. Which one wins, and what must the control plane do to get longest-prefix matching?**
+
+Worked answer: the lowest slot, not the most specific. For longest-prefix matching the control plane sorts the prefixes so that longer prefixes occupy lower slots (Exercise 1).
+
+**4. Why is a range needing two comparators per entry cheaper on ECP5 than on iCE40?**
+
+Worked answer: measured, the range matcher takes 2,178 LUTs at 64 slots on ECP5 against 2,465 on iCE40, and 34 LUTs per slot against 46 for the exact CAM on the same chip, using 1,040 carry cells. The likely reason is that a magnitude comparison maps onto ECP5's carry cells, which cost no LUTs of their own; the chapter did not isolate the cause (an experiment would synthesise the comparator with and without carry cells).
+
+**5. Why does the clock of a CAM fall as the number of entries grows?**
+
+Worked answer: the key fans out to N comparators, and the priority encoder is a chain over N match bits; both grow with N, and nothing is pipelined beyond the one register between them. Measured: 137, 78 and 38 MHz at 16, 32 and 64 exact slots on iCE40.
+
+**6. How does a query see exactly the writes of earlier cycles in the CAM, whose value is read a cycle after the compare?**
+
+Worked answer: a write takes effect at the end of its cycle. The compare of a query in cycle t sees the slots as they are in t, so it misses a write of cycle t (as required) and sees one of t - 1. The value read in cycle t + 1 happens before the end of t + 1, so a write in t + 1 cannot change it. The testbench interleaves writes, deletes and queries to show it.
+
+**7. What does two-choice hashing do to the share of keys that cannot be placed, and why does it cost a second RAM read?**
+
+Worked answer: a key that finds its first slot taken has a second chance, so the share falls (21.1% against 35.3% at 95% load with the same 512 slots, 6.2% against 21.3% at 50%). A lookup does not know which slot holds the key, so it reads both and compares.
+
+**8. Derive the share of keys that cannot be placed in a table of `m` slots with `n` random keys.**
+
+Worked answer: a given slot stays empty with probability `(1 - 1/m)^n`, so the expected number of occupied slots is `m(1 - (1 - 1/m)^n)`; each occupied slot holds one key, so the rest of the `n` keys, `n - m(1 - (1 - 1/m)^n)`, did not find a place. Divided by `n` it is 11.4% at n = 128 and m = 512, which the model measures as 11.5%.
+
+**9. Why were consecutive keys placed perfectly by one table, and `stride` keys badly by two?**
+
+Worked answer: the fold XORs the key's chunks, so consecutive keys have consecutive low chunks and fall into different buckets: better than random. In two tables of 256, 486 keys at 95% load overflow table 0 (256 slots), and the overflowing `stride` keys go through the second hash, which maps them badly (it has rank 6): 34.2% fail against 21.1% for random keys.
+
+**10. What is a rank, and why does the rank of the second hash change the false-positive rate of a fingerprint?**
+
+Worked answer: the hash is linear over GF(2), so the number of output bits that the high key bits control is the rank of the matrix. If two keys agree in the low `KW` bits, their hash difference is a function of the other bits only, and it is zero with probability 2^-rank. Hash 2 has rank 6 instead of 8, so such keys collide in table 1 four times as often as an independent hash would, and the table-1 term of the false-positive rate is four times larger: 1.16e-2 against the uncorrected 5.4e-3, with the measured 1.15e-2.
+
+**11. Why does a filter on a multicast MAC address accept frames to groups the node has not joined, and what must be done about it?**
+
+Worked answer: the MAC address of a group keeps 23 of the group's 28 variable bits, so 32 groups share an address. A filter on the MAC address accepts all 32 when it accepts one (300 of 300 alias frames in the test). The frame must be checked again at the IP level, with the full group address.
+
+**12. Name two survivors of the mutation runs and the test that closed each, and say which one was a simulator blind spot.**
+
+Worked answer: a deleted slot that still matched (exact CAM) survived because the deleting write left a random key in the slot; closed by deletes that keep the old key and queries for the keys of deleted entries. A reset that did not clear the valid bits survived because Icarus starts registers at `x`, and `if (x)` is false, so the CAM looked empty anyway (and Verilator starts at 0): the blind spot; closed by powering the registers up with garbage in the testbench.
+
+## Chapter 10 -- hints for the exercises
+
+1. Sort by prefix length, longest first; two prefixes of equal length cannot both match a key, so their order is free. The default route goes last. The model: for each address, among all prefixes that contain it, take the longest. Insert and delete with a stable order (shift entries) and test with random inserts and deletes interleaved with lookups.
+2. A standard bound: try up to 500 moves; each move writes one slot, so one insertion at high load may cost several writes (the model counts them). Use a visited set to detect a loop. Compare with the "not placed" rates of Example B at the same loads: for two tables the placement threshold rises sharply (above 90%).
+3. Take the second hash as the fold of `k ^ (k >> 11) ^ (k << 7)`, check the rank with `rank()` for `KW` from 8 to 24, and repeat the measurement. A multiplication costs about one adder per set bit of the constant when built from LUTs; choose a constant with few set bits.
+4. Two tables A and B: queries read the table named by a `sel` bit; software writes the other one; flipping `sel` takes effect in the cycle after the write of `sel`, and the query pipeline has two stages, so a query issued in the cycle of the flip uses the new table and one issued before it the old one; the model needs the sel bit to be part of the query's tag.
+5. Candidates: a mutant in the unused high bits of `w_addr` (equivalent: only the low bits index the array), or a mutant that stores a wrong value in a slot that is never queried (a missing test only if some run queries every slot).

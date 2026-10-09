@@ -19,7 +19,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 7. *(written)* Frames and the CRC: parallel CRC-32 at 64 bits per beat
 8. *(written)* The MAC datapath: AXI-Stream, FIFOs, clock crossing, the PHY modeled at its interface
 9. *(written)* VLAN, IPv4 and UDP at line rate: a byte-serial header filter, the Internet checksum, drop causes (parsing across the beats of a wide datapath is Exercise 2)
-10. Filtering: address and port matching, hash filters, small CAMs, multicast groups
+10. *(written)* Filtering: exact CAM, ternary CAM, range matcher, hash tables and fingerprints, multicast aliasing (update safety is Exercise 4)
 11. Egress: frame building, padding, checksums, pacing
 
 ## Part 3 -- Reliable transport: TCP

@@ -1,0 +1,38 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  cam: exact compares only the low 31 bits: caught by: cam mode 0, 8 slots, seed 0
+  cam: a deleted slot still matches: caught by: cam mode 0, 8 slots, seed 0
+  cam: ternary treats mask bits as 'don't care' where set: caught by: cam mode 1, 8 slots, seed 0
+  cam: ternary ignores the mask: caught by: cam mode 1, 8 slots, seed 0
+  cam: ternary compares one bit less (bit 0 never compared): caught by: cam mode 1, 8 slots, seed 0
+  cam: ternary does not need the key cleared outside the mask (it uses the key masked on one side only): caught by: cam mode 1, 8 slots, seed 0
+  cam: the range's low end is exclusive: caught by: cam mode 2, 8 slots, seed 0
+  cam: the range's high end is exclusive: caught by: cam mode 2, 8 slots, seed 0
+  cam: the range uses 15 bits of the key: caught by: cam mode 2, 8 slots, seed 0
+  cam: the range compares the whole key: caught by: cam mode 2, 8 slots, seed 0
+  cam: the HIGHEST matching slot wins: caught by: cam mode 0, 8 slots, seed 0
+  cam: the first matching slot above slot 0 wins (slot 0 never): caught by: cam mode 0, 8 slots, seed 0
+  cam: the value is taken from slot 0: caught by: cam mode 0, 8 slots, seed 0
+  cam: the value is not cleared on a miss: caught by: cam mode 0, 8 slots, seed 0
+  cam: a write does not store the value: caught by: cam mode 0, 8 slots, seed 0
+  cam: a write does not store the mask or range: caught by: cam mode 1, 8 slots, seed 0
+  cam: reset does not clear the valid bits: caught by: cam mode 0, 8 slots, seed 1
+  cam: a query during reset is answered: caught by: cam mode 0, 8 slots, seed 0
+  cam: results are valid one cycle early (skip stage 2's register of qv): caught by: cam mode 0, 8 slots, seed 0
+  cam: the valid bit is written even when the write is not enabled: caught by: cam mode 0, 8 slots, seed 0
+  cam: the valid bit is written as 1: caught by: cam mode 0, 8 slots, seed 0
+  hash: the first hash drops its top chunk: caught by: hash 1 x 32, 32 bits, random, seed 0
+  hash: the second hash is rotated by 12: caught by: hash 2 x 32, 32 bits, random, seed 0
+  hash: the second table is read with the first hash: caught by: hash 2 x 32, 32 bits, random, seed 0
+  hash: the first table is written with table select inverted: caught by: hash 1 x 32, 32 bits, random, seed 0
+  hash: both tables are written on every write: caught by: hash 2 x 32, 32 bits, random, seed 0
+  hash: the valid bit is not stored (always 1 once written): caught by: hash 2 x 32, 12 bits, stride, seed 0
+  hash: the key compare ignores the top stored bit: caught by: hash 2 x 32, 12 bits, random, seed 0
+  hash: table 1 hit is ignored: caught by: hash 2 x 32, 32 bits, random, seed 0
+  hash: table 0 hit is ignored: caught by: hash 1 x 32, 32 bits, random, seed 0
+  hash: the value of table 0 is taken even on a table-1 hit: caught by: hash 2 x 32, 32 bits, random, seed 0
+  hash: the key is not held for the compare stage: caught by: hash 1 x 32, 32 bits, random, seed 0
+  hash: a query during reset is answered: caught by: hash 1 x 32, 32 bits, random, seed 0
+  hash: the value is not cleared on a miss: caught by: hash 2 x 32, 32 bits, random, seed 0
+  hash: the address of a write uses one bit less: caught by: hash 1 x 32, 32 bits, random, seed 0
+mutants caught: 35 of 35
