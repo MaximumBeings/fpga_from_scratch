@@ -1,0 +1,68 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated designs pass the whole battery: True 
+  type: 0x0800 is recognised by its high byte only: caught by: hdr_filter, config 0, seed 0, b2b
+  type: 0x88A8 is recognised with a low byte of 0x00: caught by: hdr_filter, config 0, seed 0, b2b
+  type: 0x8100 is recognised with a low byte of 0xA8: caught by: hdr_filter, config 0, seed 0, b2b
+  vlan: three tags are accepted: caught by: hdr_filter, config 0, seed 0, b2b
+  vlan: only one tag is accepted: caught by: hdr_filter, config 0, seed 0, b2b
+  vlan: the id is taken from the inner tag: caught by: hdr_filter, config 0, seed 0, b2b
+  vlan: the id keeps the priority bits' neighbour (bits 7:4 of the high byte): caught by: hdr_filter, config 0, seed 0, b2b
+  type: the first type's flags are taken one byte early: caught by: hdr_filter, config 0, seed 0, b2b
+  type: the second type's flags are taken one byte late: caught by: hdr_filter, config 0, seed 0, b2b
+  type: the first type's low byte is looked for one byte early: caught by: hdr_filter, config 0, seed 0, b2b
+  type: the second type's low byte is looked for one byte late: caught by: hdr_filter, config 0, seed 0, b2b
+  vlan: the tag count is not incremented: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: version 4 or 5 is accepted: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: IHL 4 is accepted: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: the header length ignores the options (IHL - 1 off by one): caught by: hdr_filter, config 0, seed 0, b2b
+  ip: the end of the header is one byte late: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: the total length may equal the header length minus one: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: the total length must exceed the header length: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: the payload length ignores the options: caught by: hdr_filter, config 0, seed 1, b2b
+  ip: the total length may exceed the frame by one: caught by: hdr_filter, config 0, seed 1, b2b
+  ip: the total length must be shorter than the frame: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: a pending carry is not accepted: caught by: hdr_filter, config 2, seed 0, b2b
+  ip: the header checksum is not checked: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: only the low bytes of the header words are summed: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: a fragment with the more-fragments flag is forwarded: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: the don't-fragment flag counts as a fragment: caught by: hdr_filter, config 0, seed 0, b2b
+  ip: protocols other than 6 are taken for UDP: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the length may be 7: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the length must exceed 8: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the length may exceed the IP payload by one: caught by: hdr_filter, config 1, seed 1, b2b
+  udp: the length may not equal the IP payload: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: a zero checksum is verified like any other: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the checksum is not checked: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: a pending carry is not accepted: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the pseudo-header protocol is 16: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the pseudo-header length is not added: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the last address word of the pseudo-header is not added: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: an odd last byte is not added: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the segment counter is loaded 5 short: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the segment end is looked for one byte late: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: bytes after the segment are still summed: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: pairs of segment bytes take no high byte: caught by: hdr_filter, config 0, seed 0, b2b
+  udp: the carry is lost: caught by: hdr_filter, config 0, seed 0, b2b
+  filter: the destination address is always compared: caught by: hdr_filter, config 0, seed 0, b2b
+  filter: the destination address is never compared: caught by: hdr_filter, config 1, seed 0, b2b
+  filter: the lowest port is excluded: caught by: hdr_filter, config 0, seed 0, b2b
+  filter: the highest port is excluded: caught by: hdr_filter, config 0, seed 0, b2b
+  filter: an untagged frame passes the VLAN rule: caught by: hdr_filter, config 3, seed 0, b2b
+  filter: the VLAN rule is never applied: caught by: hdr_filter, config 2, seed 0, b2b
+  verdict: the MAC's bad flag is ignored: caught by: hdr_filter, config 0, seed 0, b2b
+  verdict: a frame ending inside the IP header is not truncated: caught by: hdr_filter, config 0, seed 0, b2b
+  verdict: a frame ending inside a VLAN tag is not truncated: caught by: hdr_filter, config 0, seed 1, b2b
+  meta: the source address field carries the destination: caught by: hdr_filter, config 0, seed 0, b2b
+  meta: the tag count is taken before the last byte: caught by: hdr_filter, config 0, seed 1, b2b
+  state: the fields are not cleared at the start of a frame: caught by: hdr_filter, config 0, seed 0, b2b
+  state: the control state is not restarted at the end of a frame: caught by: hdr_filter, config 0, seed 0, b2b
+  counters: every byte of a frame is counted, not every frame: caught by: hdr_path, config 1: counters
+  e2e: the carry is not folded back: caught by: csum_e2e
+  e2e: a lone last byte is the low half of a word: caught by: csum_e2e
+  e2e: the sum is not cleared at the start of a message: caught by: csum_e2e
+  def: the deferred carry is dropped: caught by: csum_def
+  def: the final fold is skipped: caught by: csum_def
+  lane: the odd bytes go into the even lane: caught by: csum_lane
+  lane: the high part of the combined sum is not folded in: caught by: csum_lane
+  lane: the lanes are combined the wrong way round: caught by: csum_lane
+mutants caught: 65 of 65

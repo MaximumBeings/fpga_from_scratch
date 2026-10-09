@@ -437,3 +437,61 @@ Worked answer: (i) start accepted with no preamble byte, closed by a frame kind 
 3. When the PHY clock is faster, the transmit side underruns: the asynchronous FIFO empties mid-frame. The cure is to start only when the whole frame is present (the commit pointer crosses as a Gray code) or to run the core at least as fast as the PHY.
 4. A PAUSE frame is an ordinary good frame with a fixed destination address and type; the receiver needs those 14 bytes before the verdict, so decode in the receive path, not the byte stage; the transmitter stops when its counter, in units of 512 bit times, is non-zero.
 5. Candidates: a mutant in the unreachable top bit of the saturating byte counter (equivalent), or a frame of exactly 1,522 bytes passing through the transmit side (a boundary the transmit tests do not use).
+
+## Chapter 9
+
+**1. Why does the Internet checksum add with an end-around carry, and why is the byte order of the words irrelevant to the check?**
+
+Worked answer: adding 16-bit words modulo 65,535 (ones' complement) means a carry out of bit 15 is worth 1 at bit 0, which is why it is added back. The operation is commutative and associative, so words may be added in any order, and swapping the two bytes of every word swaps the bytes of the sum, which the receiver compares in the same order. That is why the byte lanes of the lane accumulator can be summed separately and combined at the end.
+
+**2. How does a receiver check an IPv4 header without computing the complement of the sum?**
+
+Worked answer: the sender stores the complement of the sum of all the other words, so the sum of all the words including the checksum field is `0xFFFF` (all ones). The receiver sums the header and compares with `0xFFFF`. With the carry deferred into bit 16 the test is two comparisons: `low = 0xFFFF` with no carry or `low = 0xFFFE` with a carry.
+
+**3. What is the UDP pseudo-header, and what does it protect against?**
+
+Worked answer: the source address, the destination address, a zero byte with the protocol (17) and the UDP length, added to the checksum but never sent. It ties the datagram to the addresses it travels between, so a datagram delivered to the wrong host, or with corrupted addresses, fails the check even if the UDP segment itself arrived intact.
+
+**4. What does a UDP checksum field of zero mean, and what does a sender send when the sum comes out as zero?**
+
+Worked answer: zero means the sender computed no checksum, and the receiver must not verify it. A sender whose computed checksum is zero sends `0xFFFF` instead (the same value in ones' complement), so that zero stays reserved for "none". The model's `csum_zero` frames exercise exactly that, and the filter forwards them.
+
+**5. Why does the filter need the IPv4 total length and the UDP length, when the frame already ends?**
+
+Worked answer: Ethernet pads a short frame with zeros to 60 bytes and a sender may add a trailer, so the end of the frame is not the end of the datagram. The total length says where the IP packet ends (and must not exceed what arrived); the UDP length says which bytes the UDP checksum covers. Without them the checksum would include the padding or the trailer. The `trailer` frames (random bytes after the datagram) are forwarded only because the segment is summed up to its length.
+
+**6. What value does the pair (`low`, `carry`) represent in the deferred-carry accumulator, and when is the sum correct?**
+
+Worked answer: the value `low + carry` modulo `0xFFFF`: the carry still has to be added back. The sum is correct (equals `0xFFFF`) when `low = 0xFFFF` and `carry = 0`, or `low = 0xFFFE` and `carry = 1`. The case `low = 0xFFFF` with `carry = 1` is the value 1 after folding, not `0xFFFF`.
+
+**7. Why are the positions in the headers one-hot shift registers, and what do they cost?**
+
+Worked answer: a field is captured by `if (position bit) field <= byte`: the position is already decoded, so the capture is one LUT, with no counter and no decoder in front of it. The cost is flip-flops, 20 for the IP header and 8 for the UDP header, and a shift of the whole register every byte. Flip-flops are cheap in an FPGA (each logic cell has one) and the saving is in the critical path.
+
+**8. Why are the control registers cleared by the last byte of a frame and the data fields by the first byte of the next?**
+
+Worked answer: the control state must be at its initial value when the first byte of the next frame arrives, so the last byte restarts it (through the flip-flops' synchronous reset, which costs no LUT). The data fields and sums, on the other hand, are still needed for the verdict in the cycle after the last byte, so they are cleared only when the next frame begins (its first byte is an Ethernet byte and captures none of them). The state the frame ended in is copied (`st_v`, `ntags_v`) for the verdict.
+
+**9. Why is the verdict in two stages, what does it cost and what does it not cost?**
+
+Worked answer: the first stage turns the registers into single-bit facts, each at most one 16-bit comparison deep; the second combines them by priority. One long expression was the critical path of the first version. It costs one more cycle of latency (3, measured) and about 140 flip-flops for the delayed copies of the fields; it does not cost throughput, because each stage holds a different frame and the next frame's first byte may arrive in the very next cycle.
+
+**10. Name two survivors of the first mutation run, one that was a missing test and one that was code that cannot matter.**
+
+Worked answer: a missing test: the version check accepting 5 as well as 4 survived because no frame had version 5; it died when the wrong-version frames drew from the near misses. Code that cannot matter: the second fold in `csum_def`'s final sum: the first fold's value is at most `0x1FF00`, so the second never carries; the right action was to delete it.
+
+**11. Why do the three accumulators rank differently on iCE40 and ECP5?**
+
+Worked answer: ECP5 has dedicated carry chains that make a second 16-bit adder cheap, so folding the carry in the same cycle costs little (148.8 MHz against 157.7 with the carry deferred); iCE40's carry chain is slower, so the two adders in a row run 21% slower than the deferred form (130.8 against 166.5 MHz). The lane version has no 16-bit word to form, and is the fastest on both (182.0 and 229.7 MHz) at the price of about 40% more LUTs on iCE40.
+
+**12. Why does `hdr_path` run slower than `hdr_filter`, and where is its critical path?**
+
+Worked answer: it contains Chapter 8's `frame_fifo`, whose pointer arithmetic (the full test and the increment in front of the memory address) and block-RAM output are slower than the filter: 88.4 MHz on iCE40 and 117.9 on ECP5 against 122.4 and 155.6. The critical paths named by the tool are `hp.ff.wptr -> n_bad` on iCE40 and `hp.ff.rptr -> the RAM output` on ECP5, both inside the frame buffer.
+
+## Chapter 9 -- hints for the exercises
+
+1. The address words and the UDP length are added at fixed positions, so a second accumulator needs only two sources and the segment accumulator only two (`{hold, byte}` and the odd last byte): one LUT level in front of each adder. The verdict then needs `A + B` to fold to `0xFFFF`, which for two folded 16-bit sums holds when `B` is the bitwise complement of `A`, except when both are `0xFFFF`. Fold each one first (add the carry); that adds an incrementer to the first stage of the verdict, so check that it does not become the new critical path.
+2. With no tag the IP header starts at byte 14 (inside beat 1, lane 6), with one tag at byte 18 (beat 2, lane 2), with two at byte 22 (beat 2, lane 6). The source address is at IP bytes 12 to 15, so at frame bytes 26 to 29, 30 to 33 or 34 to 37: the third case straddles beats 4 and 5. Write a function in the model that returns (beat, lane) for each field byte and each tag count, then design the capture as a small table indexed by the tag count.
+3. The option type is the first byte of the options (IP byte 20), and each option has a length byte, except the two single-byte options (end of list `0x00` and no operation `0x01`); the state machine must walk the options to find the types, which needs a counter and a remembered "refuse" flag. The stimulus needs both types, both as the first and as a later option, with options before the source route, and a frame with a `0x83` byte inside the data of another option (which must not be taken for an option).
+4. The update is `HC' = ~(~HC + ~m + m')` in ones' complement, where `m` and `m'` are the old and new 16-bit words containing the TTL. Run all 65,536 old checksums against every TTL and compare with the full recomputation of the header; the boundary to look at is where the sum folds to `0x0000` or `0xFFFF`.
+5. Candidates: a mutant in the saturation of the byte counter (`ipc[11]`), which no frame of up to 1,522 bytes reaches (equivalent for the stimulus, a limit of the design), or in the `uact` guard of the segment counter (equivalent, the counter is reloaded before it is used).

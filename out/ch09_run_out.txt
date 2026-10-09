@@ -1,0 +1,38 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  hdr_filter  Verilator warnings: 0   Yosys check problems: 0
+  hdr_path    Verilator warnings: 0   Yosys check problems: 0
+  csum_e2e    Verilator warnings: 0   Yosys check problems: 0
+  csum_def    Verilator warnings: 0   Yosys check problems: 0
+  csum_lane   Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model against known answers
+  RFC 1071 section 3 example: sum 0xddf2 (expected 0xddf2): True;  textbook IPv4 header: checksum field 0xb861 (expected 0xb861): True;  header with that field sums to 0xffff: True
+
+== 3. hdr_filter against the specification: every frame's bytes, bad flag, cause and captured fields (ntags, vid, addresses, ports, UDP length)
+  configuration                           frames  forwarded | back to back  gaps+idles  Verilator
+  any address, any port, no VLAN rule       1200        704 |         8 of 8        8 of 8       PASS
+  192.168.1.10, ports 5000-5999             1200        659 |         8 of 8        8 of 8       PASS
+  10.1.255.255, port 1234, VLAN 0xABC       1200        591 |         8 of 8        8 of 8       PASS
+  any address, any port, VLAN 0 only        1200        623 |         8 of 8        8 of 8       PASS
+  frames by cause over all 32 runs of the model: forward 2577, mac_bad 106, trunc 220, not_ip 379, ip_bad 533, not_udp 291, udp_bad 353, not_ours 341
+  the FIRST version (rtl/hdr_v1.sv, kept for Example A) against the same specification, 8 seeds back to back: 8 of 8
+
+== 4. one byte per clock: frames back to back with no idle cycle between bytes or frames
+  200 frames, 16014 bytes offered in 16014 cycles (no idle cycle: True); all frames exact: True; latency from the first byte in to the first byte out: 3 cycles
+
+== 5. hdr_path from the PHY wires (mac_rx -> hdr_filter -> frame_fifo, 2 KB, consumer at 100% and at 50%): the frames delivered must be exactly the model's forwarded frames, and the counters must equal the model's per-cause counts
+  configuration                          consumer | PHY frames delivered  exact  counts equal   frames per cause (model)
+  any address, any port, no VLAN rule        100% |        160        85    YES           YES   [85, 24, 0, 17, 17, 7, 10, 0]
+  any address, any port, no VLAN rule         50% |        160        85    YES           YES   [85, 24, 0, 17, 17, 7, 10, 0]
+  192.168.1.10, ports 5000-5999              100% |        160        87    YES           YES   [87, 28, 0, 10, 13, 8, 10, 4]
+  192.168.1.10, ports 5000-5999               50% |        160        87    YES           YES   [87, 28, 0, 10, 13, 8, 10, 4]
+  10.1.255.255, port 1234, VLAN 0xABC        100% |        160        60    YES           YES   [60, 32, 0, 15, 15, 7, 9, 22]
+  10.1.255.255, port 1234, VLAN 0xABC         50% |        160        60    YES           YES   [60, 32, 0, 15, 15, 7, 9, 22]
+  any address, any port, VLAN 0 only         100% |        160        61    YES           YES   [61, 37, 0, 11, 17, 10, 10, 14]
+  any address, any port, VLAN 0 only          50% |        160        61    YES           YES   [61, 37, 0, 11, 17, 10, 10, 14]
+
+== 6. the three checksum accumulators against the model (300 messages: the edge cases, then random ones heavy in 0xFF so that nearly every word carries; 1 to 1,600 bytes; 15% idle cycles carrying junk)
+  accumulator  messages  all equal  Verilator
+  csum_e2e          300        YES       PASS
+  csum_def          300        YES       PASS
+  csum_lane         300        YES       PASS

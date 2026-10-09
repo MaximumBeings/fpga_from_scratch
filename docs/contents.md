@@ -18,7 +18,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 ## Part 2 -- Wire to bytes: Ethernet
 7. *(written)* Frames and the CRC: parallel CRC-32 at 64 bits per beat
 8. *(written)* The MAC datapath: AXI-Stream, FIFOs, clock crossing, the PHY modeled at its interface
-9. VLAN, IPv4 and UDP at line rate: parsing across beat boundaries, checksums, drop rules
+9. *(written)* VLAN, IPv4 and UDP at line rate: a byte-serial header filter, the Internet checksum, drop causes (parsing across the beats of a wide datapath is Exercise 2)
 10. Filtering: address and port matching, hash filters, small CAMs, multicast groups
 11. Egress: frame building, padding, checksums, pacing
 

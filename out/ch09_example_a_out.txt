@@ -1,0 +1,23 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz); 'RAM' = SB_RAM40_4K (iCE40) or DP16KD (ECP5); each design sits behind a pin wrapper (rtl/hdr.sv) that adds 78 configuration flip-flops, a 16-bit output multiplexer and its register
+  module                     | iCE40 LUT    FF  RAM  Fmax MHz  Gbit/s | ECP5 LUT CCU2C    FF  RAM  Fmax MHz  Gbit/s
+  hdr_filter, first version  |      1195   655    0      60.2    0.48 |     1359   142   657    0      73.4    0.59
+  hdr_filter, final          |       838   875    0     122.4    0.98 |      586   159   879    0     155.6    1.25
+  hdr_path (2 KB buffer)     |      1039   767    5      88.4    0.71 |      776   219   803    1     117.9    0.94
+  one byte per clock at 125 MHz is 1 Gbit/s. Gbit/s above = 8 x Fmax (derived), the rate of THIS 8-bit datapath at that clock.
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  hdr_filter, first version  ice40  fresh                    -> uacc_n                       7.8 ns logic, 8.8 ns routing
+  hdr_filter, first version  ecp5   fresh                    -> uacc                         5.1 ns logic, 8.5 ns routing
+  hdr_filter, final          ice40  ipw                      -> uacc                         4.2 ns logic, 4.0 ns routing
+  hdr_filter, final          ecp5   h88                      -> ipo                          2.1 ns logic, 4.3 ns routing
+  hdr_path (2 KB buffer)     ice40  hp.ff.wptr               -> hp.ff.n_bad                  4.5 ns logic, 6.8 ns routing
+  hdr_path (2 KB buffer)     ecp5   hp.ff.rptr               -> hp.ff.mem.0.0_DOB8           3.7 ns logic, 4.8 ns routing
+
+== where the logic of the final hdr_filter goes (Yosys synthesis only, no pin wrapper; each row removes ONE function from a copy of the source and reports the logic cells saved; a logic cell = a LUT4 on iCE40, a LUT4 or half of a CCU2C carry cell on ECP5)
+  removed                                      | iCE40 cells  saved | ECP5 cells  saved
+  (nothing: hdr_filter as built)               |         617        |        664
+  per-cause counters (8 x 16 bits)             |         463    154 |        523    141
+  UDP checksum (pseudo-header + segment)       |         486    131 |        531    133
+  IP header checksum                           |         593     24 |        640     24
+  VLAN tags                                    |         578     39 |        639     25
+  destination-address and port filter          |         565     52 |        594     70

@@ -1,0 +1,5 @@
+== the checksum accumulator, three ways (Yosys + nextpnr, seed 1, asked for 400 MHz); Fmax is register to register: the combinational `sum` output is a pin path and is not timed
+  accumulator  idea                             | iCE40 LUT   FF  Fmax MHz | ECP5 LUT   FF  Fmax MHz
+  csum_e2e     carry folded in the same cycle   |        68   25     130.8 |       27   25     148.8
+  csum_def     carry deferred (bit 16)          |        70   26     166.5 |       28   26     157.7
+  csum_lane    two lanes, folded at the end     |        96   41     182.0 |       43   41     229.7
