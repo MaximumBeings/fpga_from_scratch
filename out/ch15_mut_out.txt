@@ -1,0 +1,61 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated RTL passes its battery: True 
+unmutated model passes its battery: True 
+  the event type is not looked at: caught by: directed, CIDW 2, depth 4, policy 0, latency 6
+  pending events do not stop the hot path: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the hot path is never taken: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the hot decision ignores tcp_fast: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  pending is a single flag, not a count: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  POLICY 0 also holds hot events when the FIFO is full: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  POLICY 0 never holds: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  POLICY 1 holds: caught by: realistic, CIDW 3, depth 4, policy 1, latency 12
+  the FIFO is declared full one entry early: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  an event is pushed even when the FIFO is full: caught by: realistic, CIDW 3, depth 4, policy 1, latency 12
+  a dropped event is not counted as dropped: caught by: realistic, CIDW 3, depth 4, policy 1, latency 12
+  an event is consumed without ev_valid: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the entry's first flag is always 1: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the entry's first flag is always 0: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the snapshot's SND.NXT is SND.UNA: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the snapshot's RCV.NXT is SND.NXT: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the snapshot lacks the passive flag: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the snapshot's state is CLOSED: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the entry lacks the initial sequence number: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the entry lacks the window: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the entry lacks the connection number: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the result path codes hot and punted the same: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  a dropped event is reported as punted: caught by: realistic, CIDW 3, depth 4, policy 1, latency 12
+  the hot path does not update RCV.NXT: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the hot ACK acknowledges the old RCV.NXT: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the hot ACK has the wrong flags: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  a pure ACK produces a segment: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the delivered count is not reported: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write-back does not write SND.UNA: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write-back does not write SND.NXT: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write-back does not write RCV.NXT: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write-back does not write the state: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write-back does not write the passive flag: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write-back does not decrement the count: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  a push in the cycle of a write-back for the same connection is lost: caught by: realistic, CIDW 3, depth 8, policy 0, latency 1
+  a push in that cycle is counted twice: caught by: realistic, CIDW 3, depth 8, policy 0, latency 1
+  the write-back goes to the event's connection: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the write pointer does not wrap: caught by: realistic, CIDW 2, depth 3, policy 1, latency 3
+  the read pointer does not wrap: caught by: realistic, CIDW 2, depth 3, policy 1, latency 3
+  a pop of an empty FIFO is honoured: caught by: realistic, CIDW 2, depth 2, policy 0, latency 24
+  the FIFO count ignores pops: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the FIFO count ignores pushes: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the head shown is the last entry written: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the FIFO reads empty one entry late: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the connection counts are not reset: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the states are not reset: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  the FIFO is not reset: caught by: realistic, CIDW 2, depth 4, policy 0, latency 6
+  model: pending events do not stop the hot path: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+  model: the first flag is always 0: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+  model: the first flag is always 1: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+  model: the snapshot is empty: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+  model: the write-back does not write RCV.NXT: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+  model: the write-back does not decrement the count: caught by: realistic, policy 0, latency 1, depth 4: the run did not finish
+  model: POLICY 0 never holds: caught by: realistic, policy 0, latency 8, depth 2: POLICY 0 dropped an event
+  model: the FIFO is last in, first out: caught by: realistic, policy 0, latency 1, depth 4: the run did not finish
+  model: the software keeps no state between entries: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+  model: the software skips its application commands: caught by: realistic, policy 0, latency 1, depth 4: connection 0: the segments sent or the bytes delivered differ
+RTL mutants caught: 47 of 47; model mutants caught: 10 of 10

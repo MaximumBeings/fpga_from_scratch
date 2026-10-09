@@ -26,7 +26,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 12. *(written)* Why orders use TCP: the state machine, segment acceptance, a table of connections, and what must be in hardware
 13. *(written)* A TCP send side: window, cumulative ACK, the RFC 6298 retransmit timer, a scanner for many timers
 14. *(written)* Testing it against an independent reference stack with loss, reorder, duplication and forged segments injected; run-time safety invariants (a formal proof is an exercise)
-15. Hot path and cold path: reconnects, head-of-line blocking, the hardware/software split
+15. *(written)* Hot path and cold path: the dispatcher and its order-keeping count, head-of-line blocking, reconnects, the hardware/software split
 
 ## Part 4 -- Market data
 16. Exchange protocols: MoldUDP64, ITCH, SoupBinTCP and OUCH, and a generator that turns a message grammar into a parser

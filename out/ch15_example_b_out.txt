@@ -1,0 +1,43 @@
+== 1. how much traffic is punted, and how much only because an earlier event of the same connection was pending. 8 connections, L = 16, 4,000 events after the handshakes, exceptions p = 2%, FIFO of 8, POLICY 0. phi = the connection's own event rate x L
+    phi |  punted  collateral  collateral per exception  derived phi/(1-phi) | mean wait   p99    max  max FIFO  cycles stalled
+   0.02 |    2.0%           2                      0.03                 0.02 |       0.0     1      2         8             219
+   0.05 |    2.1%           5                      0.06                 0.05 |       0.0     1      2         8             219
+   0.10 |    2.1%           9                      0.11                 0.11 |       0.1     1      2         8             219
+   0.25 |    2.6%          29                      0.36                 0.33 |       0.2     2      4         8             219
+   0.50 |   22.9%         837                     10.46                 1.00 |    1502.9  4550   4571         8           10798
+   0.75 |   31.7%        1191                     14.89                 3.00 |    5612.1 11598  11639         8           16384
+  (collateral per exception: how many other events of the same connection software had to take because of one exception. Derived: each pending event keeps the connection pending for L more cycles, in which phi more events of the connection are expected, each of which does the same: phi + phi^2 + ... = phi / (1 - phi), as long as software has time to spare)
+
+== 2. head-of-line blocking. A burst of B exceptional events (one per cycle, any connection) arrives in the middle of light traffic (8 connections, L = 16, phi = 0.05, no other exceptions). How long do the OTHER events, arriving while the burst is being served, wait before they are consumed?
+  policy FIFO depth  burst B |  others mean wait  max wait  derived max (B-D) x L |  burst events dropped
+       0          2        8 |       9      42.0        90                     96 |                     0
+       0          2       32 |      14     245.6       471                    480 |                     0
+       0          2      128 |      54     841.4      1877                   2016 |                     0
+       0          8        8 |       9       0.0         0                      0 |                     0
+       0          8       32 |      14     157.9       375                    384 |                     0
+       0          8      128 |      54     848.3      1813                   1920 |                     0
+       0         32        8 |       9       0.0         0                      0 |                     0
+       0         32       32 |      14       0.2         2                      0 |                     0
+       0         32      128 |      54     671.7      1429                   1536 |                     0
+       1          2        8 |       9       0.0         0                     96 |                     5
+       1          2       32 |      14       0.2         2                    480 |                    27
+       1          2      128 |      54       0.3         5                   2016 |                   117
+       1          8        8 |       9       0.0         0                      0 |                     0
+       1          8       32 |      14       0.2         2                    384 |                    22
+       1          8      128 |      54       0.3         5                   1920 |                   112
+       1         32        8 |       9       0.0         0                      0 |                     0
+       1         32       32 |      14       0.2         2                      0 |                     0
+       1         32      128 |      54       0.3         5                   1536 |                    89
+  (derived: with POLICY 0 the event at the head of the queue waits for room in the FIFO; room appears once per L cycles, so the last burst event is consumed about (B - D) x L cycles after it arrived, and every event behind it waits at least that long. With POLICY 1 nobody waits and the burst events beyond the FIFO's room are dropped: TCP's retransmission has to supply them again)
+
+== 3. reconnects: 4 connections open actively, are answered 300 cycles later (SYN-ACK), and are aborted, 12 times each, while 12 others carry traffic (phi = 0.05). Time from the SYN-ACK's ARRIVAL to the write-back that leaves the connection ESTABLISHED in the table (software time + queueing); FIFO of 8, POLICY 0
+    L  background exception p | reconnects    mean    p99     max | ideal (L)
+    4                    0.0% |         48     5.2      7       7 |         4
+    4                    5.0% |         48     5.4      9       9 |         4
+    4                   20.0% |         48     5.4      9       9 |         4
+   16                    0.0% |         48    18.8     24      24 |        16
+   16                    5.0% |         48    18.8     24      24 |        16
+   16                   20.0% |         48    19.5     39      39 |        16
+   64                    0.0% |         48    84.2    120     120 |        64
+   64                    5.0% |         48    87.2    151     151 |        64
+   64                   20.0% |         48    93.4    151     151 |        64

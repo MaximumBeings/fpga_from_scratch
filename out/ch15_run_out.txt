@@ -1,0 +1,57 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  tcp_split      Verilator warnings: 1   Yosys check problems: 0
+  tcp_split_syn  Verilator warnings: 1   Yosys check problems: 0
+
+== 2. the model: hand-checked scenarios, then TRANSPARENCY: the dispatcher and the software together equal the single state machine of Chapter 12 on the events consumed (same segments sent, same bytes delivered, same final state), for any software timing
+  split_gold hand-checked scenarios passed
+  stream     policy        latency depth  runs  events    hot  punted  of which collateral  dropped  transparent
+  realistic       0              1     4     6    1128    874     254                   33        0         6 of 6
+  realistic       0              8     4     6    1128    533     595                  374        0         6 of 6
+  realistic       0              8     2     6    1128    679     449                  228        0         6 of 6
+  realistic       0             40     8     6    1128    322     806                  585        0         6 of 6
+  realistic       0         jitter     4     6    1128    494     634                  413        0         6 of 6
+  realistic       1              1     4     6    1128    874     254                   33        0         6 of 6
+  realistic       1              8     4     6    1128     37     237                    3      854         6 of 6
+  realistic       1              8     2     6    1128     72     225                    0      831         6 of 6
+  realistic       1             40     8     6    1128      0      94                    4     1034         6 of 6
+  realistic       1         jitter     4     6    1128      0      90                    1     1038         6 of 6
+  random          0              1     4     6    2400      7    2393                    3        0         6 of 6
+  random          0              8     4     6    2400      5    2395                    5        0         6 of 6
+  random          0              8     2     6    2400      6    2394                    4        0         6 of 6
+  random          0             40     8     6    2400      2    2398                    8        0         6 of 6
+  random          0         jitter     4     6    2400      4    2396                    6        0         6 of 6
+  random          1              1     4     6    2400      7    2393                    3        0         6 of 6
+  random          1              8     4     6    2400      0     475                    0     1925         6 of 6
+  random          1              8     2     6    2400      0     463                    0     1937         6 of 6
+  random          1             40     8     6    2400      0     140                    0     2260         6 of 6
+  random          1         jitter     4     6    2400      0     156                    0     2244         6 of 6
+  directed        0              1     4     6     960      1     959                   14        0         6 of 6
+  directed        0              8     4     6     960      1     959                   14        0         6 of 6
+  directed        0              8     2     6     960      1     959                   14        0         6 of 6
+  directed        0             40     8     6     960      1     959                   14        0         6 of 6
+  directed        0         jitter     4     6     960      1     959                   14        0         6 of 6
+  directed        1              1     4     6     960      1     959                   14        0         6 of 6
+  directed        1              8     4     6     960      0     203                    6      757         6 of 6
+  directed        1              8     2     6     960      0     191                    6      769         6 of 6
+  directed        1             40     8     6     960      0      87                    6      873         6 of 6
+  directed        1         jitter     4     6     960      0      83                    6      877         6 of 6
+  (hot = handled in hardware; punted = sent to software; collateral = punted only because an earlier event of the same connection was pending, though the single state machine would have taken it on the fast path; dropped = POLICY 1 with the FIFO full)
+
+== 3. tcp_split against the cycle model: every output after every edge, including the head of the punt FIFO
+  (in the configurations with a FIFO of 2 or 3 entries, software also pops the FIFO when it is empty in one cycle in five: the pop must be ignored)
+  stream     CIDW depth policy  latency | runs  cycles  stalled  dropped |    Icarus  Verilator
+  realistic     2     4      0        6 |    4    2673     1801        0 |      4 of 4       PASS
+  realistic     2     2      0       24 |    4    7881     6841        0 |      4 of 4       PASS
+  realistic     3     4      1       12 |    4    1809        0     1354 |      4 of 4       PASS
+  realistic     2     3      1        3 |    4     876        0      453 |      4 of 4       PASS
+  realistic     3     8      0        1 |    4    1599        0        0 |      4 of 4       PASS
+  random        2     4      0        6 |    4    9579     7859        0 |      4 of 4       PASS
+  random        2     2      0       24 |    4   38265    36377        0 |      4 of 4       PASS
+  random        3     4      1       12 |    4    1905        0     1442 |      4 of 4       PASS
+  random        2     3      1        3 |    4    1725        0     1028 |      4 of 4       PASS
+  random        3     8      0        1 |    4    1695        0        0 |      4 of 4       PASS
+  directed      2     4      0        6 |    4    3843     3083        0 |      4 of 4       PASS
+  directed      2     2      0       24 |    4   15345    14417        0 |      4 of 4       PASS
+  directed      3     4      1       12 |    4     933        0      563 |      4 of 4       PASS
+  directed      2     3      1        3 |    4     753        0      392 |      4 of 4       PASS
+  directed      3     8      0        1 |    4     722        0        0 |      4 of 4       PASS

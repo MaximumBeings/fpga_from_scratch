@@ -68,5 +68,6 @@ nav:
       - "12. The TCP State Machine: Segment Acceptance in Hardware, a Table of Connections, and What Must Be on the Hot Path": part03/12-tcp-state-machine.md
       - "13. The TCP Send Side: Window, Cumulative ACK, the RFC 6298 Retransmission Timer, and a Scanner for Many Timers": part03/13-send-side-and-timers.md
       - "14. Testing the Stack Against an Independent Reference: Loss, Reordering, Duplication, Forged Segments, and the Bug It Found": part03/14-interop-and-reference.md
+      - "15. Hot Path and Cold Path: Splitting TCP Between Hardware and Software, Keeping the Order, Head-of-Line Blocking, and Reconnects": part03/15-hot-and-cold-path.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

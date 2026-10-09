@@ -1,0 +1,14 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper; RAM = SB_RAM40_4K (iCE40) or DP16KD (ECP5)
+  design                               | iCE40 LUT    FF  RAM   Fmax | ECP5 LUT CCU2C    FF  RAM   Fmax
+  tcp_fast alone (Chapter 12)          |       278   277    0   78.0 |      119    72   277    0  110.9
+  tcp_split, 4 connections, FIFO 4     |      1407  1734    0   40.2 |     1528    72   778    0   60.7
+  tcp_split, 8 connections, FIFO 4     |      1762  2163    0   37.8 |     2466    72  1203    0   50.2
+  tcp_split, 16 connections, FIFO 4    |      2819  3012    0   31.4 |     4434    72  2048    0   42.7
+  tcp_split, 8 connections, FIFO 8     |      1471  1442   15   36.8 |     2466    72  1207    0   50.5
+  the state of one connection in tcp_split: 4 + 1 + 3 x 32 + 4 = 105 bits in registers; one punt entry: CIDW + 237 bits
+
+== the end points of each critical path (nextpnr's last report for the clock)
+  tcp_fast alone (Chapter 12)          ice40  iv                         -> h                              7.2 ns logic, 5.6 ns routing
+  tcp_fast alone (Chapter 12)          ecp5   iv                         -> hit                            3.5 ns logic, 5.6 ns routing
+  tcp_split, 8 connections, FIFO 4     ice40  u.ev_valid                 -> u.mem[2]                       9.2 ns logic, 17.3 ns routing
+  tcp_split, 8 connections, FIFO 4     ecp5   u.t_pas[3]                 -> u.r_txseq                      6.2 ns logic, 13.7 ns routing
