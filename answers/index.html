@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part03/12-tcp-state-machine/">
+        <link rel="prev" href="../part03/13-send-side-and-timers/">
       
       
       
@@ -793,6 +793,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part03/13-send-side-and-timers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    13. The TCP Send Side: Window, Cumulative ACK, the RFC 6298 Retransmission Timer, and a Scanner for Many Timers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1184,6 +1212,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 13
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-13-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 13 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1484,6 +1534,28 @@
     <span class="md-ellipsis">
       
         Chapter 12 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 13
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-13-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 13 -- hints for the exercises
       
     </span>
   </a>
@@ -1890,6 +1962,29 @@
 <li>The rule: if <code>seq &lt; RCV.NXT</code>, drop the first <code>RCV.NXT - seq</code> bytes; if the end is beyond the window, drop the tail and ignore the FIN. The acceptable offsets then become <code>-(ln-1) .. wnd-1</code> for the data (still refused if the whole segment lies before <code>RCV.NXT</code>); the delivered length is the part inside the window.</li>
 <li>Ignoring a RST in TIME_WAIT (RFC 1337) changes the model's transition, the section 6 test is unchanged, and the mutants for "RST in TIME_WAIT closes" must be rewritten; it protects against a stray RST from an old connection terminating TIME_WAIT early and letting old segments be accepted by a new connection.</li>
 <li>Candidates: a mutant in the unreachable <code>default</code> of the event decoder (equivalent), or in the saturation of <code>ack_fut</code> for states in which <code>SND.NXT - SND.UNA</code> is 2^31 or more (outside the model's contract: the model assumes less than half the sequence space is outstanding).</li>
+</ol>
+<h2 id="chapter-13">Chapter 13<a class="headerlink" href="#chapter-13" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>SND.UNA</code> is the oldest byte not yet acknowledged, <code>SND.NXT</code> the next byte to send, <code>SND.MAX</code> the highest <code>SND.NXT</code> ever reached. After a timeout <code>SND.NXT</code> goes back to <code>SND.UNA</code> (go-back-N); <code>SND.MAX</code> remembers how far the first transmission went, so that a segment below it is flagged as a retransmission and an ACK beyond it is refused.</li>
+<li>The length is the least of the bytes available (<code>end - SND.NXT</code>), the peer's window left (<code>SND.UNA + wnd - SND.NXT</code>, zero if negative) and the MSS. A segment is a retransmission if its first byte is below <code>SND.MAX</code>.</li>
+<li>Karn's rule: take no round-trip sample from an ACK for a segment that was retransmitted. The ACK cannot be matched to the first or to the second transmission, so the measured time may be too long or too short; the timer cancels the sample at a timeout and a retransmission never starts one.</li>
+<li>First sample <code>R = 100</code>: <code>SRTT = 100</code>, <code>RTTVAR = 50</code>, <code>RTO = 100 + 4 x 50 = 300</code> (<code>srtt8 = 800</code>, <code>rv4 = 200</code>). Second sample <code>R = 140</code>: <code>err = 40</code>, <code>RTTVAR = 3/4 x 50 + 1/4 x 40 = 47.5</code>, <code>SRTT = 100 + 40/8 = 105</code>, <code>RTO = 105 + 190 = 295</code>. In fixed point <code>srtt8 = 840</code>, <code>rv4 = 200 + 40 - 50 = 190</code>, <code>RTO = 105 + 190 = 295</code>.</li>
+<li>With <code>srtt8 = 8 SRTT</code> the update <code>SRTT += err/8</code> is <code>srtt8 += err</code>, an exact integer add; with <code>rv4 = 4 RTTVAR</code> the factor 3/4 is <code>rv4 - (rv4 &gt;&gt; 2)</code>. Only the shift truncates, by less than one unit of 1/4 tick, and the truncation is inside a decaying term (it pulls toward a fixed point), so errors do not accumulate: the run in Example B stays within 4 ticks of the floating-point RFC.</li>
+<li>The segment at <code>SND.UNA</code> is retransmitted, <code>SND.NXT</code> goes back to it, the RTO doubles (clamped to the maximum), the timer restarts and the pending sample is cancelled. The retransmission is flagged, starts no sample and its ACK is not sampled.</li>
+<li>When new data is acknowledged without a sample (everything was retransmitted), RFC 6298 leaves the doubled RTO in place; with no later sample it would stay at its maximum forever. The model recomputes the RTO from <code>SRTT</code> and <code>RTTVAR</code>. The first version of the model, without it, stayed at <code>RTO_MAX</code> after the first loss burst and the 20% runs did not finish in a sensible time.</li>
+<li>One connection's timer is a comparator; a table of 1,024 would need 1,024 comparators. The scanner visits one connection per cycle, injecting a TICK when no outside event uses the cycle. A timer is checked once every N cycles, so its lateness is between 0 and N - 1 cycles (measured: 1, 3, 15, 63 for N = 2, 4, 16, 64), more when outside events take cycles.</li>
+<li>Ten 32-bit adds, subtracts and compares chain: <code>R</code>, <code>err</code>, <code>|err|</code>, <code>rv4</code>, the sum, the clamp, the deadline. Cut it into three stages (sample, estimator and clamp, deadline), register in between, and use the 16-bit-narrow comparisons of the RTO clamp where the range allows.</li>
+<li>After a loss everything from <code>SND.UNA</code> is sent again, including segments the receiver already holds; under 20% loss 4,623 segments were retransmitted for 200 segments of data. Fast retransmit resends only the lost segment after three duplicate ACKs, without waiting for the timer; SACK tells the sender what the receiver has, so that only the holes are resent.</li>
+<li>A real network can reorder; the chapter's in-order receiver (a model of a minimal one, no out-of-order buffer) drops any segment that is not exactly the next, so a reordering channel turns jitter into extra loss and the lossless run did not finish. The FIFO channel isolates the sender's behaviour from the receiver's.</li>
+<li>None was a missing test. Four were the clock-granularity term <code>max(G, 4 RTTVAR)</code>, unreachable because <code>rv4 &gt;= 2</code> whenever a sample exists, so the term was removed from the RTL; one (the time stamp <code>now1 &lt;= now</code>) was equivalent to the original, since <code>now0</code> is <code>now</code>. The mutation run then caught 51 of 51.</li>
+</ol>
+<h2 id="chapter-13-hints-for-the-exercises">Chapter 13 -- hints for the exercises<a class="headerlink" href="#chapter-13-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Three stages (sample and error, estimator and clamp, deadline); the connection record then has a pipeline hazard of two cycles for one connection, which the bypass register must cover. Measure the two numbers: Fmax and the extra latency in cycles of the result.</li>
+<li>A wheel enters a connection at the slot of its deadline, so lateness is bounded by the slot width (8 ticks) instead of N cycles; the cost is a RAM of linked slots (a connection must be removed when its timer restarts) and a rule for deadlines further away than 256 x 8 ticks.</li>
+<li>The model needs a duplicate-ACK count, reset by new data; at three, emit the segment at <code>SND.UNA</code> flagged as a retransmission without changing <code>SND.NXT</code> or the timer. Expect far fewer retransmitted segments at 1% to 5% loss and a smaller gain at 20%.</li>
+<li>With window 0 and data waiting, the present sender sends nothing and starts no timer, so a lost window update deadlocks it; the closed loop with a variable window (<code>wnd_var</code>) and loss finds it as a run that never completes.</li>
+<li>Candidates: a mutant in the unused high bits of <code>SND.MAX</code> arithmetic (equivalent), or in the clamp of a window larger than 2^16 (outside the contract); decide which by writing the stimulus that would tell them apart.</li>
 </ol>
 
 
