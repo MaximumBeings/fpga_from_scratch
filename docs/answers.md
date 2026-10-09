@@ -321,3 +321,61 @@ Worked answer: the miter is a bounded search; it shows no difference within 14 c
 3. The tagged-word property needs invariants relating the pointers, the count and the position of the tagged word (for example, "if the tag is stored, it is at index `(rp + (k - nr)) mod DEPTH` and `count > k - nr`"); without something like that induction fails for lack of reachable-state information.
 4. An operator such as "replace `&& !empty` with `&& (!empty || wr_en)`" produces bug 4's behaviour: a read accepted when a write is simultaneous. Count how many generated mutants the new operator adds and whether the directed test kills them.
 5. Add `(1, 1, x)` on an empty FIFO and `(1, 0, 0xA5)` at five words to `directed()`; the directed test then finds all six; coverage rises to 15 or 16 bins (the 3-cycle full and empty runs need more cycles).
+
+## Chapter 7
+
+**1. Which four conventions define the Ethernet CRC-32 on the wire, and what happens to the result if any one is wrong?**
+
+Worked answer: bits are processed least-significant first (the reflected polynomial `0xEDB88320`), the register starts at all ones, the result is inverted, and it is sent low byte first. Get any one wrong and the value differs from every other implementation's, so a frame sent by one end fails the check at the other, though the design may look self-consistent in a closed test.
+
+**2. What is the residue, and why does a receiver not compare the CRC with the FCS field?**
+
+Worked answer: running the CRC over a frame followed by its own FCS always leaves `0x2144DF1C`. The receiver runs the CRC over every byte it received, FCS included, and tests for that one constant: no separate comparison, no need to find the FCS field when the frame length is not yet known.
+
+**3. Why is the CRC register update linear over GF(2), and what does that make possible?**
+
+Worked answer: each step shifts and XORs the register with a constant that is selected by one bit; with addition as XOR the new register bits are XORs of old register bits and data bits, and after N bits the same is true with larger sets. Linearity lets N steps be written as one XOR network, lets the state part and the data part be computed separately (pipelining), and gives the basis-vector proof.
+
+**4. How does the generator find the XOR equations without doing any algebra by hand?**
+
+Worked answer: it runs the bit-serial algorithm with each register bit held as a set of variables (an integer bit mask): the shift moves the sets, the conditional XOR replaces a set with the symmetric difference. After the N steps the sets are the equations.
+
+**5. Why can only the last beat of a frame be partial, and what does the design do for it?**
+
+Worked answer: a stream of bytes is cut into beats of W/8 bytes, so every beat is full except possibly the last. The generator emits one update function per byte count (1 to 8) and the design selects by `in_nbytes`; the pipelined design moves that selection out of the feedback loop.
+
+**6. What do `A_k` and `B_k` stand for, and why does separating them allow pipelining?**
+
+Worked answer: `A_k` is the 32 x 32 matrix applied to the old register, `B_k` the matrix applied to the k data bytes, and new state = `A_k(state) ^ B_k(data)`. `B` depends only on the input, so it can be computed in as many stages as wanted; only `A_8` and one XOR remain in the loop through the state register, and that loop is what limits the clock.
+
+**7. Why was the SAT proof of the 64-bit update abandoned, and what replaced it? What does the proof need to assume?**
+
+Worked answer: the miter has 96 free input bits and long XOR chains, which SAT solvers handle badly (no result in 100 seconds even for two bytes). It was replaced by a basis proof: the circuits are affine (only XOR and NOT gates after mapping) and give zero for zero input, hence linear, and a linear function that matches on the 96 unit inputs matches everywhere. It assumes that the mapped netlist really is what the RTL describes (the gate-type check is on the mapped netlist of the same source).
+
+**8. XOR and NOT gates only: why is that "affine", and why does the all-zero test make it linear?**
+
+Worked answer: XOR gates preserve linearity; a NOT is XOR with the constant 1, so a network of XORs and NOTs is a linear function plus a constant. If the all-zero input gives zero, the constant is zero.
+
+**9. Why do idle cycles carry random junk in the stimulus? Which mutant needed it?**
+
+Worked answer: the interface says the data, byte count and last signals are don't-cares when `valid` is low, so a correct design must ignore them. With zeros on idle cycles a design that forgot to gate its update on `valid` still held its state (a byte count of zero is a no-op), and the mutant that removed the `in_valid` gate survived until the idle cycles carried junk.
+
+**10. Writing the same XOR as a tree instead of a chain doubled the clock. Why did the tool not do it?**
+
+Worked answer: the technology mapper used here optimises area first and keeps the structure it is given for XORs: a left-to-right chain of 34 inputs became a chain of LUTs (11 levels on the critical path), while an explicit tree of 4-input groups needs 3. A delay-driven script might restructure it; the open flow's default did not.
+
+**11. 54 corruptions were missed with a 16-bit check and none with 32 bits. What does the ratio say, and what would you need to see a 32-bit miss?**
+
+Worked answer: a random corruption passes an n-bit check with probability about 2^-n: 4,000,000 / 65,536 = 61 expected, 54 seen. At 32 bits the expectation is 4,000,000 / 2^32 = 0.001, so seeing one would take about four billion corruptions.
+
+**12. The pipelined design reaches 7.9 Gbit/s on ECP5. What limits it now and what would you do about it?**
+
+Worked answer: the critical path is the last stage: the choice of one of eight `A_k` matrices applied to the snapshot and the XOR with `B_k` (about five LUT levels, not in a loop). Cut it into two registered stages (for example, compute all eight `A_k` products' needed parts first, or split the multiplexer from the XOR); the loop stays at three levels, and the clock should rise towards the 156.25 MHz a 64-bit 10GbE datapath needs.
+
+## Chapter 7 -- hints for the exercises
+
+1. Register the output of the eight-way `A_k` selection (`ak`) in one stage and do the XOR with `B_k` and the comparison in the next; the path is then a 20-input XOR with a mux in front (about four levels). Measure on ECP5; the loop remains at 3 levels, so a result near 150 MHz is plausible but not guaranteed.
+2. The FCS is the registered final `~st` after the last data byte; if the last beat has k bytes (k < W/8) the FCS bytes fit in the same beat when k + 4 <= W/8, otherwise a second beat is needed. Test both cases for every k.
+3. `W = 128` means 16 bytes per beat: the generator's `d` input becomes 128 bits and the functions go up to `step16`; the row weights grow to about 80; expect a lower clock and many more LUTs.
+4. The Hamming distance of this CRC at short lengths is large (every 3-bit error was detected in the 12-byte frame); the search for undetected 4-, 5- and 6-bit patterns is a sampling problem: undetected patterns are rare, so use the linearity (an error is undetected iff the CRC of the error pattern alone, with zero initial value and no final inversion, is zero).
+5. Candidates: a mutant in code that the interface rule makes unreachable (equivalent), or a frame length the stimulus never produces (the stimulus covers 1 to 200 bytes randomly and 1 to 80 exhaustively, so a 1,500-byte frame would be the missing test).

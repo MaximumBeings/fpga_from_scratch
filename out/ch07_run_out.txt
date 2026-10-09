@@ -1,0 +1,26 @@
+== 1. three implementations of the CRC-32 in software: bit-serial from the definition, table-driven, and zlib; 20,000 random messages of 0 to 2,000 bytes
+  all three agree on 20000 of 20000;  residue 0x2144DF1C reproduced for a frame + FCS: True;  the standard check value zlib.crc32(b'123456789') = 0xCBF43926 (expected 0xCBF43926)
+
+== 2. lint gate
+  crc32_comb    Verilator warnings: 0   Yosys check problems: 0
+  crc32_stream  Verilator warnings: 0   Yosys check problems: 0
+  crc32_fast    Verilator warnings: 0   Yosys check problems: 0
+
+== 3. both designs against zlib.crc32 (crc32_stream: result 1 cycle after the last beat; crc32_fast: 5 cycles; each frame is checked for the CRC of all its bytes and for the good/bad flag)
+  design          W  random frames, 3 seeds x 60  Icarus  Verilator |  every length 1-80 bytes, good+bad  Icarus
+  crc32_stream    8                                 PASS       PASS |                                       PASS
+  crc32_stream   16                                 PASS       PASS |                                       PASS
+  crc32_stream   32                                 PASS       PASS |                                       PASS
+  crc32_stream   64                                 PASS       PASS |                                       PASS
+  crc32_fast      8                                 PASS       PASS |                                       PASS
+  crc32_fast     16                                 PASS       PASS |                                       PASS
+  crc32_fast     32                                 PASS       PASS |                                       PASS
+  crc32_fast     64                                 PASS       PASS |                                       PASS
+
+== 4. the 64-bit update against eight 1-byte updates: all 97 basis inputs (Icarus), and the gate types of the generated XOR networks
+  PASS: the 8-byte update equals eight 1-byte updates on all 97 basis inputs (hence on all 2^96 inputs, the circuits being linear)
+  step1 (8 bits): gates after mapping: {'$_NOT_': '3', '$_XOR_': '153'}   only XOR and NOT gates (so affine): True
+  step4 (32 bits): gates after mapping: {'$_XOR_': '628'}   only XOR and NOT gates (so affine): True
+  step8 (64 bits): gates after mapping: {'$_NOT_': '7', '$_XOR_': '986'}   only XOR and NOT gates (so affine): True
+  XOR and NOT gates make an AFFINE function (linear plus a constant); the basis test also checks that the all-zero input gives zero for both circuits, so the constant is zero and the functions are linear, which is what the basis argument needs
+  a SAT miter of the 64-bit and the eight 1-byte updates (96 free input bits) did not finish within 100 seconds even for the 2-byte case: CDCL solvers are poor at long XOR chains, so the proof above is by linearity instead

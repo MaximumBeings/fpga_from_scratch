@@ -1,0 +1,31 @@
+== 1. the XOR equations (derived by crc_gen.py): inputs XORed to make each of the 32 output bits, for a full beat
+    W min inputs max inputs total terms  XOR depth with 4-input LUTs
+    8          3         14         252                            2
+   16          9         20         446                            3
+   32         24         34         904                            3
+   64         34         52        1422                            3
+  (an n-input XOR needs ceil(log4 n) levels of 4-input LUTs; the generated function for a partial last beat shares the same registers, so the real depth also includes the byte-count multiplexer)
+
+== 2. measured: the single-stage design crc32_stream (latency 1; one register loop through the whole update and the byte-count multiplexer); nextpnr seed 1, asked for 400 MHz
+    W | iCE40 LUT   FF  Fmax MHz  Gbit/s | ECP5 LUT   FF  Fmax MHz  Gbit/s
+    8 |      1254   34      83.3     0.7 |     1941   66      93.7     0.7
+   16 |      1486   34      79.0     1.3 |     2213   66      89.8     1.4
+   32 |      1888   34      75.8     2.4 |     2676   66      87.5     2.8
+   64 |      2261   34      77.6     5.0 |     3426   66      79.5     5.1
+  Gbit/s = W x Fmax: the line rate the datapath could sustain if every clock carried a full beat (derived from nextpnr's estimate)
+
+== 3. measured: the pipelined design crc32_fast (latency 5; the loop through the state register is only A8 XOR one precomputed word); nextpnr seed 1, asked for 400 MHz
+    W | iCE40 LUT   FF  Fmax MHz  Gbit/s | ECP5 LUT   FF  Fmax MHz  Gbit/s
+    8 |      1374  218     124.1     1.0 |     1779  250     137.4     1.1
+   16 |      1656  228     121.3     1.9 |     2089  260     136.8     2.2
+   32 |      2089  244     113.5     3.6 |     2665  276     125.9     4.0
+   64 |      2466  276     110.3     7.1 |     3214  308     124.0     7.9
+  Gbit/s = W x Fmax: the line rate the datapath could sustain if every clock carried a full beat (derived from nextpnr's estimate)
+
+== 4. what a 10 Gigabit Ethernet link needs: 10 Gbit/s / W bits per beat = the clock (derived) and the beats per frame
+    W  clock for 10 Gbit/s  beats, 64-byte frame  beats, 1518-byte frame
+    8           1250.00 MHz                    64                    1518
+   16            625.00 MHz                    32                     759
+   32            312.50 MHz                    16                     380
+   64            156.25 MHz                     8                     190
+  the standard 10GbE datapath is 64 bits at 156.25 MHz

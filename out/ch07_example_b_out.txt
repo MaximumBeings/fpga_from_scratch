@@ -1,0 +1,29 @@
+== 1. few-bit errors in a frame with a correct FCS (a frame is 'detected' when its CRC no longer equals the residue)
+  case                                                  patterns tried  undetected
+  every single-bit error, frame of 60 bytes + FCS                  512           0
+  every single-bit error, frame of 508 bytes + FCS                4096           0
+  every single-bit error, frame of 1514 bytes + FCS              12144           0
+  every two-bit error, frame of 60 bytes + FCS                  130816           0
+  300,000 random two-bit errors, 1,514 bytes + FCS              300000           0
+  every three-bit error, frame of 12 bytes + FCS                341376           0
+  1,000,000 random four-bit errors, 60 bytes + FCS             1000000           0
+
+== 2. burst errors: a burst of length L is a run of L bits whose first and last bit are flipped and whose middle bits are anything (a 64-byte frame with FCS)
+  burst length L  patterns tried  undetected   how
+               1             512           0   exhaustive
+               2             511           0   exhaustive
+               3            1020           0   exhaustive
+               8           32320           0   exhaustive
+              12          513024           0   exhaustive
+              16          200000           0   200,000 random bursts
+              24          200000           0   200,000 random bursts
+              31          200000           0   200,000 random bursts
+              32          200000           0   200,000 random bursts
+              33          200000           0   200,000 random bursts
+              40          200000           0   200,000 random bursts
+  every burst of up to 32 bits is detected, by construction of the code (a CRC of degree 32 detects all bursts of length <= 32); a burst of 33 or more is missed with probability about 2^-32, too small to measure here
+
+== 3. random corruption: replace a random byte range with random bytes (a frame of 60 bytes + FCS); detected when the check differs from the residue
+  4,000,000 random corruptions: undetected with the full 32-bit CRC: 0   undetected if only the low 16 bits were checked: 54   (expected for 16 bits: about 61; for 32 bits: 0.0009)
+
+  run time 22 s
