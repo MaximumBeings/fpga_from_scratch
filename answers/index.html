@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part02/11-egress/">
+        <link rel="prev" href="../part03/12-tcp-state-machine/">
       
       
       
@@ -715,6 +715,95 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 3 -- Reliable transport: TCP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 3 -- Reliable transport: TCP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part03/12-tcp-state-machine/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    12. The TCP State Machine: Segment Acceptance in Hardware, a Table of Connections, and What Must Be on the Hot Path
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -733,10 +822,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -754,8 +843,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1073,6 +1162,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 12
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-12-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 12 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1351,6 +1462,28 @@
     <span class="md-ellipsis">
       
         Chapter 11 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 12
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-12-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 12 -- hints for the exercises
       
     </span>
   </a>
@@ -1724,6 +1857,39 @@
 <li>The checksum is over bytes that have not been seen yet, so a cut-through transmitter cannot compute it; the options are to let the producer compute it (offload), to keep the payload in a buffer (store-and-forward), or to send a template whose checksum is correct for fixed payload and update it incrementally for the fields that change: <code>HC' = ~(~HC + ~m + m')</code> (RFC 1624).</li>
 <li>A policer takes the same credit but drops a request that is not covered: the model is the same bucket with <code>go = covered</code> and the request consumed either way; the test sends a stream above the contracted rate and checks that the accepted bytes over any interval stay within bucket + rate x T and that the drop counter plus the accepted frames equal the offered frames.</li>
 <li>Candidates: a mutant in the unused high bits of <code>p_len</code> (equivalent: the cost never exceeds 1,538), or in the <code>A_IDLE</code> handling of a descriptor with <code>d_len</code> of zero (outside the interface's contract: a payload of zero bytes cannot be offered).</li>
+</ol>
+<h2 id="chapter-12">Chapter 12<a class="headerlink" href="#chapter-12" title="Permanent link">&para;</a></h2>
+<p><strong>1. Why are sequence-number comparisons modular, and how does <code>a &lt; b</code> work in hardware on 32 bits?</strong></p>
+<p>Worked answer: sequence numbers wrap from <code>2^32 - 1</code> to 0, so "before" cannot be an ordinary comparison. <code>a &lt; b</code> is true when the top bit of <code>a - b</code> (computed modulo <code>2^32</code>) is set: the difference is negative as a signed number. That is right as long as the two are less than <code>2^31</code> apart. Membership of a window is <code>(x - lo) mod 2^32 &lt; w</code>. The tests use bases near the wrap (<code>0xFFFFFFF0</code>) and in the middle (<code>0x7FFFFFF0</code>), and every comparison was exact.</p>
+<p><strong>2. State the acceptability test for a segment and say what an unacceptable segment draws.</strong></p>
+<p>Worked answer: with the segment length <code>L</code> = data + SYN + FIN: if <code>L = 0</code>, acceptable when <code>RCV.NXT &lt;= seq &lt; RCV.NXT + wnd</code> (just <code>seq = RCV.NXT</code> if <code>wnd = 0</code>); if <code>L &gt; 0</code>, never when <code>wnd = 0</code>, otherwise when the first byte or the last byte (<code>seq + L - 1</code>) lies in the window. An unacceptable segment draws an ACK (<code>SEQ = SND.NXT, ACK = RCV.NXT</code>) and is dropped, unless it carries a RST, which is dropped silently.</p>
+<p><strong>3. Why does a RST in the window but not at <code>RCV.NXT</code> draw a challenge ACK, and what attack does the rule stop?</strong></p>
+<p>Worked answer: an attacker who cannot see the connection can only guess sequence numbers; if any number in the window reset the connection, a guess would succeed with probability <code>wnd / 2^32</code> per packet (large for a big window). Requiring exactly <code>RCV.NXT</code> makes it <code>1 / 2^32</code>; the challenge ACK lets a legitimate peer that really reset answer with the exact number. The same reasoning applies to a SYN in the window.</p>
+<p><strong>4. What are <code>SND.UNA</code>, <code>SND.NXT</code> and <code>RCV.NXT</code>, and how does each change on a SYN, a FIN, data and an ACK?</strong></p>
+<p>Worked answer: <code>SND.UNA</code> is the oldest unacknowledged sequence number, <code>SND.NXT</code> the next one we will send, <code>RCV.NXT</code> the next we expect. A SYN or a FIN occupies one sequence number: sending one advances <code>SND.NXT</code> by one; receiving one advances <code>RCV.NXT</code> by one. Data in order advances <code>RCV.NXT</code> by its length (limited to the window). A valid ACK in <code>(SND.UNA, SND.NXT]</code> sets <code>SND.UNA</code> to it.</p>
+<p><strong>5. Why did the window test find that a segment longer than the window is refused at the offsets between its first and last byte?</strong></p>
+<p>Worked answer: the rule accepts a segment when its first byte or its last byte lies in the window. A segment that starts before the window and ends after it (it covers the window and more: length greater than the window plus one) has neither byte inside, so the rule refuses it, although it overlaps the window completely. The test showed it for <code>wnd = 1</code>, <code>ln = 5</code>: only offsets -4 (last byte at 0) and 0 (first byte at 0) are accepted. A real stack trims the segment to the window before the test; this model does not.</p>
+<p><strong>6. Why does the first design run at 33 MHz, and what are the two parts into which the second cuts it?</strong></p>
+<p>Worked answer: one cycle holds the RAM read, several 32-bit subtractions, comparisons, the priority of the rules and the multiplexers of the answer: a path of 11 ns of logic and 19 ns of routing on iCE40 (one connection). The second design cuts it into the arithmetic (all differences, sums and equalities, in parallel from registered values) and the choice (flags and one-bit predicates in, state and segment out), and then the comparisons from the arithmetic: 3 and 4 stages, 59.9 and 66.1 MHz on iCE40.</p>
+<p><strong>7. What does the bypass of <code>tcp_tab</code> do, and what happens to the throughput of one connection without it?</strong></p>
+<p>Worked answer: the RAM is read in the cycle in which the previous event's result is written; for the same connection the read returns the old state. The bypass register holds the new state and replaces the read. Without it (<code>tcp_tab2</code>) the event must wait: one event per 3 cycles (three stages) or 4 (four stages) for one connection, instead of one per cycle.</p>
+<p><strong>8. How many cycles apart can events for the same connection be accepted in <code>tcp_tab2</code>, and why?</strong></p>
+<p>Worked answer: 3 (three stages) or 4 (four stages): the next event's RAM read must come after the previous event's write, which happens at the end of the last stage. <code>ev_ready</code> is low while the connection id of the presented event is in any stage; measured 3.00 and 4.00 cycles per event for one connection, 1.04 and 1.08 for events spread over 64 connections.</p>
+<p><strong>9. Why does the table's size barely change the LUTs, and what does it change?</strong></p>
+<p>Worked answer: the logic is one machine whatever the number of connections; the state is in memory. 16 to 1,024 connections cost 2,760 to 2,782 LUTs on iCE40, and the block RAM grows from 7 to 26 blocks (103,424 bits). It changes the kind of memory: on ECP5, 16 connections fit in distributed RAM (92.5 MHz, no block RAM), larger tables use block RAM and run at 68 to 72 MHz.</p>
+<p><strong>10. List what the hot path tests, and say what is "punted".</strong></p>
+<p>Worked answer: the state is ESTABLISHED; the flags are exactly ACK; the sequence number equals <code>RCV.NXT</code>; the length is at most the window; the ACK is in <code>[SND.UNA, SND.NXT]</code>. Everything else (the handshake and the close, a RST, a SYN, a FIN, an old or out-of-order segment, a bad ACK, every other state) is punted to the full machine or to software.</p>
+<p><strong>11. Derive the share of events the hot path cannot handle from the rate of oddities and the fixed cost of a connection.</strong></p>
+<p>Worked answer: if a connection has <code>n</code> steady-state segments, a fraction <code>p</code> of them odd, and about 10 events of handshake and close, the cold events are <code>10 + p n</code> of <code>n + 10</code>. With <code>n = 2,000</code> and <code>p = 3%</code> that is 70 / 2,010 = 3.5%; the measured share (3.3% cold) is close; at <code>p = 30%</code> the derivation gives 30.3% against 30.7% measured. For short connections the fixed cost dominates.</p>
+<p><strong>12. Name two mutants of the mutation run that were missing tests, and the test that closed each.</strong></p>
+<p>Worked answer: the hot path that does not advance <code>SND.UNA</code> survived because no test had data outstanding in ESTABLISHED (the model sends no data, so <code>SND.UNA</code> equals the ACK); the uniformly random states with data outstanding closed it. The other kind: a crash of the test script on an <code>x</code> in the output; the parser now treats an <code>x</code> as a failure.</p>
+<h2 id="chapter-12-hints-for-the-exercises">Chapter 12 -- hints for the exercises<a class="headerlink" href="#chapter-12-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Register the RAM output (<code>mem_q</code>) in its own stage before the arithmetic, which removes the RAM's clock-to-output delay from the 8.7 ns path; split <code>tcp_sel</code> into the state decision (which flags and predicates select) and the construction of the segment fields. Expect latency 5 to 6 and one event per 5 to 6 cycles for one connection; across connections one per cycle.</li>
+<li>A bypass from the write data back to the arithmetic stage's state input removes the wait but puts the whole choice in series with the arithmetic for that case (the longest path again); alternatively detect the same-connection case and recompute only the fields that changed. Measure Fmax with and without.</li>
+<li>The rule: if <code>seq &lt; RCV.NXT</code>, drop the first <code>RCV.NXT - seq</code> bytes; if the end is beyond the window, drop the tail and ignore the FIN. The acceptable offsets then become <code>-(ln-1) .. wnd-1</code> for the data (still refused if the whole segment lies before <code>RCV.NXT</code>); the delivered length is the part inside the window.</li>
+<li>Ignoring a RST in TIME_WAIT (RFC 1337) changes the model's transition, the section 6 test is unchanged, and the mutants for "RST in TIME_WAIT closes" must be rewritten; it protects against a stray RST from an old connection terminating TIME_WAIT early and letting old segments be accepted by a new connection.</li>
+<li>Candidates: a mutant in the unreachable <code>default</code> of the event decoder (equivalent), or in the saturation of <code>ack_fut</code> for states in which <code>SND.NXT - SND.UNA</code> is 2^31 or more (outside the model's contract: the model assumes less than half the sequence space is outstanding).</li>
 </ol>
 
 
