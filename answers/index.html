@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part01/05-resources/">
+        <link rel="prev" href="../part01/06-verification-harness/">
       
       
       
@@ -475,6 +475,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part01/06-verification-harness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    6. A Verification Harness: Vector Replay, Random and Constrained Stimulus, Coverage, Formal Properties, and Mutation Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -712,6 +740,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 6
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-6-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 6 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -858,6 +908,28 @@
     <span class="md-ellipsis">
       
         Chapter 5 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 6
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-6-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 6 -- hints for the exercises
       
     </span>
   </a>
@@ -1033,6 +1105,39 @@
 <li>Expect long placement; run with a timeout and report if it times out, or reduce the width first. 4,096 flip-flops fit in 7,680 logic cells, but the 256-way multiplexers add LUTs.</li>
 <li><code>nextpnr-ice40 ... --seed 1</code> prints the critical path; look for the block RAM clock-to-out and the route to the output register.</li>
 <li>Candidates: a reset value of an unobserved register (equivalent), or a mutant in code the vectors never drive (a missing test): for example, a memory whose vectors never read the address being written would let a write-first mutant survive (the vectors here make a fifth of the reads do so, which is what catches it).</li>
+</ol>
+<h2 id="chapter-6">Chapter 6<a class="headerlink" href="#chapter-6" title="Permanent link">&para;</a></h2>
+<p><strong>1. Why is the golden model written independently of the RTL, and what would be lost if the testbench computed its own expected values from the RTL's signals?</strong></p>
+<p>Worked answer: a model written from the specification can disagree with the design; one derived from the design's own signals agrees with it by construction, including when the design is wrong. The independence is what makes a mismatch informative.</p>
+<p><strong>2. What does <code>rd_data</code> get compared against when the FIFO is empty, and why?</strong></p>
+<p>Worked answer: nothing: the comparison is skipped when <code>empty</code> is 1. The specification only defines <code>rd_data</code> when a word is present; comparing it when empty would flag differences the specification allows (the memory's old contents).</p>
+<p><strong>3. Why does a vector file make the Icarus and Verilator runs comparable?</strong></p>
+<p>Worked answer: both read the same inputs and the same expected outputs, so any difference in result is a difference in the simulator or the driver, not in the stimulus. It also lets the stimulus be generated, inspected and replayed outside any simulator.</p>
+<p><strong>4. The driver reports 15.7 million cycles per second and the whole process 2.4 million. What accounts for the difference, and which number would you quote?</strong></p>
+<p>Worked answer: the driver's own figure times only the simulation loop; the process time also includes starting, and reading and parsing a million text lines. Quote both and say what each includes: the first is the simulator's speed, the second what a user waits for with a file-driven flow.</p>
+<p><strong>5. Which two injected bugs did the directed test miss, and what would you add to it to catch them?</strong></p>
+<p>Worked answer: bug 4 (a read and a write in the same cycle when empty) and bug 6 (a write of <code>0xA5</code> when five words are held). Add a cycle with both enables set on an empty FIFO, and a write of <code>0xA5</code> at five words (and, generally, writes of a few special values at every occupancy).</p>
+<p><strong>6. Constrained random found bug 6 about eighteen times faster than uniform random but was no better on bugs 1 to 5. Why?</strong></p>
+<p>Worked answer: bug 6 needs a particular data value at a particular occupancy; the constrained generator draws half its data from a list that contains <code>0xA5</code>, raising that chance from 1/256 to about 1/12 per write. Bugs 1 to 5 depend only on occupancy and enables, which uniform random already visits quickly in a six-deep FIFO, so the bias adds nothing.</p>
+<p><strong>7. Constrained random with 200 cycles covered fewer bins than uniform random with 200. Why?</strong></p>
+<p>Worked answer: its phases are 20 to 80 cycles long and biased; a phase that holds the FIFO near empty for most of 200 cycles never reaches occupancy 5 or 6. Uniform random wanders over all occupancies. The bias pays only when the run is long enough to visit several phases.</p>
+<p><strong>8. What does bounded model checking prove, and what does it say about cycle 21 when run to depth 20?</strong></p>
+<p>Worked answer: that no input sequence of up to 20 cycles from reset violates the property. It says nothing about cycle 21 or later: a violation needing 21 cycles would not be found.</p>
+<p><strong>9. The counting properties were proved by induction yet bug 3 passes them. Why, and what property catches it?</strong></p>
+<p>Worked answer: bug 3 (a late-wrapping write pointer) writes words to the wrong place but leaves the count correct, and the counting properties talk only about the count and the flags. The tagged-word property (the k-th word read equals the k-th word written) mentions the data, and the bounded run of it finds the bug.</p>
+<p><strong>10. What is a SAT miter, and why must it be tested on a design compared with itself and on a deliberately different design?</strong></p>
+<p>Worked answer: a circuit built from two designs with the same inputs that outputs 1 when any pair of outputs differs; the solver is asked whether it can ever be 1. A checker that reports "different" for a design compared with itself, or "equal" for a changed design, is broken; the first version of this one did the former because of a tool detail, and only the known-answer test showed it.</p>
+<p><strong>11. 29 of 30 generated mutants died to the 44-cycle directed test. Does that mean the directed test is good? What does the injected-bug table say?</strong></p>
+<p>Worked answer: it means the directed test is good at killing the mutants these operators produce, which are easy. The injected-bug table shows it misses two of six realistic bugs (a missing combination and a data-dependent corner). A mutation score is evidence about the tests <em>relative to the mutants</em>; it must be read with a set of realistic bugs.</p>
+<p><strong>12. Why was a survivor "proved equivalent for 14 cycles" and not simply "equivalent"?</strong></p>
+<p>Worked answer: the miter is a bounded search; it shows no difference within 14 cycles from reset. A difference that needs a longer sequence would not be found. (Here the guard is redundant because the write is already blocked when full, which is an argument for equivalence at any length, but the tool's evidence has the bound.)</p>
+<h2 id="chapter-6-hints-for-the-exercises">Chapter 6 -- hints for the exercises<a class="headerlink" href="#chapter-6-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Add the bug as <code>BUG == 7</code> with a pair of counters (writes wrapped, and the coincidence); a coverage bin "two wraps then read+write at three words" is the new <code>coverage()</code> entry; random testing will need many thousand cycles, formal will need a deeper bound (probably 30+ cycles and minutes); report the numbers you measure.</li>
+<li>Port <code>constrained()</code> (a few lines) and the deque model (an array and two indices) to C++; the speed will be limited by the simulator, not the file.</li>
+<li>The tagged-word property needs invariants relating the pointers, the count and the position of the tagged word (for example, "if the tag is stored, it is at index <code>(rp + (k - nr)) mod DEPTH</code> and <code>count &gt; k - nr</code>"); without something like that induction fails for lack of reachable-state information.</li>
+<li>An operator such as "replace <code>&amp;&amp; !empty</code> with <code>&amp;&amp; (!empty || wr_en)</code>" produces bug 4's behaviour: a read accepted when a write is simultaneous. Count how many generated mutants the new operator adds and whether the directed test kills them.</li>
+<li>Add <code>(1, 1, x)</code> on an empty FIFO and <code>(1, 0, 0xA5)</code> at five words to <code>directed()</code>; the directed test then finds all six; coverage rises to 15 or 16 bins (the 3-cycle full and empty runs need more cycles).</li>
 </ol>
 
 
