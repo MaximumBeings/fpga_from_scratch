@@ -1,0 +1,23 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper (the 148-bit event shifted in serially, an output register); RAM = SB_RAM40_4K (iCE40) or DP16KD (ECP5)
+  design                                 | iCE40 LUT    FF  RAM   Fmax | ECP5 LUT CCU2C    FF  RAM   Fmax
+  tcp_conn, one cycle, 1 connection      |      2733   459    0   33.0 |     3945   225   459    0   46.1
+  tcp_tab, 2 stages, 64 connections      |      2616   712    7   30.2 |     4206   229   713    3   32.4
+  tcp_tab2, 3 stages, 64 connections     |      2753  1186    7   59.9 |     3309   261  1187    3   58.9
+  tcp_tab2, 4 stages, 64 connections     |      2778  1788    7   66.1 |     3304   261  1789    3   72.3
+  tcp_tab2, 4 stages, 16 connections     |      2760  1776    7   65.7 |     3426   260  1670    0   92.5
+  tcp_tab2, 4 stages, 256 connections    |      2775  1800    7   66.1 |     3418   262  1801    3   70.9
+  tcp_tab2, 4 stages, 1024 connections   |      2782  1809   26   66.6 |     3428   263  1810    6   67.9
+  tcp_fast, the hot path alone           |       278   277    0   78.0 |      119    72   277    0  110.9
+  the per-connection state is 101 bits (state 4, passive 1, SND.UNA, SND.NXT, RCV.NXT 32 each): 1,024 connections = 103,424 bits; a 125 MHz clock gives 125 million events per second (derived: one event per cycle), a connection that sees a segment every 10 microseconds needs 1,250 cycles per segment
+
+== the end points of each critical path (nextpnr's last report for the clock)
+  tcp_conn, one cycle, 1 connection      ice40  c.una                      -> c.tx_ack                       11.4 ns logic, 18.9 ns routing
+  tcp_conn, one cycle, 1 connection      ecp5   ev                         -> c.r_una                        6.9 ns logic, 14.8 ns routing
+  tcp_tab, 2 stages, 64 connections      ice40  g1.t.mem.RDATA_0           -> g1.t.tx_v                      13.8 ns logic, 19.4 ns routing
+  tcp_tab, 2 stages, 64 connections      ecp5   g1.t.mem.DOB16             -> g1.t.r_txseq                   14.8 ns logic, 16.0 ns routing
+  tcp_tab2, 3 stages, 64 connections     ice40  g2.t.mem.RDATA_0           -> g2.t.pb.ack_in                 8.9 ns logic, 7.8 ns routing
+  tcp_tab2, 3 stages, 64 connections     ecp5   g2.t.mem.DOA1              -> g2.t.sel.acc_ok                9.3 ns logic, 7.7 ns routing
+  tcp_tab2, 4 stages, 64 connections     ice40  g2.t.Pc                    -> g2.t.tx_ack                    4.8 ns logic, 10.4 ns routing
+  tcp_tab2, 4 stages, 64 connections     ecp5   g2.t.mem.DOA2              -> g2.t.Sb                        8.7 ns logic, 5.1 ns routing
+  tcp_fast, the hot path alone           ice40  iv                         -> h                              7.2 ns logic, 5.6 ns routing
+  tcp_fast, the hot path alone           ecp5   iv                         -> hit                            3.5 ns logic, 5.6 ns routing

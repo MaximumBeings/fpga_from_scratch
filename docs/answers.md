@@ -611,3 +611,61 @@ Worked answer: the builder's output byte (the header/payload selection, driven b
 3. The checksum is over bytes that have not been seen yet, so a cut-through transmitter cannot compute it; the options are to let the producer compute it (offload), to keep the payload in a buffer (store-and-forward), or to send a template whose checksum is correct for fixed payload and update it incrementally for the fields that change: `HC' = ~(~HC + ~m + m')` (RFC 1624).
 4. A policer takes the same credit but drops a request that is not covered: the model is the same bucket with `go = covered` and the request consumed either way; the test sends a stream above the contracted rate and checks that the accepted bytes over any interval stay within bucket + rate x T and that the drop counter plus the accepted frames equal the offered frames.
 5. Candidates: a mutant in the unused high bits of `p_len` (equivalent: the cost never exceeds 1,538), or in the `A_IDLE` handling of a descriptor with `d_len` of zero (outside the interface's contract: a payload of zero bytes cannot be offered).
+
+## Chapter 12
+
+**1. Why are sequence-number comparisons modular, and how does `a < b` work in hardware on 32 bits?**
+
+Worked answer: sequence numbers wrap from `2^32 - 1` to 0, so "before" cannot be an ordinary comparison. `a < b` is true when the top bit of `a - b` (computed modulo `2^32`) is set: the difference is negative as a signed number. That is right as long as the two are less than `2^31` apart. Membership of a window is `(x - lo) mod 2^32 < w`. The tests use bases near the wrap (`0xFFFFFFF0`) and in the middle (`0x7FFFFFF0`), and every comparison was exact.
+
+**2. State the acceptability test for a segment and say what an unacceptable segment draws.**
+
+Worked answer: with the segment length `L` = data + SYN + FIN: if `L = 0`, acceptable when `RCV.NXT <= seq < RCV.NXT + wnd` (just `seq = RCV.NXT` if `wnd = 0`); if `L > 0`, never when `wnd = 0`, otherwise when the first byte or the last byte (`seq + L - 1`) lies in the window. An unacceptable segment draws an ACK (`SEQ = SND.NXT, ACK = RCV.NXT`) and is dropped, unless it carries a RST, which is dropped silently.
+
+**3. Why does a RST in the window but not at `RCV.NXT` draw a challenge ACK, and what attack does the rule stop?**
+
+Worked answer: an attacker who cannot see the connection can only guess sequence numbers; if any number in the window reset the connection, a guess would succeed with probability `wnd / 2^32` per packet (large for a big window). Requiring exactly `RCV.NXT` makes it `1 / 2^32`; the challenge ACK lets a legitimate peer that really reset answer with the exact number. The same reasoning applies to a SYN in the window.
+
+**4. What are `SND.UNA`, `SND.NXT` and `RCV.NXT`, and how does each change on a SYN, a FIN, data and an ACK?**
+
+Worked answer: `SND.UNA` is the oldest unacknowledged sequence number, `SND.NXT` the next one we will send, `RCV.NXT` the next we expect. A SYN or a FIN occupies one sequence number: sending one advances `SND.NXT` by one; receiving one advances `RCV.NXT` by one. Data in order advances `RCV.NXT` by its length (limited to the window). A valid ACK in `(SND.UNA, SND.NXT]` sets `SND.UNA` to it.
+
+**5. Why did the window test find that a segment longer than the window is refused at the offsets between its first and last byte?**
+
+Worked answer: the rule accepts a segment when its first byte or its last byte lies in the window. A segment that starts before the window and ends after it (it covers the window and more: length greater than the window plus one) has neither byte inside, so the rule refuses it, although it overlaps the window completely. The test showed it for `wnd = 1`, `ln = 5`: only offsets -4 (last byte at 0) and 0 (first byte at 0) are accepted. A real stack trims the segment to the window before the test; this model does not.
+
+**6. Why does the first design run at 33 MHz, and what are the two parts into which the second cuts it?**
+
+Worked answer: one cycle holds the RAM read, several 32-bit subtractions, comparisons, the priority of the rules and the multiplexers of the answer: a path of 11 ns of logic and 19 ns of routing on iCE40 (one connection). The second design cuts it into the arithmetic (all differences, sums and equalities, in parallel from registered values) and the choice (flags and one-bit predicates in, state and segment out), and then the comparisons from the arithmetic: 3 and 4 stages, 59.9 and 66.1 MHz on iCE40.
+
+**7. What does the bypass of `tcp_tab` do, and what happens to the throughput of one connection without it?**
+
+Worked answer: the RAM is read in the cycle in which the previous event's result is written; for the same connection the read returns the old state. The bypass register holds the new state and replaces the read. Without it (`tcp_tab2`) the event must wait: one event per 3 cycles (three stages) or 4 (four stages) for one connection, instead of one per cycle.
+
+**8. How many cycles apart can events for the same connection be accepted in `tcp_tab2`, and why?**
+
+Worked answer: 3 (three stages) or 4 (four stages): the next event's RAM read must come after the previous event's write, which happens at the end of the last stage. `ev_ready` is low while the connection id of the presented event is in any stage; measured 3.00 and 4.00 cycles per event for one connection, 1.04 and 1.08 for events spread over 64 connections.
+
+**9. Why does the table's size barely change the LUTs, and what does it change?**
+
+Worked answer: the logic is one machine whatever the number of connections; the state is in memory. 16 to 1,024 connections cost 2,760 to 2,782 LUTs on iCE40, and the block RAM grows from 7 to 26 blocks (103,424 bits). It changes the kind of memory: on ECP5, 16 connections fit in distributed RAM (92.5 MHz, no block RAM), larger tables use block RAM and run at 68 to 72 MHz.
+
+**10. List what the hot path tests, and say what is "punted".**
+
+Worked answer: the state is ESTABLISHED; the flags are exactly ACK; the sequence number equals `RCV.NXT`; the length is at most the window; the ACK is in `[SND.UNA, SND.NXT]`. Everything else (the handshake and the close, a RST, a SYN, a FIN, an old or out-of-order segment, a bad ACK, every other state) is punted to the full machine or to software.
+
+**11. Derive the share of events the hot path cannot handle from the rate of oddities and the fixed cost of a connection.**
+
+Worked answer: if a connection has `n` steady-state segments, a fraction `p` of them odd, and about 10 events of handshake and close, the cold events are `10 + p n` of `n + 10`. With `n = 2,000` and `p = 3%` that is 70 / 2,010 = 3.5%; the measured share (3.3% cold) is close; at `p = 30%` the derivation gives 30.3% against 30.7% measured. For short connections the fixed cost dominates.
+
+**12. Name two mutants of the mutation run that were missing tests, and the test that closed each.**
+
+Worked answer: the hot path that does not advance `SND.UNA` survived because no test had data outstanding in ESTABLISHED (the model sends no data, so `SND.UNA` equals the ACK); the uniformly random states with data outstanding closed it. The other kind: a crash of the test script on an `x` in the output; the parser now treats an `x` as a failure.
+
+## Chapter 12 -- hints for the exercises
+
+1. Register the RAM output (`mem_q`) in its own stage before the arithmetic, which removes the RAM's clock-to-output delay from the 8.7 ns path; split `tcp_sel` into the state decision (which flags and predicates select) and the construction of the segment fields. Expect latency 5 to 6 and one event per 5 to 6 cycles for one connection; across connections one per cycle.
+2. A bypass from the write data back to the arithmetic stage's state input removes the wait but puts the whole choice in series with the arithmetic for that case (the longest path again); alternatively detect the same-connection case and recompute only the fields that changed. Measure Fmax with and without.
+3. The rule: if `seq < RCV.NXT`, drop the first `RCV.NXT - seq` bytes; if the end is beyond the window, drop the tail and ignore the FIN. The acceptable offsets then become `-(ln-1) .. wnd-1` for the data (still refused if the whole segment lies before `RCV.NXT`); the delivered length is the part inside the window.
+4. Ignoring a RST in TIME_WAIT (RFC 1337) changes the model's transition, the section 6 test is unchanged, and the mutants for "RST in TIME_WAIT closes" must be rewritten; it protects against a stray RST from an old connection terminating TIME_WAIT early and letting old segments be accepted by a new connection.
+5. Candidates: a mutant in the unreachable `default` of the event decoder (equivalent), or in the saturation of `ack_fut` for states in which `SND.NXT - SND.UNA` is 2^31 or more (outside the model's contract: the model assumes less than half the sequence space is outstanding).

@@ -1,0 +1,57 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  tcp_next   Verilator warnings: 0   Yosys check problems: 0
+  tcp_conn   Verilator warnings: 0   Yosys check problems: 0
+  tcp_tab    Verilator warnings: 0   Yosys check problems: 0
+  tcp_tab2   Verilator warnings: 0   Yosys check problems: 0
+  tcp_fast   Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model's hand-checked lives (asserted by python3 model/tcp_gold.py)
+  tcp_gold hand-checked scenarios passed: active open with sequence numbers across the wrap, a duplicate, our close, FIN_WAIT_2, TIME_WAIT, the 2MSL timeout; passive open, a blind RST in the window (challenge ACK), the exact RST
+
+== 3. what the stimulus covers (8 seeds of 3,000 random events over 8 connections, plus the directed lives): the state each event arrived in, and the distinct reactions
+  24480 events;  CLOSED 11387, LISTEN 1845, SYN_SENT 1354, SYN_RCVD 2828, ESTABLISHED 2611, FIN_WAIT_1 1782, FIN_WAIT_2 907, CLOSE_WAIT 906, CLOSING 173, LAST_ACK 383, TIME_WAIT 304
+  271 distinct (state, event class, next state, segment sent, data delivered) combinations; 203 distinct (state, event class, next state)
+
+== 4. tcp_conn against the model: every state variable, the segment sent and the bytes delivered after every event
+  seeds  events |    Icarus  Verilator
+      8   20480 |      8 of 8       PASS
+
+== 5. the tables against the model: many connections, events for the same connection back to back (4 connections: one event in four is for the same connection as the one before) and with idle cycles; 4 seeds each
+  design                     connections  events |  no idle  15% idle  Verilator
+  tcp_tab (RAM, bypass)                4   10240 |     4 of 4      4 of 4       PASS
+  tcp_tab (RAM, bypass)               16   10240 |     4 of 4      4 of 4          -
+  tcp_tab (RAM, bypass)               64   10240 |     4 of 4      4 of 4          -
+  tcp_tab2, 3 stages                   4   10240 |     4 of 4      4 of 4       PASS
+  tcp_tab2, 3 stages                  16   10240 |     4 of 4      4 of 4          -
+  tcp_tab2, 3 stages                  64   10240 |     4 of 4      4 of 4          -
+  tcp_tab2, 4 stages                   4   10240 |     4 of 4      4 of 4       PASS
+  tcp_tab2, 4 stages                  16   10240 |     4 of 4      4 of 4          -
+  tcp_tab2, 4 stages                  64   10240 |     4 of 4      4 of 4          -
+
+== 6. the window test: ESTABLISHED sequence space near the wrap, a FIN outstanding, a probing ACK segment of length ln at offset `off` from RCV.NXT; the probe is accepted exactly when it moves the connection to FIN_WAIT_2
+  window  len |  derived accepted offsets |  measured (tcp_conn)  measured (tcp_tab2, 4 stages)
+       0    0 |                    [0, 0] |               [0, 0]                         [0, 0]
+       0    1 |                      none |                 none                           none
+       0    5 |                      none |                 none                           none
+       1    0 |                    [0, 0] |               [0, 0]                         [0, 0]
+       1    1 |                    [0, 0] |               [0, 0]                         [0, 0]
+       1    5 |         [-4, -4] + [0, 0] |    [-4, -4] + [0, 0]              [-4, -4] + [0, 0]
+       5    0 |                    [0, 4] |               [0, 4]                         [0, 4]
+       5    1 |                    [0, 4] |               [0, 4]                         [0, 4]
+       5    5 |                   [-4, 4] |              [-4, 4]                        [-4, 4]
+     100    0 |                   [0, 99] |              [0, 99]                        [0, 99]
+     100    1 |                   [0, 99] |              [0, 99]                        [0, 99]
+     100    5 |                  [-4, 99] |             [-4, 99]                       [-4, 99]
+  derived: a segment is acceptable when its first byte or its last byte lies in the window [RCV.NXT, RCV.NXT + wnd): for length 0, the offsets 0 .. wnd-1 (just 0 when the window is 0); for length ln > 0, the offsets 0 .. wnd-1 and, for the last byte, 1-ln .. wnd-ln (never when the window is 0); note the GAP when ln > wnd + 1: a segment that straddles the whole window is NOT acceptable by this rule. Three bases of the sequence space (0, 0xFFFFFFF0, 0x7FFFFFF0), two designs, equal to the derivation: YES
+
+== 7. latency and the price of the missing bypass: 1,000 events for ONE connection back to back, and 1,000 spread over 64 connections, no idle cycles
+  design                      latency |  one connection: cycles/event |  64 connections: cycles/event
+  tcp_conn (one connection)         1 |                          1.01 |                          1.01
+  tcp_tab (RAM, bypass)             2 |                          1.00 |                          1.00
+  tcp_tab2, 3 stages                3 |                          3.00 |                          1.04
+  tcp_tab2, 4 stages                4 |                          4.00 |                          1.08
+  (cycles per event after the reset and the RAM clearing; the bypass of tcp_tab lets back-to-back events for one connection through; tcp_tab2 has none and waits for the write)
+
+== 8. the hot path alone (tcp_fast): against the model on states and segments of the realistic traffic and on uniformly random ones
+     cases  hit by model  hit by RTL  hit decisions equal  results equal on hits
+     18855          4927        4927          18855 of 18855              4927 of 4927

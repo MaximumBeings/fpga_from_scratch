@@ -1,0 +1,134 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  CLOSED: a RST is answered [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  CLOSED: a RST is answered [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  CLOSED: the reset for an ACK segment takes seq instead of ack [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  CLOSED: the reset for an ACK segment takes seq instead of ack [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  CLOSED: the reset's ACK ignores the segment length: caught by: tcp_conn, seed 1
+  CLOSED: the reset's ACK ignores the segment length (second design): caught by: table 2/0, seed 1
+  LISTEN: a SYN with ACK is accepted [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  LISTEN: a SYN with ACK is accepted [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  LISTEN: the SYN-ACK acknowledges seq, not seq + 1: caught by: tcp_conn, seed 1
+  LISTEN: RCV.NXT is seq, not seq + 1: caught by: tcp_conn, seed 1
+  LISTEN: SND.NXT does not advance past the SYN: caught by: tcp_conn, seed 1
+  LISTEN: a RST is answered [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  LISTEN: a RST is answered [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: any ACK is accepted [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: any ACK is accepted [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: a bad ACK with RST is answered [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: a bad ACK with RST is answered [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: a RST without ACK closes [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: a RST without ACK closes [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: SYN + ACK does not reach ESTABLISHED [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: SYN + ACK does not reach ESTABLISHED [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: SND.UNA is not updated by the ACK [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: SND.UNA is not updated by the ACK [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: simultaneous open sends no SYN-ACK [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: simultaneous open sends no SYN-ACK [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  SYN_SENT: simultaneous open is marked passive [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  SYN_SENT: simultaneous open is marked passive [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: the acceptability test ignores the window for empty segments: caught by: tcp_conn, seed 1
+  sync: the zero-window rule accepts any empty segment: caught by: tcp_conn, seed 1
+  sync: the acceptability test ignores the segment's last byte [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: the acceptability test ignores the segment's last byte [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: the acceptability test ignores the segment's first byte [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: the acceptability test ignores the segment's first byte [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: a window of one byte beyond [occurrence 1 of 4]: caught by: tcp_conn, seed 1
+  sync: a window of one byte beyond [occurrence 2 of 4]: caught by: tcp_conn, seed 1
+  sync: a window of one byte beyond [occurrence 3 of 4]: caught by: table 2/0, seed 1
+  sync: a window of one byte beyond [occurrence 4 of 4]: caught by: table 2/0, seed 1
+  sync: the last byte is one beyond [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: the last byte is one beyond [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: an unacceptable RST is answered [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: an unacceptable RST is answered [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: an unacceptable segment is not answered [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: an unacceptable segment is not answered [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: a RST in the window anywhere resets: caught by: tcp_conn, seed 1
+  sync: a RST at RCV.NXT does not reset (second design): caught by: table 2/0, seed 1
+  sync: a RST in SYN_RCVD goes to CLOSED even if passive [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: a RST in SYN_RCVD goes to CLOSED even if passive [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: a SYN in the window is not challenged [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: a SYN in the window is not challenged [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: SYN_RCVD accepts ACK = SND.UNA [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: SYN_RCVD accepts ACK = SND.UNA [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: SYN_RCVD does not answer a bad ACK with a RST [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: SYN_RCVD does not answer a bad ACK with a RST [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: an ACK for data not yet sent is accepted: caught by: tcp_conn, seed 1
+  sync: an old ACK moves SND.UNA back: caught by: tcp_conn, seed 1
+  sync: FIN_WAIT_1 does not move on when its FIN is acknowledged [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: FIN_WAIT_1 does not move on when its FIN is acknowledged [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: CLOSING does not move on [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: CLOSING does not move on [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: LAST_ACK does not close [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  sync: LAST_ACK does not close [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  sync: SND.UNA is not stored: caught by: tcp_conn, seed 1
+  data: out-of-order data is delivered: caught by: tcp_conn, seed 1
+  data: the delivered length is not limited by the window: caught by: tcp_conn, seed 1
+  data: the delivery is limited to ln < wnd (second design): caught by: table 2/0, seed 1
+  data: RCV.NXT does not advance by the data (second design): caught by: table 2/0, seed 1
+  data: truncated data still lets the FIN through: caught by: tcp_conn, seed 1
+  data: the FIN is accepted out of order: caught by: tcp_conn, seed 1
+  data: a FIN behind a gap is accepted: caught by: tcp_conn, seed 1
+  data: the ACK for data acknowledges the old RCV.NXT [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  data: the ACK for data acknowledges the old RCV.NXT [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  data: no ACK for data [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  data: no ACK for data [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  fin: the FIN does not advance RCV.NXT: caught by: tcp_conn, seed 1
+  fin: ESTABLISHED + FIN goes to CLOSING [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  fin: ESTABLISHED + FIN goes to CLOSING [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  fin: FIN_WAIT_2 + FIN goes to CLOSING [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  fin: FIN_WAIT_2 + FIN goes to CLOSING [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  fin: FIN_WAIT_1 + FIN goes to TIME_WAIT [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  fin: FIN_WAIT_1 + FIN goes to TIME_WAIT [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  fin: a retransmitted FIN is not acknowledged [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  fin: a retransmitted FIN is not acknowledged [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: OPEN_PASSIVE works in any state [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: OPEN_PASSIVE works in any state [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: OPEN_ACTIVE sends no SYN: caught by: tcp_conn, seed 1
+  app: OPEN_ACTIVE does not advance SND.NXT: caught by: tcp_conn, seed 1
+  app: OPEN_ACTIVE (second design) does not advance SND.NXT: caught by: table 2/0, seed 1
+  app: OPEN_ACTIVE is refused in LISTEN [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: OPEN_ACTIVE is refused in LISTEN [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: CLOSE in CLOSE_WAIT goes to FIN_WAIT_1 [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: CLOSE in CLOSE_WAIT goes to FIN_WAIT_1 [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: CLOSE in ESTABLISHED does not send the FIN [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: CLOSE in ESTABLISHED does not send the FIN [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: the FIN does not advance SND.NXT: caught by: tcp_conn, seed 1
+  app: CLOSE in SYN_SENT does not close [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: CLOSE in SYN_SENT does not close [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: ABORT sends no RST [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: ABORT sends no RST [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: ABORT in LISTEN sends a RST [occurrence 1 of 2]: caught by: table 1/0, seed 1
+  app: ABORT in LISTEN sends a RST [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  app: the timeout closes any state [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  app: the timeout closes any state [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  pre: the window compares the segment's last byte with the wrong base [occurrence 1 of 2]: caught by: tcp_conn, seed 1
+  pre: the window compares the segment's last byte with the wrong base [occurrence 2 of 2]: caught by: table 2/0, seed 1
+  pre: the acceptability of an empty segment uses the last-byte difference: caught by: table 2/0, seed 1
+  pre: the zero-window rule is dropped: caught by: table 2/0, seed 1
+  pre: ack_in allows ack = una: caught by: table 2/0, seed 1
+  pre: ack_in allows ack = nxt + 1: caught by: table 2/0, seed 1
+  pre: ack_fut is its own negation: caught by: table 2/0, seed 1
+  pre: seq + 1 computed as seq: caught by: table 2/0, seed 1
+  pre: rcv + len + 1 computed as rcv + len: caught by: table 2/0, seed 1
+  pre: rcv + wnd computed as rcv + len: caught by: table 2/0, seed 1
+  pre: the segment length counts no FIN: caught by: table 2/0, seed 1
+  pre: the segment length counts no SYN: caught by: table 2/0, seed 1
+  tab: the bypass is not used: caught by: table 1/0, seed 1
+  tab: the bypass is used for any connection: caught by: table 1/0, seed 1
+  tab: the write goes to the wrong connection: caught by: table 1/0, seed 1
+  tab: the RAM is not cleared after reset: caught by: table 1/0, seed 1
+  tab2: no wait for an event of the same connection in stage 1: caught by: table 2/0, seed 1
+  tab2: no wait for an event of the same connection in stage 2: caught by: table 2/0, seed 1
+  tab2: no wait for the middle stage (4 stages): caught by: table 2/1, seed 1
+  tab2: the write goes to stage 1's connection: caught by: table 2/0, seed 1
+  tab2: stage b keeps the old state: caught by: table 2/1, seed 1
+  fast: a window of one less: caught by: hot path: decision
+  fast: an ACK beyond SND.NXT is taken: caught by: hot path: decision
+  fast: other flags are taken: caught by: hot path: decision
+  fast: other states are taken: caught by: hot path: decision
+  fast: any sequence number is taken: caught by: hot path: decision
+  fast: RCV.NXT advances by one too many: caught by: hot path: result
+  fast: SND.UNA is not advanced: caught by: hot path: result
+  fast: an ACK is sent for an empty segment: caught by: hot path: result
+mutants caught: 131 of 131

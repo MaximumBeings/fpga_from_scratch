@@ -23,7 +23,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 11. *(written)* Egress: UDP frame building, store-and-forward against cut-through, a token-bucket pacer
 
 ## Part 3 -- Reliable transport: TCP
-12. Why orders use TCP: the state machine and what must be in hardware
+12. *(written)* Why orders use TCP: the state machine, segment acceptance, a table of connections, and what must be in hardware
 13. A TCP offload engine: sequence and ack tracking, retransmit timers, windows
 14. Testing it against a deterministic reference stack with loss, reorder and duplication injected; formal safety properties
 15. Hot path and cold path: reconnects, head-of-line blocking, the hardware/software split

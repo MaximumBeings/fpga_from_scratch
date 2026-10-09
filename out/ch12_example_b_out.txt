@@ -1,0 +1,23 @@
+== 1. 1656 events of realistic traffic (8 connections x 200 steps, 3% oddities), by the state the connection was in and the kind of event
+  state         kind                        events   share  path
+  ESTABLISHED   segment A +data                851   51.4%  HOT (tcp_fast)
+  ESTABLISHED   segment A                      698   42.1%  HOT (tcp_fast)
+  ESTABLISHED   segment A +data (odd)           38    2.3%  cold
+  ESTABLISHED   segment A (odd)                 13    0.8%  cold
+  CLOSED        OPEN_PASSIVE                     8    0.5%  cold
+  LISTEN        segment S                        8    0.5%  cold
+  SYN_RCVD      segment A                        8    0.5%  cold
+  ESTABLISHED   segment AF (odd)                 8    0.5%  cold
+  CLOSE_WAIT    CLOSE                            8    0.5%  cold
+  LAST_ACK      segment A                        8    0.5%  cold
+  CLOSED        TIMEOUT                          8    0.5%  cold
+  hot path: 1549 of 1656 events (93.5%) in 2 state/kind classes; cold path: 107 events (6.5%) in 9 classes
+
+== 2. the share of events the hot path handles against the share of oddities (an old duplicate, a gap, an ACK for data never sent) among the segments of an established connection; 8 connections x 2,000 steps
+   oddities |  events  hot path   share    cold events per hot event
+         0% |   16056     16000   99.7%                        0.004
+         1% |   16056     15838   98.6%                        0.014
+         3% |   16056     15523   96.7%                        0.034
+        10% |   16056     14408   89.7%                        0.114
+        30% |   16056     11124   69.3%                        0.443
+  an established connection's handshake and close (about 10 events) are a fixed cost per connection; the oddities set the rest. The hot path needs no state machine at all: one state test, one flag test, three comparisons.
