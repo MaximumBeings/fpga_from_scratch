@@ -5,11 +5,11 @@
 --8<-- "docs/assets/art/contents.md"
 
 
-The plan for the whole book. **Part 0 to Part 7 build the trading data path; Parts 8 to 11 are case studies from other domains.** Every chapter carries two running examples, figures, a Python golden model, tests in two simulators, a mutation run and self-check questions with answers (Appendix H). Status: all chapters are *planned*.
+The plan for the whole book. **Part 0 to Part 7 build the trading data path; Parts 8 to 11 are case studies from other domains.** Every chapter carries two running examples, figures, a Python golden model, tests in two simulators, a mutation run and self-check questions with answers (Appendix H). Status: **Chapters 1 and 2 are written** (each marked *written* below); the rest are *planned*.
 
 ## Part 1 -- Foundations
-1. What an FPGA is: LUTs, flip-flops, carry chains, block RAM, DSP slices, clocks, I/O, and the open flow used here
-2. Hardware design in SystemVerilog: the synthesizable subset, packages, structs, interfaces, FSM style, linting
+1. *(written)* What an FPGA is: LUTs, flip-flops, carry chains, block RAM, DSP slices, clocks, I/O, and the open flow used here
+2. *(written)* Hardware design in SystemVerilog: the portable subset (measured), lint as a gate, valid/ready stages and skid buffers, state machines in three styles with a SAT equivalence proof
 3. Timing: clocks, setup and hold, reset strategy, clock-domain crossing, reading a timing report
 4. Latency as a budget: pipelines, valid/ready, cut-through against store-and-forward, determinism
 5. Resources: LUT against DSP against BRAM, fixed-point arithmetic, retiming, what actually costs area

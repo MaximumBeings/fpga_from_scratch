@@ -1,0 +1,48 @@
+== 1. which constructs do the three tools accept? (each snippet is a tiny module; 'ok' = the tool read it without error)
+  construct                                   Icarus 12  Verilator 5.020       Yosys 0.33
+  logic + always_ff                                  ok               ok               ok
+  always_comb                                        ok               ok               ok
+  always_latch                                       ok               ok               ok
+  typedef enum                                       ok               ok               ok
+  packed struct                                      ok               ok               ok
+  package + import                                   ok               ok            FAILS
+  parameter + $clog2                                 ok               ok               ok
+  generate for / if                                  ok               ok               ok
+  function automatic                                 ok               ok               ok
+  unique case                                        ok               ok               ok
+  case inside                                     FAILS               ok            FAILS
+  assignment pattern '{}                          FAILS               ok            FAILS
+  2-D packed array                                   ok               ok            FAILS
+  unpacked array (memory)                            ok               ok               ok
+  interface + modport                             FAILS               ok               ok
+  packed union                                       ok               ok               ok
+  assert property                                 FAILS               ok            FAILS
+  immediate assert                                   ok               ok               ok
+  ++ and += operators                                ok               ok               ok
+  int / bit types                                    ok               ok               ok
+  enum methods (.next)                               ok               ok            FAILS
+  streaming / dynamic types (queue)                  ok               ok            FAILS
+
+  accepted by ALL three: 14 of 22. This book's rule: write only what all three accept, because the same file is simulated twice and synthesized once. The constructs that fail somewhere are a list of things to avoid, or to gate behind a simulator-only file
+
+== 2. packages: the subtlety (Yosys 0.33 reads packages, but not every way of using them)
+  way of using a package or a shared type                                   Icarus 12 Verilator 5.020 Yosys 0.33
+  constant, qualified:  input logic [pk::W-1:0] a                                  ok         ok         ok
+  type, wildcard import in the header:  module t import pk::*; (input w_t a ...)         ok         ok      FAILS
+  packed struct, import inside the module                                          ok         ok      FAILS
+  packed struct, qualified type  pk::bus_t b;                                      ok         ok         ok
+  typedef in an included header (`include):                                        ok         ok         ok
+  the house rule that follows: QUALIFY names from a package (pk::W, pk::bus_t), never use a wildcard import
+
+== 3. lint: a module with five mistakes that all compile (rtl/lint_bad.sv), and the repair (rtl/lint_good.sv)
+  Verilator -Wall on rtl/lint_bad.sv: 6 message(s)
+    %Warning-WIDTHTRUNC: rtl/lint_bad.sv:5:24: Operator ASSIGN expects 4 bits on the Assign RHS, but Assign RHS's VARREF 'a' generates 8 bits.
+    %Warning-MULTIDRIVEN: rtl/lint_bad.sv:9:12: Variable also written to in always_comb (IEEE 1800-2017 9.2.2.2): 'z'
+    %Warning-CASEINCOMPLETE: rtl/lint_bad.sv:7:17: Case values incompletely covered (example pattern 0x2)
+    %Warning-LATCH: rtl/lint_bad.sv:6:5: Latch inferred for signal 'y' (not all control paths of combinational always assign a value)
+    %Warning-BLKSEQ: rtl/lint_bad.sv:8:38: Blocking assignment '=' in sequential logic process
+    %Error: Exiting due to 5 warning(s)
+  Verilator -Wall on rtl/lint_good.sv: 0 message(s)
+  Yosys 'check' on lint_bad.sv: reg '\z' is assigned in a continuous assignment at rtl/lint_bad.sv:9.12-9.18.
+  what the codes mean: WIDTHTRUNC = a wider value assigned to a narrower signal (bits lost); LATCH = a combinational block that does not assign its output on every path (a memory element is built); CASEINCOMPLETE = a case with no default and values not covered; BLKSEQ = a blocking assignment (=) in a clocked block; MULTIDRIVEN or the error above = one signal driven from two places
+  the discipline: lint is a gate, not a suggestion. Every design file of this book must lint clean under -Wall before its testbench is run, and the run script checks it (Chapter 2, run section 1)

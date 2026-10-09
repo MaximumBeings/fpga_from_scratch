@@ -1,0 +1,25 @@
+== 1. chains of N stages, 32-bit data, target 100 MHz, seed 1 (LUT4s | flip-flops | Fmax in MHz)
+  family   N |            slow            |            comb            |            skid           
+  ice40    1 |       4     33     317.0   |       3     33     316.4   |      38     66     178.6  
+  ice40    2 |       7     66     201.9   |       5     66     183.6   |      75    132     143.8  
+  ice40    4 |      13    132     186.2   |      10    132     149.9   |     149    264     151.8  
+  ice40    8 |      25    264     174.2   |      19    264     122.8   |     297    528     146.3  
+  ice40   16 |      49    528     174.0   |      38    528     102.3   |     593   1056     146.3  
+  ice40   32 |      97   1056     165.2   |      75   1056      57.4   |    1185   2112     135.5  
+  ecp5     1 |       4     33     300.9   |       2     33     266.6   |      40     66     240.8  
+  ecp5     2 |       7     66     269.3   |       4     66     227.2   |      79    132     219.2  
+  ecp5     4 |      13    132     328.7   |      13    132     264.2   |     157    264     243.7  
+  ecp5     8 |      25    264     318.6   |      21    264     185.0   |     313    528     239.4  
+  ecp5    16 |      49    528     229.0   |      55    528     122.6   |     625   1056     244.5  
+  ecp5    32 |      97   1056     218.3   |      97   1056      79.5   |    1249   2112     208.7  
+  three things to read. (1) The 'comb' chain's Fmax falls steadily with N (iCE40: 316 MHz at one stage, 57 at 32; ECP5: 267 to 80): its ready is a combinational path from the last stage's out_ready through every stage to the first stage's in_ready, a LUT and a routing hop per stage. (2) The 'skid' chain is nearly flat (iCE40 152 to 136 MHz from 4 to 32 stages; ECP5 244 to 209) because every ready comes from a register; at 32 stages it is 2.4 times faster than 'comb' on iCE40 and 2.6 times on ECP5. (3) The price: a skid stage has a 2:1 multiplexer on every data bit, so it uses about 37 LUTs per stage where 'comb' uses 2 to 3 (1,185 LUT4s against 75 at 32 stages on iCE40) and twice the flip-flops (66 against 33 per stage). At ONE stage 'comb' wins on speed (316 against 179 MHz) and area: skid buffers belong where the ready path would be long. 'slow' is small and fast but moves one item every two cycles. (The 'slow' and 'skid' columns also drift down a little with N for reasons of placement and reset fan-out.)
+
+== 2. the three frame recognizers: LUT4s, flip-flops and Fmax (target 100 MHz, seed 1)
+  family style                       LUT4 flip-flops  Fmax (MHz)
+  ice40  one always_ff block           38         10       190.3
+  ice40  two processes + enum          38         10       188.6
+  ice40  one-hot                       40         11       226.6
+  ecp5   one always_ff block           28         10       267.4
+  ecp5   two processes + enum          28         10       273.8
+  ecp5   one-hot                       30         12       273.1
+  the three styles are proved equivalent (run section 4) and cost about the same at this size. The one-hot version is slightly faster on iCE40 (226.6 against about 190 MHz) and no different on ECP5, at one more flip-flop and LUT or two. The choice among them is mostly about readability and about the discipline each enforces (an enum with `unique case` gives the tools something to check; the single-block style makes an omitted output default easy)

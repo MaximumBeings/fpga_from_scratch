@@ -1,0 +1,36 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the testbench notices the mistake.
+slow: ready is the inverse of the usual (ready = valid): caught
+slow: the item is never freed when the sink takes it: caught
+slow: the data register captures zero: caught
+slow: reset does not clear valid: caught
+comb: ready follows the sink only: caught
+comb: ready is high when the stage is full and the sink is not ready... or valid: caught
+comb: valid is always set after an accepted cycle: caught
+comb: the stage loads new data even when it is not ready: caught
+skid: ready is always high: caught
+skid: the parked item is never marked valid: caught
+skid: the parked item is released from the input instead of the skid register: caught
+skid: the output register only loads when the sink is ready (not when it is empty): caught
+skid: an arriving item is marked valid even when the input is idle: caught
+skid: a second item overwrites the parked one: caught
+frame_a: the start byte is 0xA4: caught
+frame_a: a length of 17 is accepted: caught
+frame_a: payload bytes are not reported: caught
+frame_a: the end byte is 0x5B: caught
+frame_a: idle cycles (valid low) are treated as data: caught
+frame_a: busy is high only in the data state: caught
+frame_b: the start byte is 0xA4: caught
+frame_b: the count ends one byte early: caught
+frame_b: a bad end byte is not reported: caught
+frame_b: reset enters the LEN state: caught
+frame_b: a zero length is accepted: caught
+frame_c: the one-hot machine never returns to idle after a frame: caught
+frame_c: the count ends one byte late: caught
+frame_c: a length of 15 or less only: caught
+frame_c: a bad length is not reported: caught
+frame_c: busy is high only in the data state: caught
+
+valid/ready stages and frame recognizers: 30 of 30 broken circuits caught
+
+Changes that look like bugs and are not:
+EQUIVALENT: frame_a's counter is reset to 7 instead of 0 (it is loaded from the length byte before it is ever used, and is not an output): NOT CAUGHT

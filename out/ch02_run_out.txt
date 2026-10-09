@@ -1,0 +1,54 @@
+== 1. lint gate: Verilator -Wall --lint-only and Yosys 'check' on the two design files (the files must be clean before anything is simulated)
+  rtl/vr.sv          Verilator warnings: 0   Yosys check problems: 0
+  rtl/frame_fsm.sv   Verilator warnings: 0   Yosys check problems: 0
+
+== 2. valid/ready stages: cycle-accurate golden vectors, a compliant-source protocol test and a throughput test (16-bit data, seed 1, 300 cycles of vectors)
+  style                                    stages profile        Icarus  Verilator
+  slow (ready = !valid)                         1 free             PASS          -
+  slow (ready = !valid)                         1 bursty           PASS          -
+  slow (ready = !valid)                         1 slow_sink        PASS          -
+  slow (ready = !valid)                         1 slow_source      PASS          -
+  slow (ready = !valid)                         1 random           PASS          -
+  slow (ready = !valid)                         4 free             PASS          -
+  slow (ready = !valid)                         4 bursty           PASS       PASS
+  slow (ready = !valid)                         4 slow_sink        PASS          -
+  slow (ready = !valid)                         4 slow_source      PASS          -
+  slow (ready = !valid)                         4 random           PASS       PASS
+  comb (ready = ready_out | !valid)             1 free             PASS          -
+  comb (ready = ready_out | !valid)             1 bursty           PASS          -
+  comb (ready = ready_out | !valid)             1 slow_sink        PASS          -
+  comb (ready = ready_out | !valid)             1 slow_source      PASS          -
+  comb (ready = ready_out | !valid)             1 random           PASS          -
+  comb (ready = ready_out | !valid)             4 free             PASS          -
+  comb (ready = ready_out | !valid)             4 bursty           PASS       PASS
+  comb (ready = ready_out | !valid)             4 slow_sink        PASS          -
+  comb (ready = ready_out | !valid)             4 slow_source      PASS          -
+  comb (ready = ready_out | !valid)             4 random           PASS       PASS
+  skid (registered ready, two entries)          1 free             PASS          -
+  skid (registered ready, two entries)          1 bursty           PASS          -
+  skid (registered ready, two entries)          1 slow_sink        PASS          -
+  skid (registered ready, two entries)          1 slow_source      PASS          -
+  skid (registered ready, two entries)          1 random           PASS          -
+  skid (registered ready, two entries)          4 free             PASS          -
+  skid (registered ready, two entries)          4 bursty           PASS       PASS
+  skid (registered ready, two entries)          4 slow_sink        PASS          -
+  skid (registered ready, two entries)          4 slow_source      PASS          -
+  skid (registered ready, two entries)          4 random           PASS       PASS
+
+  throughput and latency (valid = ready = 1 throughout; items per 1000 cycles and cycles from offer to first output):
+  slow (ready = !valid)                    1 stage(s): 1000 items in 1999 cycles (0.50 items per cycle), first item out after 1 cycles
+  slow (ready = !valid)                    4 stage(s): 1000 items in 2002 cycles (0.50 items per cycle), first item out after 4 cycles
+  comb (ready = ready_out | !valid)        1 stage(s): 1000 items in 1000 cycles (1.00 items per cycle), first item out after 1 cycles
+  comb (ready = ready_out | !valid)        4 stage(s): 1000 items in 1003 cycles (1.00 items per cycle), first item out after 4 cycles
+  skid (registered ready, two entries)     1 stage(s): 1000 items in 1000 cycles (1.00 items per cycle), first item out after 1 cycles
+  skid (registered ready, two entries)     4 stage(s): 1000 items in 1003 cycles (1.00 items per cycle), first item out after 4 cycles
+
+== 3. the three frame recognizers against the golden model (3,000 cycles, 129 frames, 88 aborts), two simulators
+  Icarus    PASS: 3000 cycles, three styles agree with the golden model (129 frames, 88 aborts, 1458 payload bytes)
+  Verilator PASS: 3000 cycles, three styles agree with the golden model (129 frames, 88 aborts, 1458 payload bytes)
+
+== 4. bounded formal equivalence with Yosys: a miter of two recognizers, a SAT solver, 30 cycles from reset (a longest frame is 19 bytes)
+  frame_a against frame_b: equivalent for every input sequence of 30 cycles after a reset (no counterexample exists)
+  frame_a against frame_c: equivalent for every input sequence of 30 cycles after a reset (no counterexample exists)
+  frame_b against frame_c: equivalent for every input sequence of 30 cycles after a reset (no counterexample exists)
+  a bounded proof says nothing beyond its bound: Chapter 6 adds induction and the properties that make an unbounded proof possible
