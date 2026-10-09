@@ -31,5 +31,5 @@ def logo(path):
     s += '<path d="M42,142 H198" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 4"/>' + bird(120, 78, 0.95, "hover") + "</svg>"
     open(path, "w").write(s)
 if __name__ == "__main__":
-    import os; root = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); logo(os.path.join(root, "docs", "assets", "kestrel-logo.svg"))
+    import os; root = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); pass  # the header logo (docs/assets/kestrel-logo.svg) is now a hand-drawn white mark on a transparent background, like the Capra one; logo() is kept for the favicon style
     fav = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="40" fill="#0f766e"/>' + bird(120, 100, 1.3, "hover") + "</svg>"; open(os.path.join(root, "docs", "assets", "kestrel-favicon.svg"), "w").write(fav); print("logo written")
