@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part02/10-match-engines/">
+        <link rel="prev" href="../part02/11-egress/">
       
       
       
@@ -676,6 +676,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part02/11-egress/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    11. Egress: Building UDP Frames, Store-and-Forward Against Cut-Through, and a Token-Bucket Pacer
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1023,6 +1051,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 11
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-11-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 11 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1279,6 +1329,28 @@
     <span class="md-ellipsis">
       
         Chapter 10 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 11
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-11-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 11 -- hints for the exercises
       
     </span>
   </a>
@@ -1619,6 +1691,39 @@
 <li>Take the second hash as the fold of <code>k ^ (k &gt;&gt; 11) ^ (k &lt;&lt; 7)</code>, check the rank with <code>rank()</code> for <code>KW</code> from 8 to 24, and repeat the measurement. A multiplication costs about one adder per set bit of the constant when built from LUTs; choose a constant with few set bits.</li>
 <li>Two tables A and B: queries read the table named by a <code>sel</code> bit; software writes the other one; flipping <code>sel</code> takes effect in the cycle after the write of <code>sel</code>, and the query pipeline has two stages, so a query issued in the cycle of the flip uses the new table and one issued before it the old one; the model needs the sel bit to be part of the query's tag.</li>
 <li>Candidates: a mutant in the unused high bits of <code>w_addr</code> (equivalent: only the low bits index the array), or a mutant that stores a wrong value in a slot that is never queried (a missing test only if some run queries every slot).</li>
+</ol>
+<h2 id="chapter-11">Chapter 11<a class="headerlink" href="#chapter-11" title="Permanent link">&para;</a></h2>
+<p><strong>1. Why can a transmitter not simply send a UDP frame's bytes in order as the payload arrives?</strong></p>
+<p>Worked answer: the IP total length, the UDP length and both checksums stand in the headers, before the payload, and the UDP checksum depends on every payload byte. The transmitter must know the whole payload before the first header byte that depends on it can leave: so it buffers the payload (store-and-forward), or it is told the length in advance and gives up the payload checksum (cut-through).</p>
+<p><strong>2. What does a UDP checksum of zero mean in IPv4, and what must a sender do when its sum comes out as zero?</strong></p>
+<p>Worked answer: zero means "no checksum was computed", and the receiver does not check. A sender whose computed checksum is zero sends <code>0xFFFF</code> (the same value in ones' complement). The model builds payloads whose checksum is zero (<code>csz</code> packets) and 38 of 200 frames in the filter test carry <code>0xFFFF</code>.</p>
+<p><strong>3. What fields go into the UDP checksum that are not in the UDP header?</strong></p>
+<p>Worked answer: the pseudo-header: the source and destination IP addresses, a zero byte with the protocol (17), and the UDP length (which is in the UDP header but is counted twice: once in the pseudo-header and once with the header). Mutants that dropped each of those words were caught.</p>
+<p><strong>4. What does cut-through give up, and what does it demand from the source?</strong></p>
+<p>Worked answer: it gives up the UDP payload checksum (the field is 0) and the ability to drop a bad frame before it starts. It demands a descriptor with the length first and a source that supplies the payload without a gap: a stall inside a payload makes <code>mac_tx</code> underrun (8 of 8 runs at 90% and at 60% source speed).</p>
+<p><strong>5. Derive the cycles per packet and the link utilisation of the store-and-forward builder for a payload of <code>L</code> bytes.</strong></p>
+<p>Worked answer: the measured cycles per packet are <code>2 L + 65</code> (265, 1,065, 2,065 and 3,009 at 100, 500, 1,000 and 1,472 bytes), the wire cost being <code>L + 66</code>: the wire idles for <code>L - 1</code> cycles per packet. The utilisation is <code>(L + 66) / (2 L + 65)</code>: 51.6% at 1,000 bytes. The <code>65</code> is a fit, not derived from the state machine: ingest <code>L</code>, about 11 cycles of checksum arithmetic and the request, the wire time <code>L + 54</code>, with the last 16 cycles of the frame's tail (FCS and gap) overlapping the next ingest.</p>
+<p><strong>6. Why does the cut-through builder keep the wire 100% busy although its checksum takes 11 cycles?</strong></p>
+<p>Worked answer: stage A takes the next descriptor and computes its IP checksum while the previous frame is on the wire; stage B starts the next frame in the cycle <code>mac_tx</code> is ready. The arithmetic is hidden behind the transmission of the previous frame, so the cycles per packet equal the wire cost at every length (84, 166, 566, 1,066 and 1,538).</p>
+<p><strong>7. What is a token bucket, and what is guaranteed about the traffic it grants?</strong></p>
+<p>Worked answer: a credit that rises at a constant rate up to a bucket size, from which each frame takes its cost. In any interval of <code>T</code> cycles the grants add up to at most the bucket plus <code>rate x T</code>: the shaping guarantee, which the test checks for every pair of frames of every run (the slack was never negative and reached 0.1 bytes).</p>
+<p><strong>8. Derive the spacing of frames and the number of frames in a burst for a pacer with rate <code>r</code> (in 1/256 byte per cycle) and bucket <code>B</code>.</strong></p>
+<p>Worked answer: in the long run each frame of cost <code>c</code> needs <code>c x 256</code> units of credit, gained at <code>r</code> per cycle: the spacing is <code>256 c / r</code> cycles (1,066 x 256 / 32 = 8,528). In a burst each frame takes <code>c</code> and the credit regains <code>c x r/256</code> during the frame's own wire time, so it falls by <code>c (1 - r/256)</code> per frame; the <code>k</code>-th frame leaves back to back while <code>B - (k - 1) c (1 - r/256) &gt;= c</code>: <code>k &lt;= 1 + (B - c) / (c (1 - r/256))</code>: 2, 4, 8 and 17 frames for buckets of 2, 4, 8 and 16 KB at <code>r = 32</code> (measured the same).</p>
+<p><strong>9. Why did the first pacer limit the clock, and which three changes made the second faster?</strong></p>
+<p>Worked answer: the grant was one combinational expression: a 24-bit comparison, a subtraction, an addition and a saturation, feeding the builder's state machine: 59.6 MHz on iCE40. The second registers the cost and the credit change, registers the comparison and the delayed request (the grant becomes three flip-flops and a gate), and selects the next credit between two sums computed in parallel; with a power-of-two bucket the saturation is a single-bit test. 76.5 MHz, at the price of three cycles of latency.</p>
+<p><strong>10. Why must the bucket be at least the largest frame's cost?</strong></p>
+<p>Worked answer: a frame is granted only when the credit covers its whole cost, and the credit never exceeds the bucket: a bucket below 1,538 bytes (the cost of a 1,472-byte payload) would never grant that frame.</p>
+<p><strong>11. Name one mutant that was code that cannot matter and one that was outside the interface's contract.</strong></p>
+<p>Worked answer: code that cannot matter: the separate overflow flag of the store-and-forward builder (the test at the last byte already drops every oversize payload), or the saturation of the credit on a grant (the credit cannot rise). Outside the contract: the cut-through builder taking its last-byte marker from the source's <code>s_last</code> (the interface says it matches the descriptor's length).</p>
+<p><strong>12. What is the critical path of the whole transmit system, and why is it not the pacer?</strong></p>
+<p>Worked answer: the builder's output byte (the header/payload selection, driven by the byte counter or read from the RAM) goes combinationally into the CRC register of <code>mac_tx</code>: for cut-through <code>k</code> to the CRC on both chips, for store-and-forward the RAM output to the CRC on ECP5. The final pacer's grant is three flip-flops and a gate, so its paths are short; it still costs 9% of the clock for store-and-forward on iCE40, which this chapter did not trace.</p>
+<h2 id="chapter-11-hints-for-the-exercises">Chapter 11 -- hints for the exercises<a class="headerlink" href="#chapter-11-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>A one-entry register at the builder output is not enough because <code>ready</code> can drop before the first byte only; but once a frame has started <code>mac_tx</code> never stalls, so a plain output register (valid, data, last) works if the builder's state machine runs one cycle ahead and the first byte is held until <code>o_ready</code>. Latency grows by one cycle; check that the underrun flag stays zero in the cut-through tests.</li>
+<li>Two banks: the ingest writes bank A while the output reads bank B; the utilisation limit becomes the wire (100%) when the ingest of the next payload is at most as long as the wire time of the previous, which holds for <code>L + 54 &gt;= L</code>. New cases: both banks full while a third payload arrives (the source must see <code>s_ready</code> low), and an oversize payload in the middle (the drop must not disturb the frame being sent).</li>
+<li>The checksum is over bytes that have not been seen yet, so a cut-through transmitter cannot compute it; the options are to let the producer compute it (offload), to keep the payload in a buffer (store-and-forward), or to send a template whose checksum is correct for fixed payload and update it incrementally for the fields that change: <code>HC' = ~(~HC + ~m + m')</code> (RFC 1624).</li>
+<li>A policer takes the same credit but drops a request that is not covered: the model is the same bucket with <code>go = covered</code> and the request consumed either way; the test sends a stream above the contracted rate and checks that the accepted bytes over any interval stay within bucket + rate x T and that the drop counter plus the accepted frames equal the offered frames.</li>
+<li>Candidates: a mutant in the unused high bits of <code>p_len</code> (equivalent: the cost never exceeds 1,538), or in the <code>A_IDLE</code> handling of a descriptor with <code>d_len</code> of zero (outside the interface's contract: a payload of zero bytes cannot be offered).</li>
 </ol>
 
 
