@@ -56,5 +56,6 @@ nav:
       - "2. Hardware Design in SystemVerilog: A Portable Subset, Valid/Ready Stages, State Machines, and Lint": part01/02-systemverilog.md
       - "3. Timing and Clock Domains: Setup and Hold, Reading a Timing Report, Reset, Synchronizers, and the Asynchronous FIFO": part01/03-timing-and-cdc.md
       - "4. Latency as a Budget: Pipelines, Cut-Through Against Store-and-Forward, and Determinism": part01/04-latency-budget.md
+      - "5. Resources: Fixed-Point Arithmetic, DSP Blocks, Block RAM, and Moving Registers": part01/05-resources.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

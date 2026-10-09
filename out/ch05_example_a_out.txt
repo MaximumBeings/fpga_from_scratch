@@ -1,0 +1,21 @@
+== 1. a registered W x W signed multiplier (operands and product registered); nextpnr seed 1, asked for 300 MHz
+    W | ECP5 + DSP: DSP   LUT      Fmax | ECP5 LUTs only: LUT  carry      Fmax |  iCE40: LUT  carry      Fmax
+    8 |               1     0  144.6 MHz |                 291      8  116.6 MHz |         181     10  103.1 MHz
+   12 |               1     0  145.0 MHz |                 759     12  101.0 MHz |         417     17   86.5 MHz
+   16 |               1     0  144.0 MHz |                1581     16   81.0 MHz |         758     24   68.0 MHz
+   18 |               1     0  138.0 MHz |                2022     18   80.8 MHz |         968     28   66.0 MHz
+   24 |               4     0   88.2 MHz |                3479     24   73.7 MHz |        1718     39   57.7 MHz
+   32 |               4     0   82.1 MHz |                6044     32   59.3 MHz |        2995     54   48.4 MHz
+
+== 2. the Chapter 5 multiply-accumulate (16 x 16, 40-bit accumulator, round and saturate on the output)
+  target                        DSP   LUT  carry   FF      Fmax
+  ECP5 with DSP blocks            1    59     53  108  144.0 MHz
+  ECP5 LUTs only                  0  1640     69  108   86.2 MHz
+  iCE40 (no DSP)                  0   899    123  108   68.0 MHz
+
+== 3. what rounding and saturation add: a 40-bit value narrowed to 16 bits (shift 15), iCE40 LUT4 count, combinational
+  RND SAT  LUTs   meaning
+    0   0     0   truncate and wrap: just wires
+    1   0    16   round half up, wrap
+    0   1    43   truncate, saturate
+    1   1    60   round half up, saturate

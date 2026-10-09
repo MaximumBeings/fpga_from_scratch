@@ -1,0 +1,29 @@
+NOTE: this script deliberately breaks copies of the RTL. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design passes the whole battery: True 
+  round: the half constant is one place too high: caught by: round/saturate 12->6 rnd=1 sat=0
+  round: truncation mode also rounds: caught by: round/saturate 12->6 rnd=0 sat=0
+  round: the largest value is one too high: caught by: round/saturate 12->6 rnd=0 sat=1
+  round: the smallest value is one too high: caught by: round/saturate 12->6 rnd=0 sat=1
+  round: logical shift instead of arithmetic: caught by: round/saturate 12->6 rnd=0 sat=1
+  round: saturation is always on: caught by: round/saturate 12->6 rnd=0 sat=0
+  mac: the product is subtracted: caught by: mac random rnd=1 sat=1
+  mac: a clear without an enable loads the product: caught by: mac random rnd=1 sat=1
+  mac: the accumulator adds even when not enabled: caught by: mac random rnd=1 sat=1
+  mac: the operand register is skipped: caught by: mac random rnd=1 sat=1
+  mac: the enable is not delayed with the data: caught by: mac random rnd=1 sat=1
+  mac: reset does not clear the accumulator: caught by: mac random rnd=1 sat=1
+  mac: the product is zero-extended, not sign-extended: caught by: mac random rnd=1 sat=1
+  fir direct: coefficients shifted by one: caught by: fir form 0 rnd=1
+  fir direct: the sum is never registered: caught by: fir form 0 rnd=1
+  fir direct: reset does not clear the taps: caught by: fir form 0 rnd=1
+  fir transposed: the last coefficient is the wrong one: caught by: fir form 1 rnd=1
+  fir transposed: a stage adds its own old value: caught by: fir form 1 rnd=1
+  ram: the write goes to the read address: caught by: ram depth 64 style 0
+  ram: styles 1 and 2 are swapped: caught by: ram depth 64 style 1
+  ram: the output register takes the array directly: caught by: ram depth 64 style 2
+  ram: the memory has no initial contents: caught by: ram depth 64 style 0
+  ram: a synchronous read of the written address returns the new data: caught by: ram depth 64 style 1
+mutants caught: 23 of 23
+equivalent changes (no test can tell them apart; listed apart, see the page):
+  round: saturate when the value EQUALS the maximum (the result is the same value either way): NOT CAUGHT
+  round: saturate when the value EQUALS the minimum (the result is the same value either way): NOT CAUGHT

@@ -1,0 +1,46 @@
+== 1. lint gate: Verilator -Wall --lint-only and Yosys 'check'
+  fx_round_sat    Verilator warnings: 0   Yosys check problems: 0
+  fx_mac          Verilator warnings: 0   Yosys check problems: 0
+  fir_direct      Verilator warnings: 0   Yosys check problems: 0
+  fir_transposed  Verilator warnings: 0   Yosys check problems: 0
+  ram_style       Verilator warnings: 0   Yosys check problems: 0
+  mulreg          Verilator warnings: 0   Yosys check problems: 0
+
+== 2. fx_round_sat: EVERY input value, against the model (Icarus); three width configurations x four modes
+   IW  OW  SH |  trunc, wrap  round, wrap  trunc, sat  round, sat   inputs per run
+   12   6   4 |         PASS         PASS        PASS        PASS   4096
+   10  10   0 |         PASS         PASS        PASS        PASS   1024
+   14   8   5 |         PASS         PASS        PASS        PASS   16384
+  (one run also in Verilator: PASS )
+
+== 3. fx_mac against the model: 3,000 cycles per run (16-bit operands, 40-bit accumulator)
+  traffic    mode            Icarus  Verilator   outputs at the saturation limits
+  random     round, sat        PASS       PASS   550
+  random     trunc, sat        PASS          -   550
+  random     round, wrap       PASS          -   n/a (wrap)
+  random     trunc, wrap       PASS          -   n/a (wrap)
+  overflow   round, sat        PASS       PASS   2387
+  overflow   trunc, sat        PASS       PASS   2387
+  overflow   round, wrap       PASS       PASS   n/a (wrap)
+  overflow   trunc, wrap       PASS       PASS   n/a (wrap)
+
+== 4. the two FIR forms against the model: 3,000 cycles, mostly random input with bursts of full-scale values (the filter's gain is 1.17, so full scale overflows)
+  form          round, sat  trunc, sat  round, wrap   Verilator (round, sat)
+  direct              PASS        PASS         PASS                     PASS
+  transposed          PASS        PASS         PASS                     PASS
+  saturated outputs in the run: 53 of 3000; with wrap instead, 53 outputs differ
+
+== 5. ram_style against the model: 3,000 cycles of random writes and reads (a fifth of the reads hit the address being written)
+   depth  style 0 (async)  style 1 (sync)  style 2 (sync + reg)
+      16             PASS            PASS                  PASS
+     256             PASS            PASS                  PASS
+    4096             PASS            PASS                  PASS
+
+== 6. quantization error (Python, model arithmetic; units: the least significant bit of Q1.15, 2^-15)
+  one product narrowed from Q2.30 to Q1.15 (100000 random pairs):      mean  max |error|
+    truncate         -0.499        1.000
+    round half up    +0.000        0.500
+  the sum of 256 products, each of magnitude up to full scale, 2,000 trials: error of the result against the exact sum
+    round each product, then add:   mean  +0.093  standard deviation  4.609  max |error| 14.688
+    add at full width, round once:  mean  +0.024  standard deviation  0.289  max |error|  0.500
+  saturation against wrap: Q1.15 values 0.75 + 0.5 (24576 + 16384 = 40960): saturate gives 32767  wrap gives -24576 (that is 0.75 + 0.5 = 1.25 reported as -0.75)

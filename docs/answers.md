@@ -205,3 +205,61 @@ Worked answer: the one that does not clear the input valid register on reset. Th
 3. Add `out_ready` and a hold: either a skid buffer (Chapter 2) at the output, which keeps one cycle of latency and adds registers, or stalling the input, which requires `in_ready`. A stage that can stall no longer has a *single* latency under backpressure: the property becomes "latency 1 when the downstream is ready".
 4. `flow.run(["rtl/pipe.sv"], "pipe", "ecp5", 400, params={"S": s})`; compare the Fmax column and the position of the minimum; ECP5's per-stage overhead differs, so the floor can move.
 5. Candidates: a reset value of an unobserved register (equivalent), or a mutant in a path the vectors never drive (a missing test): for example, a packet of exactly 32 beats, the buffer depth, which the generators never produce (maximum 12).
+
+## Chapter 5
+
+**1. What does the Q1.15 value `0x4000` mean? What is the product of `0x4000` and `0x4000` in Q2.30 and in Q1.15?**
+
+Worked answer: `0x4000` is 16,384, and 16,384 / 2^15 = 0.5. The product is 16,384 x 16,384 = 268,435,456 = 2^28, which in Q2.30 is 2^28 / 2^30 = 0.25. Narrowed to Q1.15 (shift right by 15) it is 2^13 = 8,192 = `0x2000`, which is 0.25. Exact, because 0.25 is representable.
+
+**2. Why is the accumulator 40 bits for 16 x 16 products? How many products can it hold at full scale?**
+
+Worked answer: a product is 32 bits (Q2.30). Each doubling of the number of terms needs one more integer bit; 8 extra bits hold 2^8 = 256 products at full scale without overflow. The largest magnitude of a product of two Q1.15 numbers is 2^30 (-1 x -1 = 1), 256 of them sum to 2^38, which fits in 40 signed bits.
+
+**3. Why is truncation biased in two's complement, and by how much on average?**
+
+Worked answer: dropping low bits is a floor: it rounds toward minus infinity for positive and negative numbers alike, so the error is always zero or negative, from 0 to just under one step. If the dropped bits are uniformly distributed the average error is half a step: the measured mean is -0.499 least-significant bits.
+
+**4. Rounding 2,047 to 6 bits with a shift of 4 gives 128. Why does the circuit carry an extra bit, and what does saturation do with it?**
+
+Worked answer: 2,047 + 8 = 2,055 and 2,055 >> 4 = 128, which does not fit in a 6-bit signed value (maximum 31). The extra bit stops the addition of the rounding constant from overflowing the *input* width before the shift. Saturation sees 128 > 31 and returns 31; wrap would keep the low 6 bits of 128 and return 0.
+
+**5. Why can `fx_round_sat` be tested on every input and a 16 x 16 multiplier not?**
+
+Worked answer: the number of inputs is 2^(input bits): 4,096 to 16,384 for the narrowing circuits at the widths tested, but 2^32 pairs for a 16 x 16 multiplier (and 2^40 inputs for the 40-bit narrowing). Exhaustive testing is for the small instances; the large ones are tested on random and corner-heavy traffic against a model.
+
+**6. Why does a 16 x 16 multiplier in logic cost four to five times an 8 x 8, and what happens beyond 18 bits in a DSP block?**
+
+Worked answer: a W x W multiplier has W rows of W partial-product bits, so the logic grows with W squared: doubling the width gives about four times the LUTs (measured: 4.2 on iCE40, 5.4 on ECP5). The DSP block multiplies 18 x 18 bits; a wider operand is built from several blocks and extra adders: four blocks at 24 and 32 bits, with a lower Fmax (88 MHz at 24 bits against 144 at 16).
+
+**7. Why are the ECP5 and iCE40 LUT counts for the same multiplier not comparable?**
+
+Worked answer: the two flows map the multiplier with different rules and different carry structures (the ECP5 carry cell holds logic that iCE40 counts as LUTs), so the totals measure the tools and devices together, not the multiplier. Compare a family with itself.
+
+**8. Why can a block RAM not implement an asynchronous read? What did that cost in the 16-word memory?**
+
+Worked answer: a block RAM's read port is clocked: the data appears after an edge. An asynchronous read needs the data in the same cycle as the address, which only an array of flip-flops with multiplexers (or LUT RAM) can provide. The 16 x 16 memory cost 256 flip-flops and 197 LUTs on iCE40, against about 22 LUTs and one block RAM for the synchronous version.
+
+**9. What does `n/a` mean in the Fmax column, and why must the 976 MHz entry not be read as a design clock?**
+
+Worked answer: `n/a` means the design has no register-to-register path, so there is nothing for the timing tool to measure (an asynchronous read goes from input pins to output pins). 976 MHz is a memory with an output register measured alone: the path is nearly empty, and any real design is limited by its other logic and the clock network.
+
+**10. The two FIR forms have the same outputs. Why is the transposed one faster, and what does it spend to be so?**
+
+Worked answer: in the direct form the whole sum of eight products is formed in one clock period (a multiplier then an eight-input adder tree). In the transposed form each period holds one multiplier and one adder, with a register between adders. It spends registers (300 flip-flops against 150), which are cheap in an FPGA, to remove a long combinational path, which is expensive.
+
+**11. Why is rounding once at full width 16 times more accurate than rounding each product?**
+
+Worked answer: each rounding adds an independent error of up to half a step; the errors of 256 roundings add as a random walk, so the standard deviation grows with the square root of the count (about 16 times that of a single rounding). Adding at full width and rounding once introduces a single rounding error whatever the number of terms: measured standard deviation 0.289 against 4.609.
+
+**12. The first direct-form FIR had latency 3. Which test caught it, and why would a test of the frequency response alone not have?**
+
+Worked answer: the cycle-by-cycle comparison with the model, on the first compared cycle. A frequency response would show the same magnitude at any delay, so a pure delay is invisible to it; only a test that pins the *latency* sees a change of one cycle.
+
+## Chapter 5 -- hints for the exercises
+
+1. Round to nearest even: add half, but if the dropped bits were exactly one half *and* the result's low bit would be 1, clear it. Extend `round_sat` with a `mode` and test exhaustively as before. The bias of ties-to-even is zero for any input distribution; round-half-up is biased only on ties, which are rare for random products.
+2. A symmetric filter needs only 4 multipliers: add `x[k-i] + x[k-(7-i)]` first (one extra bit of width) and multiply the sum by `C[i]`. Whether Yosys reports fewer DSP blocks depends on how it handles the pre-adder width (17 bits still fits an 18 x 18 block).
+3. Expect long placement; run with a timeout and report if it times out, or reduce the width first. 4,096 flip-flops fit in 7,680 logic cells, but the 256-way multiplexers add LUTs.
+4. `nextpnr-ice40 ... --seed 1` prints the critical path; look for the block RAM clock-to-out and the route to the output register.
+5. Candidates: a reset value of an unobserved register (equivalent), or a mutant in code the vectors never drive (a missing test): for example, a memory whose vectors never read the address being written would let a write-first mutant survive (the vectors here make a fifth of the reads do so, which is what catches it).
