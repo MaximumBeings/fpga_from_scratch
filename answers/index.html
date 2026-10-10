@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part05/22-fixed-point-signals/">
+        <link rel="prev" href="../part05/23-pre-trade-risk/">
       
       
       
@@ -1195,6 +1195,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part05/23-pre-trade-risk/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    23. Pre-Trade Risk: Position, Notional and Rate Limits, a Price Band, a Kill Switch, a Gate That Fails Closed, and a Bounded Proof That It Holds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1806,6 +1834,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 23
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-23-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 23 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2326,6 +2376,28 @@
     <span class="md-ellipsis">
       
         Chapter 22 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 23
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-23-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 23 -- hints for the exercises
       
     </span>
   </a>
@@ -2962,6 +3034,29 @@
 <li>A table of the reciprocal of the leading bits of <code>D</code> plus one Newton step <code>x(2 - Dx)</code> gives <code>w</code> to a few bits less than the exact quotient; the properties of Section 2 (the microprice between the prices, the bounds) no longer hold exactly, so the model must give its own error bound and the test must check it, and <code>micro</code> must be clamped if you want to keep the "between the two prices" property.</li>
 <li>With four quantities the total needs <code>QW + 2</code> bits and the divider remainder one more bit; the microprice formula weights the best prices by the other side's quantity at the touch, and does not generalise directly: the weights of the second levels are a modelling choice that the specification must state.</li>
 <li>Candidates: a mutant in a width above the contract (a share count above <code>2^QW</code>: outside the contract), or in the top bit of <code>cnt</code> (equivalent, as it never counts that high).</li>
+</ol>
+<h2 id="chapter-23">Chapter 23<a class="headerlink" href="#chapter-23" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Because open orders are exposure: if they all fill, the position becomes <code>pos + ob</code> (buys) or <code>pos - os</code> (sells). A limit on <code>pos</code> alone lets an account with 100 shares of buys in the market buy 100 more, and end up at twice the limit. Counting the open orders makes the limit hold in the worst case, at the cost of refusing orders that would have been fine had some of the open ones been cancelled.</li>
+<li>KILL first (the cheapest check and the one that must always win, with no state to read), then DISARMED or a fault, then BADIDX (before any state is read), then the limits that depend only on the event and the configuration (QTY, BAND, ONOT), then the ones that depend on state (POS, NOT), and RATE last, because it is the only check that takes something (a token) and it should take it only from an order that passes everything else. A rejected order changes nothing.</li>
+<li>A cancel or a fill reduces risk, or records that it has already happened (a fill is a fact: the gate must follow it even when it refuses new orders). A FAULT is a release of more than is open or for an account or symbol that does not exist: the gate's books and the order manager's no longer agree and the gate cannot tell which is right, so it refuses every order from then on (until reset) rather than guess.</li>
+<li>After reset the gate is disarmed, the fault latch is clear, <code>max_qty</code> is 0 (every order is refused at the quantity check even if somebody arms the gate before configuring it) and the bands are empty. It is enough to reset <code>max_qty</code> (and the bucket size) because the other limits are only read after the quantity check passes: they cannot affect an answer.</li>
+<li>Yes: an order offered in cycle <code>c</code> is checked in cycle <code>c + 1</code>, after the write of cycle <code>c</code> has landed. An <code>arm</code> in cycle <code>c</code> is not seen by an order offered in cycle <code>c - 1</code>: that order is checked in cycle <code>c</code>, before the <code>arm</code> lands (it is answered DISARMED).</li>
+<li>The answer is formed from the state in the cycle the order is checked, and the tick of that cycle is applied at the end of it, after the order took its token; so the answer shows the bucket after the order's token and before the tick (the model does the same: the gate's <code>event()</code> runs before the tick).</li>
+<li>State is read, checked and written in the same cycle, and at most one event is in stage 2 at a time, so a second event on the same account sees what the first left; there is nothing to forward. The price is a long path (the index through the state arrays, the comparisons, the update: Example A, 28 to 38 MHz).</li>
+<li>S1: if the gate says OK to an order, then the gate was armed, not faulted and not killed, the account and symbol exist, the quantity, price band and order notional are within limits, after the order the worst-case long (short) exposure and the total open notional are within their limits, and a token was available. It is stated on the gate's <em>answer</em> and on the wrapper's <em>cumulative sums</em> (accepted, filled and cancelled shares; notional accepted and released), a different formulation from the gate's registers, so that a bug in the gate's bookkeeping is not mirrored in the property.</li>
+<li>For every sequence of inputs of up to 6 cycles from reset (free events, configurations, controls and kill, under the contract), no assertion fails. It does not say anything about cycle 7 and beyond; it covers every short sequence, including unlikely ones, but not the long ones (a position that builds up over many orders). That 15 safety mutants are each refused by the same search shows the properties are not vacuous: they fail when the gate is wrong.</li>
+<li><code>sat -prove-asserts</code> ignores <code>assume</code> unless <code>-set-assumes</code> is given: the contract was not enforced and the "counterexamples" were outside it. With the assumptions on, a counterexample remained: an event offered while the reset is applied (the first stage of the gate no longer gates its valid bit with the reset, since the input is 0 during reset by contract), so the contract needed <code>assume (!rst || !ev_valid)</code>.</li>
+<li>Orders already sent to the exchange, and the orders offered in the cycle before the kill rose (they are already in the pipeline: 123 of them in Example B). The kill acts on the next order.</li>
+<li>For example: the long check that ignores the position (a missing test: no case had a position and an order that fails only because of it; a directed order after a fill was added); <code>arm</code> that ignores a fault (equivalent: a fault refuses every order anyway; the condition was removed); reset that does not clear the fault (a weak test: the power-up garbage had the fault clear; the garbage now sets it).</li>
+</ol>
+<h2 id="chapter-23-hints-for-the-exercises">Chapter 23 -- hints for the exercises<a class="headerlink" href="#chapter-23-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The first stage reads the touched account's registers (the position, open quantities, notional, tokens) into a pipeline register; the second checks and writes back. If the next event touches the same account, its read must see the update of the one ahead: forward the new values from the second stage's result to the first stage's read when the indexes match. The latency becomes 3 and the model's table of "which events see which writes" changes; test back-to-back events on one account.</li>
+<li>A RAM has a read latency of one cycle, so the read of event N+1 happens before the write of event N: forward when the addresses are equal. The events that touch the same address in consecutive cycles are two orders, or an order and a release, on the same account and symbol (and the account-level notional and tokens, which are shared by all symbols): the model must say that the second sees the first's update, and the test must have back-to-back events on one pair.</li>
+<li>A per-symbol notional limit is another cumulative sum with its own limit, reset and refill-free; a daily loss limit needs a realised profit, which needs the fill price and the average cost: it is a different gate. The wrapper's sums need the matching ghost state, and S1 gets one more conjunct.</li>
+<li>A candidate invariant: for every account and symbol, <code>pos + ob - (the sum of buys accepted under the limit at the time) = ...</code> does not hold when the limit changes. A stable one: <code>pos + ob &lt;= max over all configurations ever written of max_long</code> (a history variable), which is weaker than S1; for the induction to prove S1 itself it must be strengthened with <code>-tempinduct</code> counterexamples (the engine shows a state it considers reachable but is not: add what excludes it).</li>
+<li>Candidates: a mutant in the top bit of the tick counter's width (equivalent when <code>R</code> is a power of two minus one), or in the bit above <code>NA</code> of the account index (outside the contract: the index is 4 bits and <code>NA &lt;= 15</code>).</li>
 </ol>
 
 
