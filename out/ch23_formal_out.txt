@@ -1,0 +1,25 @@
+== 1. the gate, proved for 6 cycles from reset (free inputs, under the contract; S1 safety, S2 answers, S3 state, S4 bucket)
+  gate: proved in 478 s
+
+== 2. mutants of the gate against the same search at depth 6 (counterexample found = the formal run catches it)
+  the long limit is checked with >= (a buy to the limit is refused: a wrong answer, not unsafe): counterexample found (15 s)
+  the long check ignores the open buys: counterexample found (28 s)
+  the position is not checked: counterexample found (12 s)
+  the notional ignores the open orders: counterexample found (15 s)
+  the notional is not checked: counterexample found (16 s)
+  the price band is not checked: counterexample found (12 s)
+  the order notional limit is not checked: counterexample found (12 s)
+  the quantity limit is not checked: counterexample found (16 s)
+  the kill input is ignored: counterexample found (20 s)
+  a fault does not stop orders: counterexample found (23 s)
+  a disarmed gate lets orders through: counterexample found (25 s)
+  an order does not take a token: counterexample found (19 s)
+  an order does not add to the open buys: counterexample found (18 s)
+  a fill does not move the position: counterexample found (26 s)
+  the bucket can exceed its size: counterexample found (13 s)
+  counterexamples found: 15 of 15
+
+== 3. deeper (the same command with -seq 7 and -seq 8 on the correct gate, run alone, time limit 3,000 s each)
+  depth 7: no result within 3,000 s (the SAT engine did not finish)
+  depth 8: no result within 3,000 s (the SAT engine did not finish)
+  (an earlier depth-8 run, before the contract was enforced with -set-assumes, found a counterexample in 257 s: see the text)

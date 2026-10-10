@@ -1,0 +1,16 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper
+   NA  NS  QW  PW state bits | iCE40 LUT     FF    Fmax | ECP5 LUT     FF MULT18   Fmax | no-DSP LUT   Fmax
+    2   2  16  16        286 |      1997    985    38.4 |     2050   1017      1   39.3 |       2728   41.7
+    4   4  16  16        970 |      2992   1945    28.4 |     6098   2009      1   35.6 |       6718   35.7
+    8   4  16  16       1938 |      4336   3401  no fit |    10005   3465      1   30.9 |      10673   31.3
+    8   8  16  16       3538 |      5771   5065  no fit |    13440   5193      1   30.3 |      15662   27.6
+   12  12  16  16       7706 |     16187  15521  no fit |    47192  15713      2 no fit |      47840 no fit
+    8   8   8   8       1874 |      3326   2821    28.8 |     6639   2885      1   31.3 |       6783   31.3
+   12  12   8   8       4058 |      9116   8285  no fit |    19367   8381      2   22.7 |      19503   24.8
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  NA  4 NS  4 QW 16 ice40      u.s1_a                   -> u.tok[2]                 10.9 ns logic, 24.3 ns routing
+  NA  4 NS  4 QW 16 ecp5       u.s1_a                   -> u.tok[0]                 9.0 ns logic, 19.1 ns routing
+  NA  4 NS  4 QW 16 ecp5nodsp  u.s1_a                   -> u.tok[3]                 8.6 ns logic, 19.4 ns routing
+  NA  8 NS  8 QW 16 ecp5       u.s1_s                   -> u.ob[25]                 8.2 ns logic, 24.7 ns routing
+  NA  8 NS  8 QW 16 ecp5nodsp  u.s1_s                   -> u.ob[11]                 8.9 ns logic, 27.3 ns routing

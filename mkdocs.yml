@@ -78,5 +78,6 @@ nav:
   - "Part 5 -- Decide and act":
       - "21. Triggers: Predicates on Messages, a Symbol Table, and Comparators That Meet the Clock": part05/21-triggers.md
       - "22. Fixed-Point Signals: Imbalance, Mid and Microprice, a Division That Is Exact to the Bit, and What a DSP Block Buys": part05/22-fixed-point-signals.md
+      - "23. Pre-Trade Risk: Position, Notional and Rate Limits, a Price Band, a Kill Switch, a Gate That Fails Closed, and a Bounded Proof That It Holds": part05/23-pre-trade-risk.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

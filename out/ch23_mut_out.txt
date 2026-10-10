@@ -1,0 +1,102 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  kill is ignored: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  kill is not checked: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  kill is checked after the index: caught by: dense, NA 4, NS 4, QW 16, PW 16, R 4
+  a disarmed gate lets orders through: caught by: tight, NA 4, NS 4, QW 16, PW 16, R 4
+  a fault does not stop orders: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  a bad index is not noticed: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a symbol equal to NS is a good index: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  an account equal to NA is a good index: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a zero quantity is allowed: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a quantity equal to the maximum is refused: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a price equal to the low bound is refused: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a price equal to the high bound is refused: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the band is not checked: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  an order notional equal to the maximum is refused: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  the order notional is not checked: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a buy to the long limit is refused: caught by: tight, NA 4, NS 4, QW 16, PW 16, R 4
+  a sell to the short limit is refused: caught by: tight, NA 4, NS 4, QW 16, PW 16, R 4
+  the long limit is checked on the sell side: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the position is not checked: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the long check ignores the position: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the long check ignores the open buys: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the short check adds the open sells: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  the short check ignores the open sells: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the short limit has the wrong sign: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a notional equal to the maximum is refused: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  the notional ignores the open orders: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  the notional is not checked: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  no token is not noticed: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the last token is refused: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a release of more than is open is accepted (buy): caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  a release of more than is open is accepted (sell): caught by: fault, NA 4, NS 4, QW 16, PW 16, R 4
+  a release of exactly what is open is a fault: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a release is checked on the wrong side: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a release of more notional than is open is accepted: caught by: fault, NA 4, NS 4, QW 16, PW 16, R 4
+  a release for a bad index is not a fault: caught by: fault, NA 4, NS 4, QW 16, PW 16, R 4
+  a fault does not latch: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  an order does not take a token: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  tokens are taken from the wrong account: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the bucket can exceed its size: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the bucket does not refill: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the bucket refills on every cycle: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the tick is one cycle late: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the tick is one cycle early: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  an order does not add to the open buys: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  an order does not add to the notional: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a release does not reduce the open quantity: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a release does not reduce the notional: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a cancel moves the position: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a fill does not move the position: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a fill moves the position the wrong way: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a rejected release is applied: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  a release is not applied after a fault: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  a release is not applied while disarmed: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not set max long: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not set max short: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not set max quantity: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not set max order notional: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not set max notional: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not set the bucket size: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write does not refill the bucket: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a configuration write swaps long and short: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a band write does not set the low bound: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  a band write does not set the high bound: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  arm ignores the kill input: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  arm wins over disarm: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  reset arms the gate: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the fault: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the phase: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the maximum quantity: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the bucket size: caught by: reset, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not empty the bands: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the notional: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the tokens: caught by: edge, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the positions: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  reset does not clear the open buys: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the notional is a sum, not a product: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the answer shows the open sells for the open buys: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the answer shows the tokens after the tick: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the answer for a bad index is not zero: caught by: tight, NA 4, NS 4, QW 16, PW 16, R 4
+  the answer shows the notional before the update: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  the answer shows the position before the update: caught by: random, NA 4, NS 4, QW 16, PW 16, R 4
+  model: kill is checked after the arming: caught by: hand-checked scenarios
+  model: a fault does not refuse orders: caught by: hand-checked scenarios
+  model: the band is exclusive: caught by: hand-checked scenarios
+  model: the long limit is checked after the open sells: caught by: hand-checked scenarios
+  model: the short check uses the open buys: caught by: hand-checked scenarios
+  model: the notional is checked before the order notional: caught by: hand-checked scenarios
+  model: a rejected order takes a token: caught by: hand-checked scenarios
+  model: a cancel moves the position: caught by: hand-checked scenarios
+  model: a release of more than is open is applied: caught by: hand-checked scenarios
+  model: a fault is not latched: caught by: hand-checked scenarios
+  model: arm is allowed while killed: caught by: hand-checked scenarios
+  model: arm wins over disarm: caught by: hand-checked scenarios
+  model: the tick is one cycle late: caught by: hand-checked scenarios
+  model: a configuration write does not refill: caught by: hand-checked scenarios
+  model: the kill of the order's cycle is not used: caught by: hand-checked scenarios
+  model: the answer shows the state of the tick: caught by: hand-checked scenarios
+  rtl/risk.sv: caught 81 of 81
+  model/risk_gold.py: caught 16 of 16
+mutants caught: 97 of 97

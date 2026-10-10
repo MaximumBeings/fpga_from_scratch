@@ -1,0 +1,44 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  risk: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model (python3 model/risk_gold.py) and what the stimulus contains (NA 4, NS 4, R 4; 8 seeds of 300 cycles, edge: the directed set)
+  risk_gold hand-checked scenarios passed
+  random  answers: OK 442, KILL 16, DISARMED 301, BADIDX 10, QTY 585, BAND 215, ONOT 41, POS 24, NOT 2, RATE 44  | events: CANCEL 168, FILL 169, ORDER 1343
+  tight   answers: OK 194, KILL 13, DISARMED 262, BADIDX 12, QTY 906, BAND 227, ONOT 33, POS 8, NOT 2, RATE 20  | events: CANCEL 56, FILL 66, ORDER 1555
+  dense   answers: OK 531, KILL 91, DISARMED 489, BADIDX 56, QTY 785, BAND 316, ONOT 80, POS 14, NOT 11, RATE 26, FAULT 1  | events: CANCEL 209, FILL 198, ORDER 1993
+  edge    answers: OK 11, KILL 1, DISARMED 6, BADIDX 2, QTY 3, BAND 3, ONOT 1, POS 3, NOT 1, RATE 3, FAULT 2  | events: CANCEL 3, FILL 4, ORDER 29
+  reset   answers: OK 9, QTY 1, RATE 15  | events: ORDER 25
+  fault   answers: OK 13, DISARMED 5, FAULT 5  | events: CANCEL 5, FILL 6, ORDER 12
+
+== 3. the gate against the model, in every cycle; 4 seeds of 300 cycles per row (edge, reset, fault: the directed sets)
+  traffic  NA  NS  QW  PW   R |  cycles  answers  accepted |    Icarus  Verilator
+  random    4   4  16  16   4 |    1236      650        53 |      4 of 4       PASS
+  random    2   2   8   8   3 |    1220      722        42 |      4 of 4       PASS
+  random    8   4  12  10   5 |    1252      693        57 |      4 of 4       PASS
+  random    3   5  16  16   7 |    1236      675        62 |      4 of 4       PASS
+  random   12  14   8   8   2 |    1308      656        59 |      4 of 4       PASS
+  tight     4   4  16  16   4 |    1236      771        46 |      4 of 4       PASS
+  tight     2   2   8   8   3 |    1220      811        35 |      4 of 4       PASS
+  tight     8   4  12  10   5 |    1252      787        43 |      4 of 4       PASS
+  tight     3   5  16  16   7 |    1236      771        41 |      4 of 4       PASS
+  tight    12  14   8   8   2 |    1308      718        67 |      4 of 4       PASS
+  dense     4   4  16  16   4 |    1236      971        67 |      4 of 4       PASS
+  dense     2   2   8   8   3 |    1220     1039        58 |      4 of 4       PASS
+  dense     8   4  12  10   5 |    1252     1025        68 |      4 of 4       PASS
+  dense     3   5  16  16   7 |    1236     1043        55 |      4 of 4       PASS
+  dense    12  14   8   8   2 |    1308      963        76 |      4 of 4       PASS
+  edge      4   4  16  16   4 |      54       29         6 |      1 of 1       PASS
+  edge      2   2   8   8   3 |      54       29         6 |      1 of 1       PASS
+  edge      8   4  12  10   5 |      54       29         6 |      1 of 1       PASS
+  edge      3   5  16  16   7 |      54       29         6 |      1 of 1       PASS
+  edge     12  14   8   8   2 |      54       29         6 |      1 of 1       PASS
+  reset     4   4  16  16   4 |      43       25         9 |      1 of 1       PASS
+  reset     2   2   8   8   3 |      43       25        12 |      1 of 1       PASS
+  reset     8   4  12  10   5 |      43       25         8 |      1 of 1       PASS
+  reset     3   5  16  16   7 |      43       25         7 |      1 of 1       PASS
+  reset    12  14   8   8   2 |      43       25        15 |      1 of 1       PASS
+  fault     4   4  16  16   4 |      58       12         7 |      5 of 5       PASS
+  fault     2   2   8   8   3 |      58       12         7 |      5 of 5       PASS
+  fault     8   4  12  10   5 |      58       12         7 |      5 of 5       PASS
+  fault     3   5  16  16   7 |      58       12         7 |      5 of 5       PASS
+  fault    12  14   8   8   2 |      58       12         7 |      5 of 5       PASS
