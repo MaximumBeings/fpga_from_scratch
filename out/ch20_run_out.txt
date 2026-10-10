@@ -1,0 +1,40 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  book2: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model (python3 model/book2_gold.py) and what the stimulus contains (8 seeds of 300 events, NS 2, D 4, NB 4, K 2)
+  book2_gold hand-checked scenarios passed
+  flow    events: ADD 979, CANCEL 265, DELETE 404, EXEC 226, REPLACE 526  | results: OK 1709, UNK 69, FULL 424, LVL 8, OVER 51, DUPREF 72, ZERO 67
+  random  events: ADD 489, CANCEL 503, DELETE 454, EXEC 468, REPLACE 486  | results: OK 696, UNK 1290, FULL 40, OVER 150, DUPREF 202, ZERO 22
+  wide    events: ADD 979, CANCEL 265, DELETE 404, EXEC 226, REPLACE 526  | results: OK 640, UNK 956, FULL 697, LVL 5, OVER 15, DUPREF 32, ZERO 55
+  near    events: ADD 520, DELETE 528, EXEC 280  | results: OK 1304, UNK 24
+
+== 3. the book against the cycle model: every result with the top of book of its symbol, and `ready`, in every cycle; 4 seeds of 300 events per row
+  events  NS  D NB  K |  cycles  results    OK  rejected |    Icarus  Verilator
+  flow     2  4  4  2 |   12059     1200   894       306 |      4 of 4       PASS
+  flow     1  2  2  2 |   11506     1200   842       358 |      4 of 4       PASS
+  flow     3  3  4  1 |    9434     1200   812       388 |      4 of 4       PASS
+  flow     4  8  8  4 |   15830     1200   904       296 |      4 of 4       PASS
+  flow     2  1  2  3 |   12653     1200   836       364 |      4 of 4       PASS
+  random   2  4  4  2 |    8197     1200   355       845 |      4 of 4       PASS
+  random   1  2  2  2 |    7902     1200   297       903 |      4 of 4       PASS
+  random   3  3  4  1 |    6301     1200   275       925 |      4 of 4       PASS
+  random   4  8  8  4 |   11297     1200   374       826 |      4 of 4       PASS
+  random   2  1  2  3 |    8846     1200   259       941 |      4 of 4       PASS
+  wide     2  4  4  2 |    8137     1200   308       892 |      4 of 4       PASS
+  wide     1  2  2  2 |    7185     1200   186      1014 |      4 of 4       PASS
+  wide     3  3  4  1 |    5436     1200   121      1079 |      4 of 4       PASS
+  wide     4  8  8  4 |   14551     1200   751       449 |      4 of 4       PASS
+  wide     2  1  2  3 |   11087     1200   598       602 |      4 of 4       PASS
+  near     2  4  4  2 |    5708      664   652        12 |      4 of 4       PASS
+  near     1  2  2  2 |    5692      664   652        12 |      4 of 4       PASS
+  near     3  3  4  1 |    3972      664   364       300 |      4 of 4       PASS
+  near     4  8  8  4 |    7132      664   652        12 |      4 of 4       PASS
+  near     2  1  2  3 |    6364      664   652        12 |      4 of 4       PASS
+
+== 4. the longest event: the closed form of the model, the longest event seen in 30 x 200 random events of flow, and the longer of the two constructed events (see `adversarial`), which the RTL also executes cycle for cycle
+   D  K | closed form constructed random flow, longest | RTL = model
+   1  1 |          15          15                   15 | PASS
+   2  2 |          20          20                   20 | PASS
+   4  4 |          28          28                   28 | PASS
+   8  4 |          36          36                   36 | PASS
+   8  1 |          30          30                   30 | PASS

@@ -1,0 +1,15 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper; order table and levels in RAM
+  NS   D  NB  K orders | iCE40 LUT    FF  EBR   Fmax | ECP5 LUT    FF DP16KD DPR16X4   Fmax | RAM bits register bits
+   2   4   4  4     16 |      1485  1115   11   55.3 |     1310   688      0      73   77.2 |     2608           304
+   2  16  32  4    128 |      1560  1144   11   50.2 |     1798   892      5      32   62.2 |    16768           304
+   2  24  64  4    256 |      1592  1148   11   56.3 |     1798   896      5      32   59.5 |    31488           304
+   2  16  64  2    128 |      1567  1142   11   55.3 |     1817   890      5      32   61.6 |    16768           304
+   2  16  16  8    128 |      1560  1146   11   57.6 |     1792   894      5      32   63.1 |    16768           304
+   4  16  32  4    128 |      1812  1431   11   53.8 |     1761   923      5      32   59.5 |    20992           592
+   1  16  32  4    128 |      1443  1002   11   57.9 |     1475   935      3      32   82.1 |    14720           160
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  NS 2 D 16 NB 32 K 4 ice40  u.r_t                  -> u.st                   8.1 ns logic, 11.9 ns routing
+  NS 2 D 16 NB 32 K 4 ecp5   u.lm.DOB17             -> u.sw                   10.0 ns logic, 6.0 ns routing
+  NS 2 D 24 NB 64 K 4 ice40  u.lm.RDATA_0           -> u.srem                 8.9 ns logic, 8.9 ns routing
+  NS 2 D 24 NB 64 K 4 ecp5   u.lm.DOB17             -> u.sw                   9.9 ns logic, 6.8 ns routing

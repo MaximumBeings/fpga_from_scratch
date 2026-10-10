@@ -1,0 +1,104 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  the hash ignores byte 2: caught by: wide, NS 2, D 4, NB 4, K 2
+  the hash ignores byte 3: caught by: wide, NS 2, D 4, NB 4, K 2
+  the hash of a replace's new reference ignores byte 1: caught by: flow, NS 2, D 4, NB 4, K 2
+  the hash of a replace's new reference ignores byte 3: caught by: wide, NS 2, D 4, NB 4, K 2
+  the bucket starts at the wrong way: caught by: flow, NS 2, D 4, NB 4, K 2
+  the clearing sweep stops one entry early: caught by: flow, NS 2, D 4, NB 4, K 2
+  the clearing sweep writes nothing: caught by: flow, NS 2, D 4, NB 4, K 2
+  reset does not clear the order count: caught by: flow, NS 2, D 4, NB 4, K 2
+  reset does not clear the level counts: caught by: flow, NS 2, D 4, NB 4, K 2
+  the lookup reads one way too few: caught by: flow, NS 2, D 4, NB 4, K 2
+  an empty entry matches a reference: caught by: random, NS 2, D 4, NB 4, K 2
+  only 16 bits of the reference are compared: caught by: near, NS 2, D 4, NB 4, K 2
+  only 31 bits of the reference are compared: caught by: near, NS 2, D 4, NB 4, K 2
+  the found order's side is not remembered: caught by: flow, NS 2, D 4, NB 4, K 2
+  the found order's price is not remembered: caught by: flow, NS 2, D 4, NB 4, K 2
+  the found way is off by one: caught by: flow, NS 2, D 4, NB 4, K 2
+  the free way is off by one: caught by: flow, NS 2, D 4, NB 4, K 2
+  the free flag is not cleared for a new event: caught by: flow, NS 2, D 4, NB 4, K 2
+  the found flag is not cleared for a new event: caught by: flow, NS 2, D 4, NB 4, K 2
+  the found flag is not cleared for the new order of a replace: caught by: flow, NS 2, D 4, NB 4, K 2
+  the new order of a replace is looked up in the old bucket: caught by: flow, NS 2, D 4, NB 4, K 2
+  zero shares are refused for every type before the lookup: caught by: flow, NS 2, D 4, NB 4, K 2
+  a duplicate is not noticed: caught by: flow, NS 2, D 4, NB 4, K 2
+  a full bucket is not noticed: caught by: flow, NS 2, D 4, NB 4, K 2
+  DUPREF is reported as FULL: caught by: flow, NS 2, D 4, NB 4, K 2
+  an unknown reference is reported with the input's symbol: caught by: random, NS 2, D 4, NB 4, K 2
+  a reduction by zero is accepted: caught by: flow, NS 2, D 4, NB 4, K 2
+  an over-reduction is accepted: caught by: flow, NS 2, D 4, NB 4, K 2
+  a reduction by the whole order is an over-reduction: caught by: random, NS 2, D 4, NB 4, K 2
+  a delete reduces by the input's shares: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level search starts at index 1: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level read is one ahead: caught by: flow, NS 2, D 4, NB 4, K 2
+  an equal price is not a hit: caught by: flow, NS 2, D 4, NB 4, K 2
+  a price at or above the level is a hit: caught by: flow, NS 2, D 4, NB 4, K 2
+  the better price is judged on the wrong side: caught by: flow, NS 2, D 4, NB 4, K 2
+  an add to an existing level replaces its shares: caught by: flow, NS 2, D 4, NB 4, K 2
+  a reduction subtracts one from the level: caught by: flow, NS 2, D 4, NB 4, K 2
+  the side is not full when D levels are in use (insert at the end): caught by: flow, NS 1, D 2, NB 2, K 2
+  the side is not full when D levels are in use (insert before): caught by: flow, NS 2, D 4, NB 4, K 2
+  a side is full one level early: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift down moves one level too few: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift down starts at the wrong level: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift down writes to the same index: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift down is skipped: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift up moves one level too many: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift up starts at the removed level: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift up writes to the same index: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift up is always entered: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift up does not refresh the best level: caught by: flow, NS 2, D 4, NB 4, K 2
+  the shift up refreshes the best level from the wrong index: caught by: flow, NS 2, D 4, NB 4, K 2
+  an addition to a level always changes the best level's shares: caught by: flow, NS 2, D 4, NB 4, K 2
+  an addition to the best level does not change its shares: caught by: flow, NS 2, D 4, NB 4, K 2
+  an inserted level always becomes the best: caught by: flow, NS 2, D 4, NB 4, K 2
+  an inserted best level is not recorded: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level count goes up by two: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level count does not go down after a removal: caught by: flow, NS 2, D 4, NB 4, K 2
+  the order count does not go up: caught by: flow, NS 2, D 4, NB 4, K 2
+  the order count goes down for a partial reduction: caught by: flow, NS 2, D 4, NB 4, K 2
+  the order count does not go down: caught by: flow, NS 2, D 4, NB 4, K 2
+  a new order goes to the wrong way: caught by: flow, NS 2, D 4, NB 4, K 2
+  a reduced order is written to the wrong way: caught by: flow, NS 2, D 4, NB 4, K 2
+  a reduced order keeps its shares: caught by: flow, NS 2, D 4, NB 4, K 2
+  a reduced order gets the reduction as its shares: caught by: flow, NS 2, D 4, NB 4, K 2
+  a fully reduced order is not freed: caught by: flow, NS 2, D 4, NB 4, K 2
+  a new order stores the wrong side: caught by: flow, NS 2, D 4, NB 4, K 2
+  a new order stores the wrong price: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level index of a reduction uses the input's symbol: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level index of a reduction uses the input's side: caught by: flow, NS 2, D 4, NB 4, K 2
+  the level base is off: caught by: flow, NS 2, D 4, NB 4, K 2
+  a replace keeps the old reference for the new order: caught by: flow, NS 2, D 4, NB 4, K 2
+  a replace adds at the input's symbol: caught by: flow, NS 2, D 4, NB 4, K 2
+  a replace adds at the input's side: caught by: flow, NS 2, D 4, NB 4, K 2
+  a replace with zero new shares reports the input's symbol: caught by: random, NS 2, D 4, NB 4, K 2
+  a replace does not become an add: caught by: flow, NS 2, D 4, NB 4, K 2
+  a delete reports the input's symbol: caught by: flow, NS 2, D 4, NB 4, K 2
+  the engine is ready while it writes the order: caught by: flow, NS 2, D 4, NB 4, K 2
+  the best bid is shown when the side is empty: caught by: flow, NS 2, D 4, NB 4, K 2
+  the best ask's shares are shown when the side is empty: caught by: flow, NS 2, D 4, NB 4, K 2
+  the ask level count is the bid's: caught by: flow, NS 2, D 4, NB 4, K 2
+  model: the lookup costs one cycle less: caught by: hand-checked scenarios
+  model: the level search costs one cycle less: caught by: hand-checked scenarios
+  model: the bucket is full one order early: caught by: hand-checked scenarios
+  model: the bucket is never full: caught by: hand-checked scenarios
+  model: the hash ignores byte 1: caught by: hand-checked scenarios
+  model: zero shares on an add cost the lookup: caught by: hand-checked scenarios
+  model: a duplicate is found after the table is full: caught by: hand-checked scenarios
+  model: a hit costs one cycle more: caught by: hand-checked scenarios
+  model: an insertion shifts one level too few: caught by: hand-checked scenarios
+  model: an insertion at the end shifts: caught by: hand-checked scenarios
+  model: a removal shifts one level too many: caught by: hand-checked scenarios
+  model: a removal of the last level shifts: caught by: hand-checked scenarios
+  model: a partial reduction costs one cycle less: caught by: hand-checked scenarios
+  model: a refused add (LVL) costs the whole insertion: caught by: hand-checked scenarios
+  model: an emptied level stays: caught by: hand-checked scenarios
+  model: a replace keeps the old order on failure: caught by: hand-checked scenarios
+  model: an unknown reference is reported with symbol 1: caught by: hand-checked scenarios
+  model: the order count in the top of book is off: caught by: hand-checked scenarios
+  model: the clearing sweep takes one cycle too few: caught by: hand-checked scenarios
+  model: the bucket's capacity is checked on the symbol: caught by: hand-checked scenarios
+  rtl/book2.sv: caught 79 of 79
+  model/book2_gold.py: caught 20 of 20
+mutants caught: 99 of 99

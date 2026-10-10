@@ -1,0 +1,22 @@
+== 1. ADDs refused because the bucket is full (FULL); table of 128 orders as NB x K; D unlimited; spread 8; 5 seeds x 20,000 events
+    NB x K |         seq 64         seq 96      random 64      random 96     strided 64     strided 96
+   128 x 1  |         27.18%         45.24%         45.64%         57.20%         54.53%         61.01%
+    64 x 2  |         17.28%         37.53%         32.72%         48.05%         54.23%         61.24%
+    32 x 4  |          8.68%         30.74%         20.34%         39.20%         26.27%         44.89%
+    16 x 8  |          3.34%         24.42%          9.80%         30.93%          8.39%         32.22%
+  (for scale: with no limit the number of live orders at a target of 64 has mean 86.8, p99 99, maximum 108)
+  (for scale: with no limit the number of live orders at a target of 96 has mean 130.4, p99 148, maximum 158)
+
+== 2. cycles per event against D (spread 8, 32 x 4 table, target 64, sequential references): mean / p99 / maximum over 5 seeds x 20,000 events
+    D |              ADD      EXEC+CANCEL           DELETE          REPLACE | all events: mean  closed-form worst
+    4 |     11.4/ 15/ 15     12.5/ 14/ 14     12.7/ 14/ 14     23.7/ 28/ 28 |            12.56                 28
+    8 |     14.0/ 19/ 19     14.4/ 18/ 18     15.2/ 18/ 18     28.9/ 36/ 36 |            16.06                 36
+   16 |     17.6/ 27/ 27     16.6/ 25/ 26     18.4/ 26/ 26     35.0/ 50/ 52 |            20.37                 52
+   24 |     17.6/ 29/ 35     16.6/ 25/ 32     18.3/ 28/ 34     35.0/ 53/ 66 |            20.41                 68
+   32 |     17.6/ 29/ 37     16.7/ 26/ 35     18.4/ 28/ 35     35.1/ 53/ 69 |            20.45                 84
+
+== 3. cycles per event against K (D 16, 128 orders as NB x K, same flow): the lookup reads K ways and costs K + 3 cycles whatever is found
+   128 x 1  | mean  15.09 cycles per event, p99 38, maximum 46
+    64 x 2  | mean  17.22 cycles per event, p99 41, maximum 48
+    32 x 4  | mean  20.37 cycles per event, p99 46, maximum 52
+    16 x 8  | mean  25.48 cycles per event, p99 54, maximum 60

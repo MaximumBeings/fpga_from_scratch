@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+"""Chapter 20 figures -> docs/assets/fig/ch20-*.svg (data from out/ch20_*_out.txt)."""
+import os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from figs import Fig, C, bar_chart, line_chart
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); OUT = os.path.join(ROOT, "docs", "assets", "fig"); os.makedirs(OUT, exist_ok=True)
+rd = lambda n: open(f"{ROOT}/out/{n}").read()
+f = Fig(980, 420, "Engine"); f.text(490, 24, "The engine: two RAMs read one entry per cycle, a few registers, one event at a time", 14, bold=True)
+f.box(20, 150, 120, 80, ["event", "in_valid,", "in_ready"], C["gray2"], C["gray"], 11.5, True)
+f.box(190, 60, 130, 60, ["LK", "K + 1 reads of", "the bucket"], C["blue2"], C["blue"], 11, True); f.box(190, 150, 130, 60, ["DEC", "UNK ZERO OVER", "DUPREF FULL"], C["blue2"], C["blue"], 11, True)
+f.box(190, 240, 130, 60, ["FIND", "p + 1 reads of", "the levels"], C["purple2"], C["purple"], 11, True)
+f.box(380, 100, 120, 50, ["WLV: write level"], C["purple2"], C["purple"], 11, True); f.box(380, 170, 120, 50, ["SHD, WINS: insert"], C["purple2"], C["purple"], 11, True); f.box(380, 240, 120, 50, ["SHU: remove"], C["purple2"], C["purple"], 11, True)
+f.box(560, 150, 120, 80, ["WOM", "write the order,", "result"], C["orange2"], C["orange"], 11, True)
+f.box(740, 40, 220, 110, ["order RAM", "NB x K words: valid, ref,", "symbol, side, price, shares", "cleared after reset (NB x K cycles)"], C["blue2"], C["blue"], 11, True)
+f.box(740, 170, 220, 110, ["level RAM", "NS x 2 x D: price, shares", "sorted, best first, contiguous", "one word per cycle"], C["purple2"], C["purple"], 11, True)
+f.box(740, 300, 220, 90, ["registers", "levels per side, best level", "(price, shares), order count"], C["green2"], C["green"], 11, True)
+f.arrow(142, 190, 188, 100, C["ink"], 1.6); f.arrow(255, 122, 255, 148, C["ink"], 1.6); f.arrow(255, 212, 255, 238, C["ink"], 1.6)
+f.arrow(322, 255, 378, 125, C["ink"], 1.4); f.arrow(322, 265, 378, 195, C["ink"], 1.4); f.arrow(322, 270, 378, 265, C["ink"], 1.4)
+f.arrow(502, 125, 558, 175, C["ink"], 1.4); f.arrow(502, 195, 558, 190, C["ink"], 1.4); f.arrow(502, 265, 558, 210, C["ink"], 1.4)
+f.arrow(322, 85, 738, 85, C["blue"], 1.2); f.arrow(682, 190, 738, 90, C["blue"], 1.2); f.arrow(502, 270, 738, 230, C["purple"], 1.2); f.arrow(682, 210, 738, 330, C["green"], 1.2)
+f.text(490, 408, "lookup K + 3 cycles; level search p + 2; shifts one level per cycle; the result is visible when the engine is ready again", 12, C["ink"], italic=True)
+f.save(f"{OUT}/ch20-engine.svg")
+B = rd("ch20_example_b_out.txt"); s1 = B.split("== 2.")[0]
+rows = re.findall(r"^\s+(\d+) x (\d+)\s+\|\s+([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%", s1, re.M)
+if rows: bar_chart(900, 340, [f"{r[0]} x {r[1]}" for r in rows], [[float(r[2]) for r in rows], [float(r[4]) for r in rows], [float(r[6]) for r in rows]], "ADDs refused because their bucket is full (%), table of 128 orders as NB x K, target 64", "% refused", colors=[C["blue"], C["orange"], C["red"]], legend=["sequential refs", "random refs", "strided refs"], fmt="{:.0f}", maxv=70).save(f"{OUT}/ch20-full.svg")
+s2 = B.split("== 2.")[1].split("== 3.")[0]; lat = re.findall(r"^\s+(\d+) \|.*\|\s+([\d.]+)\s+(\d+)\s*$", s2, re.M)
+if lat: line_chart(900, 330, [float(r[0]) for r in lat], [[float(r[1]) for r in lat], [float(r[2]) for r in lat]], "Cycles per event against D: mean, and the closed-form worst case", "levels per side D", "cycles", colors=[C["blue"], C["red"]], legend=["mean of all events", "worst case (model)"], xfmt="{:g}", yfmt="{:.0f}", ymin=0).save(f"{OUT}/ch20-latency.svg")
+A = rd("ch20_example_a_out.txt"); ar = re.findall(r"^\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+) \|\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+) \|\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)", A, re.M)
+if ar: bar_chart(900, 330, [f"NS{r[0]} D{r[1]} {r[4]}o" for r in ar], [[float(r[5]) for r in ar], [float(r[9]) for r in ar]], "LUTs of the RAM-based book (the register-only book needed 7,685 and did not fit for NS 2, D 4, 16 orders)", "LUTs", colors=[C["blue"], C["orange"]], legend=["iCE40", "ECP5"], fmt="{:.0f}").save(f"{OUT}/ch20-cost.svg")
+print("ch20 figures written")
