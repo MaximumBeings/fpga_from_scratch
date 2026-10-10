@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part04/17-wide-parsing/">
+        <link rel="prev" href="../part04/18-sequence-and-arbitration/">
       
       
       
@@ -994,6 +994,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part04/18-sequence-and-arbitration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    18. Sequence Gaps and A/B Feed Arbitration: Forwarding Once and in Order, Asking for What Is Missing, and a Window That Must Be Big Enough
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1495,6 +1523,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 18
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-18-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 18 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1905,6 +1955,28 @@
     <span class="md-ellipsis">
       
         Chapter 17 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 18
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-18-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 18 -- hints for the exercises
       
     </span>
   </a>
@@ -2426,6 +2498,29 @@
 <li>The second slot needs its own field registers and snapshot (double the output registers); the rule becomes "a third completion is an error".</li>
 <li>Replace the 8 per-lane type comparisons by one decode of the type byte shared by tags and lengths; the field selects are then comparisons against a one-hot vector.</li>
 <li>Candidates: a mutant in the unreachable <code>default</code> of the state case (equivalent), or in the saturation value of the offset (outside the contract above 255 bytes only for blocks that are errors anyway).</li>
+</ol>
+<h2 id="chapter-18">Chapter 18<a class="headerlink" href="#chapter-18" title="Permanent link">&para;</a></h2>
+<ol>
+<li>So that the loss of a packet on one path does not lose it: the two copies take different routes. The arbiter forwards the first copy that arrives and drops the second as a duplicate; a copy that arrives after the packet was forwarded is behind <code>next</code> and ends at or before it.</li>
+<li>It arrives with <code>d = seq - next &gt; 0</code>. If a slot already has this number it is a duplicate; else it is stored in the lowest free slot (OVF if there is none). Later, when <code>next</code> reaches its number, the slot is "in order": it is released (one per cycle, with priority over the input), <code>next</code> advances by its count and the slot is freed. While it waits the window is a gap, and the gap timer runs.</li>
+<li>When the window holds packets and none is in order (a gap) and the timer reaches TO with no request sent: request <code>[next, next + min(mind, 65535))</code>. If a request has been sent and the timer reaches TO2: the range is reported as skipped, <code>next</code> moves to the first stored packet, the arbiter continues.</li>
+<li>A release and a skip both change <code>next</code> and the slots; a forward or a store in the same cycle would change them too, and the cycle's decisions are taken from the state at its start. So the input waits one cycle (<code>ready = 0</code>) rather than the design resolving two writers.</li>
+<li>It is the property a user needs (every message once, in order, losses reported), it needs no knowledge of the internals, and it holds under any loss pattern, so it can be checked on random closed-loop runs. It does not check <em>when</em> things happen (the cycle model does), the kinds of the decisions (DUP, BAD, OVF) or the timer events, and it cannot see a loss at the end of the stream.</li>
+<li>A packet is lost on both feeds with probability <code>p x p</code>.</li>
+<li>At least (TO + answer time) / packet spacing packets: a gap stays open for that long and that many packets arrive behind the lost one. Smaller, the later packets are dropped (OVF) and asked for again: at 5% loss with 2 slots the arbiter fetched 4,530 messages for 5 packets that were really lost.</li>
+<li>Longer than the skew between the feeds plus the jitter: a gap opened by loss on the first feed is closed by the second feed's copy at about that delay. Shorter, the arbiter asks for packets that are on their way (430 requests at TO = 2 for none needed).</li>
+<li>The clock fell about as the inverse of the window (52 to 6 MHz from 1 to 16 slots on iCE40), the critical path 88 ns of logic at 16 slots. Storing the distance removed recomputation but the critical path was the minimum over the slots, written as a chain of comparators.</li>
+<li>Each iteration of the loop compares with the result of the previous one, so the comparators are in series, PEND deep; a tree compares pairs in parallel and pairs of pairs, <code>log2(PEND)</code> deep.</li>
+<li>A loss is revealed by a later packet with a higher number. If the last packets are lost on both feeds, or were dropped for lack of a slot, nothing follows them. A heartbeat with the next expected number would reveal it; this arbiter ignores heartbeats.</li>
+<li>For example: the skip that does not wait for a request (a missing test: TO was always smaller than TO2); a forward that advances during a heartbeat (code that cannot matter: its count is 0); a skip that does not clear the request flag (equivalent: the next cycle is not a gap and clears it); reset that does not clear the slots (an Icarus semantics hole closed by powering the registers up with garbage).</li>
+</ol>
+<h2 id="chapter-18-hints-for-the-exercises">Chapter 18 -- hints for the exercises<a class="headerlink" href="#chapter-18-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>A stale stored packet (its range lies entirely behind the new <code>next</code>) must be dropped, one that straddles <code>next</code> must be trimmed or reported BAD: in the distance representation a slot with distance below zero after the subtraction is stale; the model needs a rule and a test with a retransmission that covers two stored packets.</li>
+<li>A heartbeat <code>(seq, 0)</code> with <code>seq</code> ahead of <code>next</code> opens a gap with no stored packet: the timer needs a <code>gap</code> that does not depend on a stored packet, with <code>mind</code> taken from the heartbeat's number (a register); then the request is for <code>[next, seq)</code>.</li>
+<li>A bitmap of 512 bits (arrived or not) indexed by <code>seq mod 512</code> and a RAM of counts; the release is a lookup at <code>next</code>; the minimum is a priority search of the bitmap from <code>next</code> (a find-first-set on a rotated word), which is the part to pipeline.</li>
+<li>Two ports into the classifier means two decisions in a cycle: the second can see the first's result (a duplicate in the same cycle) or the pair can be reduced to one by a rule (A first). The model must say which.</li>
+<li>Candidates: a mutant in a counter's unreachable top bit (equivalent), or in the timer's width above any configured TO2 (outside the contract).</li>
 </ol>
 
 
