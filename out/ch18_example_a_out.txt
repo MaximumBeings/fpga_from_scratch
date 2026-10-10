@@ -1,0 +1,37 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper
+  version PEND | iCE40 LUT    FF   Fmax | ECP5 LUT CCU2C    FF   Fmax
+        1    1 |       574   284   52.3 |      502   128   288   73.7
+        1    2 |       889   335   33.5 |      597   160   307   52.8
+        1    4 |      1093   437   20.7 |     1058   224   369   32.5
+        1    8 |      1889   641   12.1 |     2262   352   501   18.0
+        1   16 |      3554  1049    6.2 |     3913   608   765    9.8
+        2    1 |       543   284   48.3 |      436    96   288   74.2
+        2    2 |       757   335   35.5 |      620   128   307   58.2
+        2    4 |      1022   437   22.5 |      825   192   369   36.9
+        2    8 |      1974   641   12.3 |     1985   320   501   18.5
+        2   16 |      3432  1049    6.4 |     3493   576   765   10.0
+        3    1 |       583   284   50.1 |      433    96   288   74.7
+        3    2 |       736   335   49.7 |      575   112   307   76.6
+        3    4 |      1127   437   35.0 |      914   176   369   56.0
+        3    8 |      1968   641   27.0 |     1689   304   501   43.4
+        3   16 |      3579  1049   21.1 |     4799   560   765   32.3
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  version 1 PEND =  1 ice40  u.nx                 -> u.t_cnt              8.2 ns logic, 10.9 ns routing
+  version 1 PEND =  1 ecp5   u.nx                 -> u.nx                 5.9 ns logic, 7.7 ns routing
+  version 1 PEND =  4 ice40  u.nx                 -> u.nx                 26.7 ns logic, 21.7 ns routing
+  version 1 PEND =  4 ecp5   u.nx                 -> u.nx                 13.4 ns logic, 17.3 ns routing
+  version 1 PEND = 16 ice40  u.nx                 -> u.nx                 88.2 ns logic, 74.2 ns routing
+  version 1 PEND = 16 ecp5   u.nx                 -> u.t_cnt              40.8 ns logic, 61.8 ns routing
+  version 2 PEND =  1 ice40  u.nx                 -> u.sd[0]              11.6 ns logic, 9.1 ns routing
+  version 2 PEND =  1 ecp5   u.nx                 -> u.sd[0]              5.8 ns logic, 7.7 ns routing
+  version 2 PEND =  4 ice40  u.sd[3]              -> u.sd[3]              25.3 ns logic, 19.2 ns routing
+  version 2 PEND =  4 ecp5   u.sd[3]              -> u.sd[3]              11.7 ns logic, 15.4 ns routing
+  version 2 PEND = 16 ice40  u.sd[15]             -> u.sd[9]              86.6 ns logic, 70.2 ns routing
+  version 2 PEND = 16 ecp5   u.sd[15]             -> u.sd[7]              39.6 ns logic, 60.3 ns routing
+  version 3 PEND =  1 ice40  u.nx                 -> u.sd[0]              11.6 ns logic, 8.4 ns routing
+  version 3 PEND =  1 ecp5   u.nx                 -> u.sd[0]              5.9 ns logic, 7.5 ns routing
+  version 3 PEND =  4 ice40  u.sd[0]              -> u.sd[1]              15.0 ns logic, 13.6 ns routing
+  version 3 PEND =  4 ecp5   u.sv[0]              -> u.sd[3]              7.2 ns logic, 10.7 ns routing
+  version 3 PEND = 16 ice40  u.sv[10]             -> u.sd[10]             24.5 ns logic, 22.8 ns routing
+  version 3 PEND = 16 ecp5   u.sd[6]              -> u.sd[14]             11.4 ns logic, 19.6 ns routing

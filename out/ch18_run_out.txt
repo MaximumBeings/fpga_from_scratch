@@ -1,0 +1,28 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  seq_arb      Verilator warnings: 0   Yosys check problems: 0
+  seq_arb_syn  Verilator warnings: 0   Yosys check problems: 0
+
+== 2. the model: hand-checked scenarios, then the END-TO-END PROPERTY in a closed loop: 10 seeds of 200 packets per profile (PEND 4, TO 16, TO2 64, retransmission answered after 30 cycles); the messages forwarded must tile the sequence space in order, with every skipped range reported
+  arb_gold hand-checked scenarios passed
+  profile                                              |   tiled  forwarded  requests  skips  messages lost   OVF  undelivered at the end
+  clean                                                |   10 of 10       1905         0      0              0     0                       0
+  loss 5% each                                         |   10 of 10       1497        58      0              0   886                     140
+  loss 20% each                                        |   10 of 10        913       141      0              0  1776                     482
+  A lossy, B clean                                     |   10 of 10       1905         0      0              0     0                       0
+  loss 30% each, retransmissions lost half the time    |   10 of 10        399       138     74           7786  2137                     935
+  duplicates 20%, B 6 cycles late                      |   10 of 10       1905         0      0              0     0                       0
+  loss 50% each, retransmissions lost half the time    |   10 of 10        313       143     77           8347  1530                    1253
+  (undelivered at the end: messages that arrived on A or B beyond where the forwarding stopped; the last packets of the stream, dropped because the slots were full, have nothing after them to reveal the loss)
+
+== 3. seq_arb against the cycle model: every output and the state after every cycle, 3 seeds per row
+  inputs      PEND  TO  TO2       INIT |  cycles   FWD  STORE   DUP  BAD  OVF  HB  REL  REQ  SKIP |    Icarus  Verilator
+  closed loop    4  16   64        0x1 |    7704    56     51    45    0  175  20   51   14     7 |      3 of 3       PASS
+  closed loop    2   8   24 0xffffff00 |    7272    49     37    45    0  202  20   37   23    23 |      3 of 3       PASS
+  closed loop    8  20   40        0x1 |    7524    58     90    63    0  118  20   90   16     7 |      3 of 3       PASS
+  closed loop    1   6   12 0xfffffff0 |    7146    49     34    53    0  201  20   34   34    34 |      3 of 3       PASS
+  closed loop    4  20    8        0x1 |    7236    49     75    71    0  141  20   75   27    27 |      3 of 3       PASS
+  random         4  16   64        0x1 |    9628    51     65    78    4  435  17   65   65    19 |      3 of 3       PASS
+  random         2   8   24 0xffffff00 |    9196    67     86   159   16  317  17   86   83    38 |      3 of 3       PASS
+  random         8  20   40        0x1 |    9448    61     82    81    3  416  17   82   82    29 |      3 of 3       PASS
+  random         1   6   12 0xfffffff0 |    9070     4     72   266   32  260  17   72   72    72 |      3 of 3       PASS
+  random         4  20    8        0x1 |    9160     5    107   218   12  316  17  107  104   104 |      3 of 3       PASS

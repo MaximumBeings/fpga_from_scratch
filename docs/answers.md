@@ -784,3 +784,26 @@ Worked answer: the hot path that does not advance `SND.UNA` survived because no 
 3. The second slot needs its own field registers and snapshot (double the output registers); the rule becomes "a third completion is an error".
 4. Replace the 8 per-lane type comparisons by one decode of the type byte shared by tags and lengths; the field selects are then comparisons against a one-hot vector.
 5. Candidates: a mutant in the unreachable `default` of the state case (equivalent), or in the saturation value of the offset (outside the contract above 255 bytes only for blocks that are errors anyway).
+
+## Chapter 18
+
+1. So that the loss of a packet on one path does not lose it: the two copies take different routes. The arbiter forwards the first copy that arrives and drops the second as a duplicate; a copy that arrives after the packet was forwarded is behind `next` and ends at or before it.
+2. It arrives with `d = seq - next > 0`. If a slot already has this number it is a duplicate; else it is stored in the lowest free slot (OVF if there is none). Later, when `next` reaches its number, the slot is "in order": it is released (one per cycle, with priority over the input), `next` advances by its count and the slot is freed. While it waits the window is a gap, and the gap timer runs.
+3. When the window holds packets and none is in order (a gap) and the timer reaches TO with no request sent: request `[next, next + min(mind, 65535))`. If a request has been sent and the timer reaches TO2: the range is reported as skipped, `next` moves to the first stored packet, the arbiter continues.
+4. A release and a skip both change `next` and the slots; a forward or a store in the same cycle would change them too, and the cycle's decisions are taken from the state at its start. So the input waits one cycle (`ready = 0`) rather than the design resolving two writers.
+5. It is the property a user needs (every message once, in order, losses reported), it needs no knowledge of the internals, and it holds under any loss pattern, so it can be checked on random closed-loop runs. It does not check *when* things happen (the cycle model does), the kinds of the decisions (DUP, BAD, OVF) or the timer events, and it cannot see a loss at the end of the stream.
+6. A packet is lost on both feeds with probability `p x p`.
+7. At least (TO + answer time) / packet spacing packets: a gap stays open for that long and that many packets arrive behind the lost one. Smaller, the later packets are dropped (OVF) and asked for again: at 5% loss with 2 slots the arbiter fetched 4,530 messages for 5 packets that were really lost.
+8. Longer than the skew between the feeds plus the jitter: a gap opened by loss on the first feed is closed by the second feed's copy at about that delay. Shorter, the arbiter asks for packets that are on their way (430 requests at TO = 2 for none needed).
+9. The clock fell about as the inverse of the window (52 to 6 MHz from 1 to 16 slots on iCE40), the critical path 88 ns of logic at 16 slots. Storing the distance removed recomputation but the critical path was the minimum over the slots, written as a chain of comparators.
+10. Each iteration of the loop compares with the result of the previous one, so the comparators are in series, PEND deep; a tree compares pairs in parallel and pairs of pairs, `log2(PEND)` deep.
+11. A loss is revealed by a later packet with a higher number. If the last packets are lost on both feeds, or were dropped for lack of a slot, nothing follows them. A heartbeat with the next expected number would reveal it; this arbiter ignores heartbeats.
+12. For example: the skip that does not wait for a request (a missing test: TO was always smaller than TO2); a forward that advances during a heartbeat (code that cannot matter: its count is 0); a skip that does not clear the request flag (equivalent: the next cycle is not a gap and clears it); reset that does not clear the slots (an Icarus semantics hole closed by powering the registers up with garbage).
+
+## Chapter 18 -- hints for the exercises
+
+1. A stale stored packet (its range lies entirely behind the new `next`) must be dropped, one that straddles `next` must be trimmed or reported BAD: in the distance representation a slot with distance below zero after the subtraction is stale; the model needs a rule and a test with a retransmission that covers two stored packets.
+2. A heartbeat `(seq, 0)` with `seq` ahead of `next` opens a gap with no stored packet: the timer needs a `gap` that does not depend on a stored packet, with `mind` taken from the heartbeat's number (a register); then the request is for `[next, seq)`.
+3. A bitmap of 512 bits (arrived or not) indexed by `seq mod 512` and a RAM of counts; the release is a lookup at `next`; the minimum is a priority search of the bitmap from `next` (a find-first-set on a rotated word), which is the part to pipeline.
+4. Two ports into the classifier means two decisions in a cycle: the second can see the first's result (a duplicate in the same cycle) or the pair can be reduced to one by a rule (A first). The model must say which.
+5. Candidates: a mutant in a counter's unreachable top bit (equivalent), or in the timer's width above any configured TO2 (outside the contract).

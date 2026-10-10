@@ -1,0 +1,29 @@
+== 1. what the second feed buys (200 packets x 10 seeds, PEND 16, TO 16, retransmissions answered after 30 cycles)
+  loss per feed p |  lost on both (measured)  p^2 (derived) |  requests  messages from retransmissions | delay mean   p99   max |  one feed alone: lost
+               1% |                    0.00%          0.01% |         0                              0 |        0.0     1     1 |                    1%
+               5% |                    0.25%          0.25% |         5                             75 |        1.0    39    50 |                    5%
+              10% |                    1.65%          1.00% |        37                            434 |        9.3    67    90 |                   10%
+              20% |                    4.10%          4.00% |        97                           2988 |       31.7   244   252 |                   20%
+              30% |                    9.45%          9.00% |       200                          10524 |      133.0   376   391 |                   30%
+
+== 1b. the window: loss 5% on each feed, 200 packets x 10 seeds, packets 4 cycles apart, TO 16, retransmission answered after 30 cycles: a gap stays open TO + 30 = 46 cycles, in which 46 / 4 = 11.5 packets arrive behind it
+  PEND |  requests  messages from retransmissions  lost on both feeds  packets dropped for lack of a slot (OVF)
+     2 |        44                           4530                   5                                       838
+     4 |        43                           3813                   5                                       690
+     8 |        40                           2339                   5                                       422
+    12 |        17                            455                   5                                        71
+    16 |         5                             75                   5                                         0
+  (the messages from retransmissions that exceed what was lost on both feeds are packets that DID arrive and were dropped for lack of a slot, then asked for: a window shorter than (TO + answer time) / packet spacing turns a gap into a stream of needless requests)
+
+== 2. the gap timer: A loses 30%, B is clean but 10 cycles late (jitter 0 to 3), 200 packets x 10 seeds, PEND 16, no retransmission is ever needed (every packet reaches the arbiter on B)
+   TO |  requests   of which spurious (B copy arrived before the answer) | delay mean   p99
+    2 |       430                                                    430 |        2.4    10
+    4 |       353                                                    353 |        2.4    10
+    8 |        35                                                     35 |        2.4    10
+   11 |         0                                                      0 |        2.4    10
+   12 |         0                                                      0 |        2.4    10
+   13 |         0                                                      0 |        2.4    10
+   14 |         0                                                      0 |        2.4    10
+   16 |         0                                                      0 |        2.4    10
+   24 |         0                                                      0 |        2.4    10
+  (every request here is spurious: nothing was lost on both feeds. Derived: a gap opened by A's loss lasts until B's copy arrives, at about the skew + the jitter = 10 to 13 cycles after the cycle it would have arrived on A, minus the time the packets behind it take to open the gap; a TO above that never fires)

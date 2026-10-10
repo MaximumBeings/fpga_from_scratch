@@ -1,0 +1,56 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  the minimum is the largest distance: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a stored packet is in order one early: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a gap is any stored packet: caught by: random, PEND 4, TO 16, TO2 64, INIT 0x1
+  the request is one cycle late: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the skip does not wait for a request: caught by: closed, PEND 4, TO 20, TO2 8, INIT 0x1
+  the skip is one cycle early: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the input is accepted during a skip: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the input is accepted during a release: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the input is always accepted: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the request count is not capped: caught by: random, PEND 4, TO 16, TO2 64, INIT 0x1
+  the request is for the minimum, not for the next: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the skip reports a count of 1: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a copy of a stored packet is not recognised: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a stored packet is compared by its distance with the wrong value: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the skip does not move the expected number: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a release advances by one: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a forward does not advance the expected number: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a forward advances by one: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the distances are not reduced when the expected number advances: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the stored distance is the sequence number: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a release reports no sequence number: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a release does not free the slot: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  an empty slot takes part in the minimum: caught by: random, PEND 2, TO 8, TO2 24, INIT 0xffffff00
+  the padding of the tree is zero: caught by: closed, PEND 1, TO 6, TO2 12, INIT 0xfffffff0
+  a release is reported as a forward: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a release reports the feed of the input: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a release reports the count of the input: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a heartbeat is not recognised: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a packet that overlaps the expected number is a duplicate: caught by: random, PEND 4, TO 16, TO2 64, INIT 0x1
+  a packet ending exactly at the expected number is not a duplicate: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a packet behind the expected number is tested by the wrong bit: caught by: random, PEND 4, TO 16, TO2 64, INIT 0x1
+  a copy of a stored packet is stored again: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a full table drops silently as a store: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the stored packet loses its feed: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the stored packet loses its count: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  outside a gap the timer is not cleared: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  outside a gap the request flag is not cleared: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  a request does not set the flag: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the timer counts by two: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the expected number starts at 1: caught by: closed, PEND 2, TO 8, TO2 24, INIT 0xffffff00
+  reset does not clear the slots: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  the slot count is wrong: caught by: closed, PEND 4, TO 16, TO2 64, INIT 0x1
+  model: the request count is not capped: caught by: hand-checked scenarios
+  model: the skip does not move the expected number: caught by: hand-checked scenarios
+  model: a packet behind next is always a duplicate: caught by: hand-checked scenarios
+  model: a copy of a stored packet is stored again: caught by: hand-checked scenarios
+  model: heartbeats are forwarded: caught by: hand-checked scenarios
+  model: a release advances by one: caught by: hand-checked scenarios
+  model: the input is accepted during a release: caught by: hand-checked scenarios
+  model: a full table stores anyway: caught by: hand-checked scenarios
+  model: the request does not wait for TO: caught by: hand-checked scenarios
+  rtl/seq_arb.sv: caught 42 of 42
+  model/arb_gold.py: caught 9 of 9
+mutants caught: 51 of 51
