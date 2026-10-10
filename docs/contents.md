@@ -32,7 +32,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 16. *(written)* Exchange protocols: MoldUDP64 and ITCH, and a generator that turns a message grammar into a parser (SoupBinTCP and OUCH are exercises)
 17. *(written)* Line-rate message parsing: W bytes per clock, messages across beats, a framing rule (several messages per beat and a design that scales are exercises)
 18. *(written)* Sequence gaps and A/B feed arbitration: the window, the gap timer, retransmission requests (heartbeats and a RAM window are exercises)
-19. The order book in hardware: per-symbol state, price-level structures (sorted array, CAM, hash in BRAM), top of book
+19. *(written)* The order book in hardware: per-symbol state, an associative order table and sorted price levels in registers, top of book, and what it costs (CAM/hash/BRAM structures are Chapter 20)
 20. Order-book engineering: worst-case latency against depth, checked against a Python golden book
 
 ## Part 5 -- Decide and act

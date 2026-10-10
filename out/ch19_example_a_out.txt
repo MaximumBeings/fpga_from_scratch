@@ -1,0 +1,14 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper; the book is registers only
+  NS   D  NO | iCE40 LUT     FF   Fmax | ECP5 LUT CCU2C     FF   Fmax | bits of state
+   2   2  16 |      4949   2380   19.0 |     7407   382   2380   24.7 |          2104
+   2   4  16 |      7685   2900 no fit |    10197   670   2900   22.2 |          2624
+   2   8  16 |     12191   3940 no fit |    20141  1274   3940   18.7 |          3664
+   2   4   8 |      6021   2108   18.1 |     6927   638   2108   26.0 |          1832
+   2   4  32 |     10003   4484 no fit |    15828   734   4484   13.3 |          4208
+   1   4  16 |      5282   2380   15.9 |     7149   414   2380   24.6 |          2104
+   4   4  16 |     11421   3958 no fit |    12750  1182   3958   19.6 |          3680
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  NS 2 D  4 NO 16 ecp5   iv                     -> u.lpx[0]               13.2 ns logic, 31.8 ns routing
+  NS 2 D  8 NO 16 ecp5   u.ov[13]               -> u.lpx[22]              13.9 ns logic, 39.5 ns routing
+  NS 2 D  4 NO 32 ecp5   u.ov[0]                -> r1                     22.5 ns logic, 52.9 ns routing

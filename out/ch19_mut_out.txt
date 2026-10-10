@@ -1,0 +1,55 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  the level search counts the wrong side as better: caught by: flow, NS 2, D 4, NO 8
+  an equal price counts as better: caught by: flow, NS 2, D 4, NO 8
+  a level is a hit whatever its price: caught by: flow, NS 2, D 4, NO 8
+  a side is full one level early: caught by: flow, NS 2, D 4, NO 8
+  a side is never full: caught by: flow, NS 2, D 4, NO 8
+  a duplicate is checked before zero shares: caught by: random, NS 2, D 4, NO 8
+  a full order table is not noticed: caught by: flow, NS 2, D 4, NO 8
+  full levels are checked before the order table: caught by: flow, NS 2, D 4, NO 8
+  a duplicate reference is not noticed: caught by: flow, NS 2, D 4, NO 8
+  the duplicate check of an add after a replace uses the old reference: caught by: flow, NS 2, D 4, NO 8
+  a reduction by the whole order is an over-reduction: caught by: flow, NS 2, D 4, NO 8
+  a reduction by zero is accepted: caught by: random, NS 2, D 4, NO 8
+  an over-reduction is accepted: caught by: flow, NS 2, D 4, NO 8
+  a replace reduces by the new shares: caught by: flow, NS 2, D 4, NO 8
+  a full reduction does not free the order: caught by: flow, NS 2, D 4, NO 8
+  a level whose shares reach 1 is removed: caught by: flow, NS 2, D 4, NO 8
+  an emptied level is not removed after a delete: caught by: flow, NS 2, D 4, NO 8
+  a replace does not remove the old order: caught by: flow, NS 2, D 4, NO 8
+  a replace adds the new order at the input's symbol: caught by: flow, NS 2, D 4, NO 8
+  a replace adds the new order at the input's side: caught by: flow, NS 2, D 4, NO 8
+  a replace gives the new order the old reference: caught by: flow, NS 2, D 4, NO 8
+  a replace keeps the old price: caught by: flow, NS 2, D 4, NO 8
+  the second phase of a replace is not remembered: caught by: flow, NS 2, D 4, NO 8
+  the engine is always ready: caught by: flow, NS 2, D 4, NO 8
+  an unknown reference is reported with the input's symbol: caught by: flow, NS 2, D 4, NO 8
+  adding to a level replaces its shares: caught by: flow, NS 2, D 4, NO 8
+  the removal leaves the level in place: caught by: flow, NS 2, D 4, NO 8
+  a reduction subtracts one: caught by: flow, NS 2, D 4, NO 8
+  the best bid is shown when the side is empty: caught by: flow, NS 2, D 4, NO 8
+  the ask count is wrong: caught by: flow, NS 2, D 4, NO 8
+  the order count ignores one entry: caught by: flow, NS 2, D 4, NO 8
+  reset does not clear the order table: caught by: flow, NS 2, D 4, NO 8
+  reset does not clear the levels: caught by: flow, NS 2, D 4, NO 8
+  reset does not clear the second phase: caught by: flow, NS 2, D 4, NO 8
+  a reduction does not update the order: caught by: flow, NS 2, D 4, NO 8
+  a reduction sets the shares to the reduction: caught by: flow, NS 2, D 4, NO 8
+  an add stores the wrong side: caught by: flow, NS 2, D 4, NO 8
+  an add stores the wrong price: caught by: flow, NS 2, D 4, NO 8
+  the symbol and the side are swapped in the level index: caught by: flow, NS 2, D 4, NO 8
+  a reduction names the level by the input's side: caught by: flow, NS 2, D 4, NO 8
+  a delete is taken for a reduction: caught by: flow, NS 2, D 4, NO 8
+  model: a reduction by zero is accepted: caught by: hand-checked scenarios
+  model: an over-reduction is accepted: caught by: hand-checked scenarios
+  model: levels are checked before the table: caught by: hand-checked scenarios
+  model: a duplicate is checked after the table: caught by: hand-checked scenarios
+  model: an emptied level stays: caught by: hand-checked scenarios
+  model: a replace takes one phase: caught by: hand-checked scenarios
+  model: a replace keeps the old order on failure: caught by: hand-checked scenarios
+  model: an unknown reference is reported with symbol 1: caught by: hand-checked scenarios
+  model: the table is counted wrongly in the top of book: caught by: hand-checked scenarios
+  rtl/book.sv: caught 41 of 41
+  model/book_gold.py: caught 9 of 9
+mutants caught: 50 of 50

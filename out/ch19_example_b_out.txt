@@ -1,0 +1,28 @@
+== 1. price levels: ADDs rejected for lack of a level (LVL) against D; unlimited order table; target 64 live orders; 5 seeds x 30,000 events
+    D |     spread 4     spread 8    spread 16
+    2 |       82.56%       84.66%       87.89%
+    4 |       66.90%       70.68%       76.77%
+    6 |       49.41%       55.90%       65.25%
+    8 |       30.10%       39.83%       52.52%
+   12 |        5.65%       10.01%       24.26%
+   16 |        0.25%        0.72%        4.08%
+   24 |        0.00%        0.00%        0.00%
+  levels in use on the fullest side (unlimited D): spread 4: mean 11.6, p99 17, max 21; spread 8: mean 13.2, p99 19, max 24; spread 16: mean 15.9, p99 21, max 25
+  (derived: each side can rest at `spread` distinct prices below or above the mid, so `spread` levels if the mid never moved; the mid drifts and orders left behind keep their levels, so the fullest side needs more)
+
+== 2. the order table: ADDs rejected for FULL against NO; D unlimited; spread 8; target 64 live orders (the occupancy this flow reaches with an unlimited table is printed first: the control target is not the mean)
+  occupancy with an unlimited table: mean 86.7, p99 100, p99.9 104, max 108
+    NO |  ADDs rejected (FULL)
+    32 |                80.57%
+    48 |                68.23%
+    64 |                50.09%
+    80 |                24.81%
+    96 |                 1.60%
+   128 |                 0.00%
+   192 |                 0.00%
+
+== 3. both finite: D = 8, NO = 64 and the targets of live orders 32, 64, 96 (spread 8)
+  target |    ADDs    LVL   FULL  rejected
+      32 |   56271   6477      0    11.51%
+      64 |   80412  25677  14239    49.64%
+      96 |   99309  28608  40462    69.55%
