@@ -1,0 +1,34 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  life: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model's hand-checked scenarios (python3 model/sys_gold.py) and what the traffic contains (NT 4, seed 1)
+  selftest True
+  flow    orders answered  76: BAND 6, DISARMED 1, OK 54, QTY 13, TRK_FULL 2 | quiet cycles checked 90, books differ in 0 | fault 0
+  tight   orders answered 114: BADIDX 2, BAND 6, DISARMED 2, OK 23, ONOT 13, POS 1, QTY 67 | quiet cycles checked 121, books differ in 0 | fault 0
+  dups    orders answered  82: BADIDX 2, BAND 14, OK 54, QTY 10, TRK_DUPTOK 2 | quiet cycles checked 72, books differ in 0 | fault 0
+  faults  orders answered  75: BAND 15, DISARMED 3, KILL 1, OK 48, QTY 8 | quiet cycles checked 101, books differ in 0 | fault 0
+  cancels orders answered  72: BAND 5, DISARMED 8, OK 51, QTY 8 | quiet cycles checked 94, books differ in 0 | fault 0
+  random  orders answered 109: BAND 2, DISARMED 3, KILL 79, OK 21, QTY 1, TRK_DUPTOK 3 | quiet cycles checked 115, books differ in 0 | fault 1
+  collision cases (rollback and a tracker release want the gate's port in the same cycle), report delay 0..13: 1 of 14 collide
+
+== 3. the joined design against the model: every output, every cycle
+  mix       NT |  cycles  orders  sent rolled back |  Icarus  Verilator
+  flow       1 |     419      80    42          12 |    PASS       PASS
+  flow       2 |     419      78    50           9 |    PASS       PASS
+  flow       4 |     419      76    54           2 |    PASS       PASS
+  tight      1 |     419     116    20           3 |    PASS       PASS
+  tight      2 |     419     114    23           0 |    PASS       PASS
+  tight      4 |     419     114    23           0 |    PASS       PASS
+  dups       1 |     419      78    43          14 |    PASS       PASS
+  dups       2 |     419      83    51           1 |    PASS       PASS
+  dups       4 |     419      82    54           2 |    PASS       PASS
+  faults     1 |     419      82    36          13 |    PASS       PASS
+  faults     2 |     419      77    44           7 |    PASS       PASS
+  faults     4 |     419      75    48           0 |    PASS       PASS
+  cancels    1 |     419      78    36          11 |    PASS       PASS
+  cancels    2 |     419      72    46           7 |    PASS       PASS
+  cancels    4 |     419      72    51           0 |    PASS       PASS
+  random     1 |     419     124     4           1 |    PASS       PASS
+  random     2 |     419      81    54           5 |    PASS       PASS
+  random     4 |     419     109    21           3 |    PASS       PASS
+  collision 0..13 |    PASS       PASS

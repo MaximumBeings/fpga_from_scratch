@@ -1,0 +1,65 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  a report does not win over a local event: caught by: clean, NT 1
+  the lookup uses the local token for reports: caught by: clean, NT 1
+  the lookup uses only 31 token bits: caught by: near, NT 1
+  a zero-quantity order is recorded: caught by: near, NT 1
+  a duplicate token is recorded: caught by: clean, NT 1
+  a full table overwrites entry 0: caught by: clean, NT 1
+  a new order starts LIVE: caught by: clean, NT 1
+  a new order stores no price: caught by: clean, NT 1
+  a new order stores the wrong side: caught by: clean, NT 1
+  a new order stores no account: caught by: clean, NT 1
+  a new order stores no symbol: caught by: clean, NT 1
+  a new order stores one quantity too few: caught by: clean, NT 1
+  a cancel request of an unknown token is OK: caught by: clean, NT 1
+  a cancel request is allowed in PENDING_NEW: caught by: clean, NT 1
+  a cancel request does not change the state: caught by: clean, NT 1
+  an ack is allowed in any state: caught by: fault, NT 2
+  an ack does not make the order live: caught by: clean, NT 1
+  a fill is not an implicit ack: caught by: clean, NT 1
+  a fill makes a cancelling order live: caught by: clean, NT 1
+  a fill of zero is believed: caught by: fault, NT 1
+  an overfill is allowed by one: caught by: clean, NT 1
+  a fill of exactly the remainder is an overfill: caught by: clean, NT 1
+  a full fill does not free the entry: caught by: clean, NT 1
+  every fill frees the entry: caught by: clean, NT 1
+  a fill releases a cancel: caught by: clean, NT 1
+  a fill releases the remainder: caught by: clean, NT 1
+  a cancel report releases a fill: caught by: clean, NT 1
+  a cancel report releases nothing: caught by: clean, NT 1
+  a cancel report releases the report quantity: caught by: clean, NT 1
+  a cancel report does not free: caught by: clean, NT 1
+  a reject is allowed in any state: caught by: fault, NT 2
+  a reject releases a fill: caught by: clean, NT 1
+  a reject does not free: caught by: clean, NT 1
+  an unknown report is not an anomaly: caught by: fault, NT 1
+  an anomaly is not a fault: caught by: fault, NT 1
+  a local refusal is a fault: caught by: clean, NT 1
+  the fault clears when a good report arrives: caught by: fault, NT 1
+  the answer is valid every cycle: caught by: clean, NT 1
+  the answer ignores the source: caught by: clean, NT 1
+  the release carries the wrong account: caught by: clean, NT 2
+  the release carries the wrong symbol: caught by: clean, NT 2
+  the release carries the wrong side: caught by: clean, NT 1
+  the release carries the wrong price: caught by: clean, NT 2
+  a fill does not reduce the remainder: caught by: clean, NT 1
+  a fill reduces by one: caught by: clean, NT 1
+  the live count counts only live: caught by: clean, NT 1
+  reset leaves entries in use: caught by: clean, NT 1
+  reset leaves the fault: caught by: clean, NT 1
+  reset leaves the answer valid: caught by: clean, NT 1
+  reset leaves the release valid: caught by: clean, NT 1
+  model: a zero order is accepted: caught by: hand-checked scenarios
+  model: duplicates are accepted: caught by: hand-checked scenarios
+  model: a cancel request needs no live state: caught by: hand-checked scenarios
+  model: overfill allowed: caught by: hand-checked scenarios
+  model: a fill is not an implicit ack: caught by: hand-checked scenarios
+  model: a fill releases the wrong price: caught by: hand-checked scenarios
+  model: a cancel report keeps the entry: caught by: hand-checked scenarios
+  model: a reject works in any state: caught by: hand-checked scenarios
+  model: an anomaly is not a fault: caught by: hand-checked scenarios
+  model: the report does not win: caught by: hand-checked scenarios
+  rtl/track.sv: caught 50 of 50
+  model/life_gold.py: caught 10 of 10
+mutants caught: 60 of 60

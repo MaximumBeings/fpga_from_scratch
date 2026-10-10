@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+"""Chapter 25 figures -> docs/assets/fig/ch25-*.svg (data from out/ch25_*_out.txt)."""
+import os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from figs import Fig, C, bar_chart, line_chart
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); OUT = os.path.join(ROOT, "docs", "assets", "fig"); os.makedirs(OUT, exist_ok=True)
+rd = lambda n: open(f"{ROOT}/out/{n}").read()
+f = Fig(980, 430, "Join"); f.text(490, 24, "The lifecycle: the gate charges, the tracker remembers, the exchange's reports give back", 14, bold=True)
+f.box(20, 150, 120, 90, ["requester", "order request", "cancel request"], C["gray2"], C["gray"], 11, True)
+f.box(160, 60, 200, 80, ["state machine", "one order in flight:", "RISK1 RISK2 TNEW TANS RB"], C["purple2"], C["purple"], 11, True)
+f.box(420, 60, 200, 90, ["risk gate (Chapter 23)", "ORDER charges the books;", "FILL / CANCEL release them", "kill input"], C["blue2"], C["blue"], 11, True)
+f.box(420, 230, 200, 100, ["order tracker", "NT entries: token, account,", "symbol, side, price, remaining,", "state; sticky FAULT"], C["green2"], C["green"], 11, True)
+f.box(700, 230, 160, 90, ["exchange reports", "ACK, FILL, CANCELED,", "REJECT (token, qty)"], C["orange2"], C["orange"], 11, True)
+f.box(700, 60, 160, 80, ["to the wire", "(Chapter 24 encoder)", "answer 0 = send"], C["gray2"], C["gray"], 11, True)
+f.arrow(142, 190, 178, 110, C["ink"], 1.6); f.arrow(352, 100, 418, 100, C["ink"], 1.6); f.arrow(300, 142, 440, 228, C["ink"], 1.6); f.arrow(698, 270, 622, 275, C["ink"], 1.6)
+f.arrow(520, 228, 520, 152, C["green"], 1.8); f.arrow(352, 90, 698, 90, C["ink"], 1.0, dash="4 3"); f.arrow(500, 332, 500, 380, C["red"], 1.4)
+f.text(535, 195, "releases (priority 1)", 11, C["green"], anchor="start"); f.text(500, 400, "FAULT (an unexplained report) holds the gate's kill input high for good", 12, C["red"], italic=True)
+f.text(320, 215, "NEW on gate OK", 11, C["ink"]); f.text(20, 270, "give-back (priority 2): a CANCEL of the same order, when the tracker refuses it", 10, C["ink"], anchor="start")
+f.save(f"{OUT}/ch25-join.svg")
+g = Fig(980, 400, "States"); g.text(490, 24, "An order in the tracker: three states, and the exits", 14, bold=True)
+def st(x, y, w, t, col): g.box(x, y, w, 60, t, C[col + "2"], C[col], 11, True)
+st(30, 150, 130, ["(not in table)"], "gray"); st(230, 150, 150, ["PENDING_NEW", "sent, not acknowledged"], "blue"); st(470, 150, 130, ["LIVE", "acknowledged"], "green"); st(700, 150, 190, ["PENDING_CANCEL", "cancel requested"], "orange"); st(470, 270, 200, ["gone: released and freed"], "purple")
+g.arrow(162, 180, 228, 180, C["ink"], 1.6); g.arrow(382, 180, 468, 180, C["ink"], 1.6); g.arrow(602, 180, 698, 180, C["ink"], 1.6); g.arrow(530, 212, 530, 268, C["ink"], 1.6); g.arrow(300, 212, 470, 275, C["ink"], 1.2); g.arrow(790, 212, 670, 285, C["ink"], 1.2)
+g.text(195, 170, "NEW", 10); g.text(425, 170, "ACK or FILL", 10); g.text(650, 170, "cancel request", 10); g.text(560, 245, "FILL to zero, CANCELED", 10, anchor="start"); g.text(330, 255, "REJECT", 10)
+g.text(490, 375, "any report that does not fit (unknown token, ACK of a live order, fill of 0 or above the remainder) sets the fault and changes nothing", 12, italic=True)
+g.save(f"{OUT}/ch25-states.svg")
+B = rd("ch25_example_b_out.txt"); s3 = B.split("== 3.")[1]
+rows = re.findall(r"^\s+(\d+) \|\s+(\d+)\s+(\d+)\s+(\d+)\s+([\d.]+)%", s3, re.M)
+if rows: bar_chart(900, 320, [f"NT {r[0]}" for r in rows], [[float(r[4]) for r in rows]], "Orders the gate accepted but the tracker had no room for (give-backs), %", "% of orders", colors=[C["orange"]], fmt="{:.1f}").save(f"{OUT}/ch25-full.svg")
+A = rd("ch25_example_a_out.txt")
+tr = re.findall(r"^\s+track\s+(\d+) \|\s+(\d+)\s+(\d+)\s+\S+\s+([\d.]+|no fit) \|\s+(\d+)\s+(\d+)\s+([\d.]+|no fit)", A, re.M)
+if tr: line_chart(900, 330, [float(r[0]) for r in tr], [[float(r[1]) for r in tr], [float(r[4]) for r in tr]], "Tracker size (LUTs) against the table size NT", "NT (table entries)", "LUTs", colors=[C["blue"], C["green"]], legend=["iCE40", "ECP5"], logx=True, logy=True, xfmt="{:g}", yfmt="{:.0f}").save(f"{OUT}/ch25-size.svg")
+print("ch25 figures written")

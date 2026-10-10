@@ -1,0 +1,18 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper
+  design  NT | iCE40 LUT    FF   LCs   Fmax | ECP5 LUT    FF   Fmax
+  track    2 |       471   360   788   53.0 |      985   360   57.2
+  track    4 |       700   512  1153   41.6 |     1896   512   52.4
+  track    8 |      1200   816  1957   38.0 |     2489   816   40.7
+  track   16 |      2171  1424  3537   30.0 |     6772  1424   32.6
+  track   32 |      2960  2640  5541   23.0 |     9232  2640   25.8
+  life     4 |      3767  2526  6254   29.1 |     4713  2591   37.5
+  life    16 |      5531  3438  9037 no fit |     7983  3503   34.6
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  track NT  4 ice40  u.r_valid                -> u.fault                  7.2 ns logic, 16.8 ns routing
+  track NT  4 ecp5   iv                       -> u.used[1]                6.7 ns logic, 12.4 ns routing
+  track NT 32 ice40  iv                       -> u.used[16]               10.6 ns logic, 32.8 ns routing
+  track NT 32 ecp5   iv                       -> u.used[4]                12.8 ns logic, 26.0 ns routing
+  life NT  4 ice40  u.gate.ev_sym            -> u.gate.os[13]            9.3 ns logic, 25.0 ns routing
+  life NT  4 ecp5   u.gate.s1_a              -> u.gate.tok[3]            8.0 ns logic, 18.7 ns routing
+  life NT 16 ecp5   u.h_tok                  -> u.trk.rem[12]            8.7 ns logic, 20.2 ns routing

@@ -1,0 +1,21 @@
+== 1. cycles from the cycle an order is offered to the cycle its answer is visible (the order is offered at cycle 0 of each case)
+  accepted by gate and tracker (OK)                                5 cycles (answer OK)
+  refused by the gate (QTY)                                        3 cycles (answer QTY)
+  refused by the gate (KILL)                                       3 cycles (answer KILL)
+  tracker refuses, token open (DUPTOK): charge given back          6 cycles (answer TRK_DUPTOK)
+  tracker refuses, table full (FULL): charge given back            6 cycles (answer TRK_FULL)
+  OK, but a report from the exchange wins the tracker's cycle      7 cycles (answer OK)
+
+== 2. fault study: one anomalous report (a fill of 1 for a token that does not exist) at a random cycle of ordinary traffic; 300 trials, NT 4, 400 cycles each
+  orders refused (KILL) after the fault, per trial: mean 44.0, min 12, max 75
+  cycles from the bad report to the first KILL answer: mean 6.7, min 4, max 29 (an order is answered 3 cycles after it is offered)
+  orders in flight at the fault that are still sent (answered OK within 6 cycles of the fault becoming visible): mean 0.65, max 1
+  quiet cycles in which the gate's books and the tracker's books differ, over all trials: 0
+
+== 3. the share of orders the tracker has no room for, against the table size (each table size has its own traffic from the generator, which reports only on orders the table holds: 'flow', 6 seeds of 400 cycles)
+   NT | orders  sent  FULL give-backs  share
+    1 |    440   247               61  13.9%
+    2 |    438   274               10   2.3%
+    4 |    460   312                2   0.4%
+    8 |    467   299                0   0.0%
+   16 |    467   299                0   0.0%

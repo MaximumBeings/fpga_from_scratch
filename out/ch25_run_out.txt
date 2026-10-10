@@ -1,0 +1,44 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  track: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model's hand-checked scenarios (python3 model/life_gold.py) and what the stimulus contains (NT 4, seed 1)
+  selftest True True
+  clean   answers: BADSTATE 15, DUPTOK 15, FULL 14, OK 142, UNKNOWN 15, ZERO 2 | releases: FILL 43, CANCEL 22 | live max 4 | fault 0
+  full    answers: BADSTATE 59, DUPTOK 47, FULL 73, OK 63, UNKNOWN 11, ZERO 1 | releases: FILL 21, CANCEL 9 | live max 4 | fault 0
+  near    answers: BADSTATE 24, DUPTOK 17, FULL 2, OK 155, UNKNOWN 9, ZERO 1 | releases: FILL 44, CANCEL 32 | live max 4 | fault 0
+  burst   answers: OK 163, UNKNOWN 7, ZERO 1 | releases: FILL 52, CANCEL 28 | live max 2 | fault 0
+  fault   answers: BADSTATE 25, DUPTOK 22, FULL 8, OK 127, OVERFILL 8, UNKNOWN 39, ZERO 4 | releases: FILL 35, CANCEL 27 | live max 4 | fault 1
+  random  answers: BADSTATE 16, DUPTOK 17, FULL 2, OK 111, OVERFILL 12, UNKNOWN 36, ZERO 17 | releases: FILL 30, CANCEL 23 | live max 4 | fault 1
+
+== 3. the tracker against the model: ready, answer, release, live count and fault in every cycle
+  scenario  NT |  cycles  answers  releases |  Icarus  Verilator
+  clean      1 |     303      194        64 |    PASS       PASS
+  clean      2 |     303      205        69 |    PASS       PASS
+  clean      4 |     303      203        65 |    PASS       PASS
+  clean      5 |     303      219        79 |    PASS       PASS
+  clean      8 |     303      212        76 |    PASS       PASS
+  full       1 |     303      255        28 |    PASS       PASS
+  full       2 |     303      257        33 |    PASS       PASS
+  full       4 |     303      254        30 |    PASS       PASS
+  full       5 |     303      261        25 |    PASS       PASS
+  full       8 |     303      248        18 |    PASS       PASS
+  near       1 |     303      192        54 |    PASS       PASS
+  near       2 |     303      202        71 |    PASS       PASS
+  near       4 |     303      208        76 |    PASS       PASS
+  near       5 |     303      218        79 |    PASS       PASS
+  near       8 |     303      212        74 |    PASS       PASS
+  burst      1 |     303      183        83 |    PASS       PASS
+  burst      2 |     303      183        83 |    PASS       PASS
+  burst      4 |     303      171        80 |    PASS       PASS
+  burst      5 |     303      174        86 |    PASS       PASS
+  burst      8 |     303      203        97 |    PASS       PASS
+  fault      1 |     303      219        48 |    PASS       PASS
+  fault      2 |     303      223        56 |    PASS       PASS
+  fault      4 |     303      233        62 |    PASS       PASS
+  fault      5 |     303      228        67 |    PASS       PASS
+  fault      8 |     303      222        67 |    PASS       PASS
+  random     1 |     303      215        47 |    PASS       PASS
+  random     2 |     303      224        58 |    PASS       PASS
+  random     4 |     303      211        53 |    PASS       PASS
+  random     5 |     303      211        56 |    PASS       PASS
+  random     8 |     303      234        61 |    PASS       PASS

@@ -1,0 +1,44 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  the give-back is a fill: caught by: flow, NT 1
+  the give-back has the wrong price: caught by: flow, NT 1
+  the give-back has the wrong quantity: caught by: flow, NT 1
+  the give-back has the wrong side: caught by: flow, NT 1
+  the give-back has the wrong account: caught by: flow, NT 1
+  the give-back has the wrong symbol: caught by: flow, NT 1
+  the tracker release has the wrong account: caught by: flow, NT 1
+  the tracker release has the wrong price: caught by: flow, NT 1
+  the tracker release has the wrong type: caught by: flow, NT 1
+  the tracker release has the wrong side: caught by: flow, NT 1
+  an order is offered while a release is waiting: caught by: flow, NT 1
+  ready ignores the waiting release: caught by: flow, NT 1
+  the tracker's fault does not kill the gate: caught by: random, NT 1
+  the external kill is ignored: caught by: faults, NT 1
+  a gate refusal is passed as OK: caught by: flow, NT 1
+  the order skips the tracker: caught by: flow, NT 1
+  the tracker NEW is never held: caught by: flow, NT 1
+  a tracker refusal is not given back: caught by: flow, NT 1
+  the tracker's code is not offset: caught by: flow, NT 1
+  the give-back does not wait for the port: caught by: flow, NT 1
+  the answer token is wrong: caught by: flow, NT 1
+  a cancel request is accepted while the tracker takes the order: caught by: flow, NT 1
+  a cancel request ignores the report: caught by: flow, NT 1
+  the cancel answer shows the NEW answer: caught by: flow, NT 1
+  the cancel answer shows report answers: caught by: flow, NT 1
+  the tracker lookup token is the cancel token for NEW: caught by: flow, NT 1
+  the held price is not captured: caught by: flow, NT 1
+  the held quantity is not captured: caught by: flow, NT 1
+  the held account is not captured: caught by: flow, NT 1
+  the held side is not captured: caught by: flow, NT 1
+  the held symbol is not captured: caught by: flow, NT 1
+  reset leaves the state: caught by: flow, NT 1
+  reset leaves the answer valid: caught by: flow, NT 1
+  model: a tracker release does not win: caught by: hand-checked scenarios
+  model: the give-back is not made: caught by: hand-checked scenarios
+  model: the fault does not kill: caught by: hand-checked scenarios
+  model: the books are not compared: caught by: hand-checked scenarios
+  model: the reconciliation ignores notional: caught by: hand-checked scenarios
+  model: the reconciliation ignores sells: caught by: hand-checked scenarios
+  rtl/life.sv: caught 33 of 33
+  model/sys_gold.py: caught 6 of 6
+mutants caught: 39 of 39

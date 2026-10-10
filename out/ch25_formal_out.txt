@@ -1,0 +1,13 @@
+== 1. the tracker, proved for 8 cycles from reset (free inputs, under the contract; T1 no over-release, T2 exact release at exit, T3 the order's own fields, T4 answers, count and fault, T5 anomalies change nothing)
+  tracker: proved in 99 s
+
+== 2. mutants against the same search at depth 8
+  an overfilling report is believed (not an anomaly): counterexample found (3 s)
+  a fill releases more than was left (clamp removed: quantity wraps): counterexample found (3 s)
+  a cancel releases the original quantity, not the remainder: counterexample found (3 s)
+  a fill does not reduce the remaining quantity: counterexample found (3 s)
+  the release carries the wrong price: counterexample found (3 s)
+  an unknown token is not a fault: counterexample found (3 s)
+  a fully filled order stays in the table: counterexample found (3 s)
+  a duplicate token is accepted: counterexample found (3 s)
+  counterexamples found: 8 of 8

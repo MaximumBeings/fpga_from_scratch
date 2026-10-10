@@ -40,7 +40,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 22. *(written)* Fixed-point signals: imbalance, mid and microprice, a bit-exact specification, error against the exact values, a DSP block against LUTs, a pipelined against a shared divider
 23. *(written)* Pre-trade risk: position, notional and rate limits, price band, kill switch, a gate that fails closed, a bounded formal proof of the safety property (an unbounded proof is an exercise)
 24. *(written)* Order entry: a binary protocol (the book's own, OUCH-like), templates patched in one cycle, a session state machine that fails closed, heartbeats and sequence numbers
-25. Order lifecycle: acks, cancels, replaces, fills, reconciliation
+25. *(written)* Order lifecycle: acks, cancels, replaces, fills, reconciliation
 
 ## Part 6 -- The whole system
 26. Integration: the wire-to-wire pipeline, a per-stage cycle-budget table, a register interface and DMA to the host
