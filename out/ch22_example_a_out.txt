@@ -1,0 +1,20 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper
+   PW  QW   F DIV latency | iCE40 LUT    FF   Fmax | ECP5 LUT    FF MULT18   Fmax | no-DSP LUT   Fmax
+   24  20  12   1      16 |      1942  1834   75.7 |     1408  1834      2  105.7 |       3156   83.2
+   24  20  12   0      16 |      1110   514   67.8 |      335   514      2  108.3 |       2015   86.8
+   24  20   8   1      12 |      1401  1404   77.2 |      988  1404      2  111.1 |       2031   97.0
+   24  20  16   1      20 |      2482  2240   68.2 |     1823  2240      2  109.9 |       3904   80.8
+   16  12   8   1      12 |       914  1036   90.6 |      402  1036      1  118.7 |       1152  100.8
+   32  24  16   1      20 |      2780  2552   69.6 |     3563  2552      2  111.6 |       4401   82.0
+   32  24  16   0      20 |      1377   567   63.4 |      375   567      2  112.7 |       2543   83.4
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  PW 24 QW 20 F 12 DIV 1 ice40      u.a_s                  -> u.b_prod               7.0 ns logic, 6.2 ns routing
+  PW 24 QW 20 F 12 DIV 1 ecp5       u.a_s                  -> u.b_prod               5.7 ns logic, 3.7 ns routing
+  PW 24 QW 20 F 12 DIV 1 ecp5nodsp  u.a_w                  -> u.b_prod               4.7 ns logic, 7.3 ns routing
+  PW 24 QW 20 F 12 DIV 0 ice40      u.w_n                  -> u.b_prod               6.7 ns logic, 8.0 ns routing
+  PW 24 QW 20 F 12 DIV 0 ecp5       u.d_d                  -> u.a_imb                3.9 ns logic, 5.4 ns routing
+  PW 24 QW 20 F 12 DIV 0 ecp5nodsp  u.a_w                  -> u.b_prod               4.5 ns logic, 7.1 ns routing
+  PW 32 QW 24 F 16 DIV 1 ice40      u.w_n                  -> u.b_prod               5.9 ns logic, 8.4 ns routing
+  PW 32 QW 24 F 16 DIV 1 ecp5       u.a_s                  -> u.b_prod               5.7 ns logic, 3.3 ns routing
+  PW 32 QW 24 F 16 DIV 1 ecp5nodsp  u.a_s                  -> u.b_prod               5.0 ns logic, 7.2 ns routing

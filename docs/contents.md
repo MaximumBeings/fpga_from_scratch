@@ -37,7 +37,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 
 ## Part 5 -- Decide and act
 21. *(written)* Triggers: predicates on messages (a fixed template), a symbol table in RAM banks, pipelined comparators, exact rules for when a write is seen
-22. Fixed-point signals: imbalance, mid and microprice on DSP and LUT
+22. *(written)* Fixed-point signals: imbalance, mid and microprice, a bit-exact specification, error against the exact values, a DSP block against LUTs, a pipelined against a shared divider
 23. Pre-trade risk: position, notional and rate limits, price bands, kill switch, fail-closed design, formal proof of the invariants
 24. Order entry: binary encoding, pre-built templates, session state, sequence numbers
 25. Order lifecycle: acks, cancels, replaces, fills, reconciliation

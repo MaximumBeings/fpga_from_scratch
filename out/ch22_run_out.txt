@@ -1,0 +1,26 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  sig DIV 0: Verilator warnings 0, Yosys check problems 0
+  sig DIV 1: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model (python3 model/sig_gold.py) and the properties of the arithmetic on random books
+  sig_gold hand-checked scenarios passed
+  362764 (book, F) cases with both sides present, F = 8 and 12: violations of  0 <= w <= 2^F: 0;  |imbalance| <= 1: 0;  microprice between the two prices: 0;
+  imbalance error <= 1 unit of 2^-F: 0 violations (worst 1.0000 units); microprice error <= spread / 2^(F+1): 0 violations (worst 1.0000 of the bound per tick of spread);  w(Qb, Qa) + w(Qa, Qb) is 2^F or 2^F + 1: 0 violations
+
+== 3. the unit against the model: every output in every cycle; 4 seeds of 150 messages per row (edge: the directed set, 2,916 books)
+  books    PW  QW   F DIV |  cycles  answers  not ok  crossed |    Icarus  Verilator
+  random   24  20  12   1 |    6334      600      48      104 |      4 of 4       PASS
+  random   24  20  12   0 |    9651      600      48      104 |      4 of 4       PASS
+  random   12   8   4   1 |    6302      600      48      104 |      4 of 4       PASS
+  random   20  16   9   0 |    7872      600      48      104 |      4 of 4       PASS
+  random   30  22  16   1 |    6350      600      48      104 |      4 of 4       PASS
+  burst    24  20  12   1 |     668      600      48      104 |      4 of 4       PASS
+  burst    24  20  12   0 |    9608      600      48      104 |      4 of 4       PASS
+  burst    12   8   4   1 |     636      600      48      104 |      4 of 4       PASS
+  burst    20  16   9   0 |    7808      600      48      104 |      4 of 4       PASS
+  burst    30  22  16   1 |     684      600      48      104 |      4 of 4       PASS
+  edge     24  20  12   1 |    2955     2938     612      964 |      1 of 1       PASS
+  edge     24  20  12   0 |   47010     2938     612      964 |      1 of 1       PASS
+  edge     12   8   4   1 |    2947     2938     612      964 |      1 of 1       PASS
+  edge     20  16   9   0 |   38196     2938     612      964 |      1 of 1       PASS
+  edge     30  22  16   1 |    2959     2938     612      964 |      1 of 1       PASS

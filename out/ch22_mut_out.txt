@@ -1,0 +1,65 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  only the bid side is checked for shares: caught by: random, PW 24, QW 20, F 12, DIV 1
+  only the ask side is checked for shares: caught by: random, PW 24, QW 20, F 12, DIV 1
+  a side without shares is allowed: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the total quantity is a difference: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the spread has the wrong sign: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the mid is a difference: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the division step compares with >: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the quotient bit compares with >: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the divider starts from the ask's shares (pipelined): caught by: random, PW 24, QW 20, F 12, DIV 1
+  the divider starts from the ask's shares (shared): caught by: random, PW 24, QW 20, F 12, DIV 0
+  the quotient bit is inverted: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the quotient is not shifted: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the remainder is not carried: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the total is not carried: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the pipelined valid is not reset along the chain: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the shared divider's result is flagged one cycle early: caught by: random, PW 24, QW 20, F 12, DIV 0
+  the shared divider's result is flagged one cycle late: caught by: random, PW 24, QW 20, F 12, DIV 0
+  the shared divider is free one cycle early: caught by: random, PW 24, QW 20, F 12, DIV 0
+  the shared divider is free one cycle late: caught by: random, PW 24, QW 20, F 12, DIV 0
+  the shared divider is always ready: caught by: random, PW 24, QW 20, F 12, DIV 0
+  the shared divider takes a message while busy: caught by: random, PW 24, QW 20, F 12, DIV 0
+  the shared divider's valid is not reset: caught by: random, PW 24, QW 20, F 12, DIV 0
+  rounding is half down: caught by: edge, PW 24, QW 20, F 12, DIV 1
+  there is no rounding: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the rounding compares the remainder with the total: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the imbalance is 2 w - 2^F + 1: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the imbalance is w - 2^(F-1): caught by: random, PW 24, QW 20, F 12, DIV 1
+  the imbalance is not registered: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the product drops the top bit of w: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the product is unsigned in the spread: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the product uses the spread of the previous stage: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the microprice has no price term: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the microprice price term is not shifted: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the microprice starts from the mid: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the price is not carried: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the spread is not carried to the multiplier: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the mid is not carried: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the mid output is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the spread output is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the cross flag is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the lock flag is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the w output is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the imbalance output is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the microprice output is not gated: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the cross flag is the wrong bit: caught by: edge, PW 24, QW 20, F 12, DIV 1
+  the lock flag tests one bit: caught by: random, PW 24, QW 20, F 12, DIV 1
+  the ok flag is not carried: caught by: random, PW 24, QW 20, F 12, DIV 1
+  model: rounding is floor: caught by: hand-checked scenarios
+  model: rounding is half down: caught by: hand-checked scenarios
+  model: the imbalance is 2 w: caught by: hand-checked scenarios
+  model: the microprice uses the wrong spread sign: caught by: hand-checked scenarios
+  model: lock is spread <= 0: caught by: hand-checked scenarios
+  model: cross is spread <= 0: caught by: hand-checked scenarios
+  model: a side without shares gives signals: caught by: hand-checked scenarios
+  model: the answer comes one cycle early: caught by: hand-checked scenarios
+  model: the shared divider is free one cycle early: caught by: hand-checked scenarios
+  model: the pipelined divider is busy: caught by: hand-checked scenarios
+  model: the division does not start from the bid's shares: caught by: hand-checked scenarios
+  model: the division has one step too few: caught by: hand-checked scenarios
+  model: the mid is exact in ticks: caught by: hand-checked scenarios
+  rtl/sig.sv: caught 47 of 47
+  model/sig_gold.py: caught 13 of 13
+mutants caught: 60 of 60

@@ -1,0 +1,25 @@
+== 1. error against F: 45305 books with both sides present; errors against the exact rational values
+    F | imbalance: max err   mean err | microprice: max err (ticks)  mean (ticks)  max / spread
+    4 |           0.062500   0.024625 |                    0.625000      0.054660      0.031250
+    6 |           0.015625   0.006826 |                    0.156250      0.015068      0.007812
+    8 |           0.003906   0.001680 |                    0.039062      0.003737      0.001953
+   10 |           0.000977   0.000414 |                    0.009743      0.000926      0.000488
+   12 |           0.000244   0.000103 |                    0.002438      0.000229      0.000122
+   14 |           0.000061   0.000026 |                    0.000609      0.000058      0.000030
+   16 |           0.000015   0.000006 |                    0.000153      0.000014      0.000008
+   18 |           0.000004   0.000002 |                    0.000038      0.000004      0.000002
+   20 |           0.000001   0.000000 |                    0.000010      0.000001      0.000000
+
+== 2. the smallest F (even values) that keeps the microprice error on every book seen below a threshold, in ticks
+  below  0.06250 tick: F = 8
+  below  0.01000 tick: F = 10
+  below  0.00100 tick: F = 14
+
+== 3. waiting for the shared divider (F = 12, accepts every 16 cycles): books arrive with probability p per cycle, one is held until accepted; 20,000 books
+       p  offered per 16 cycles |  mean wait  max wait  share waiting | pipelined divider
+  0.0100                   0.16 |        1.4        46          15.0% | wait 0
+  0.0300                   0.48 |        7.2       116          47.1% | wait 0
+  0.0500                   0.80 |       29.5       233          78.8% | wait 0
+  0.0600                   0.96 |      169.2       664          95.9% | wait 0
+  0.0625                   1.00 |      927.6      2195          99.6% | wait 0
+  0.0700                   1.12 |    16765.1     34454         100.0% | wait 0

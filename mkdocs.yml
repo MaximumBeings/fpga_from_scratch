@@ -77,5 +77,6 @@ nav:
       - "20. Order-Book Engineering: RAMs, a Hash Table, and What a Bounded Latency Costs": part04/20-order-book-engineering.md
   - "Part 5 -- Decide and act":
       - "21. Triggers: Predicates on Messages, a Symbol Table, and Comparators That Meet the Clock": part05/21-triggers.md
+      - "22. Fixed-Point Signals: Imbalance, Mid and Microprice, a Division That Is Exact to the Bit, and What a DSP Block Buys": part05/22-fixed-point-signals.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md
