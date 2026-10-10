@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part05/24-order-entry/">
+        <link rel="prev" href="../part05/25-order-lifecycle/">
       
       
       
@@ -1251,6 +1251,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part05/25-order-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    25. The Order Lifecycle: Tracking What Is Open, Giving Back What Is Not, and Keeping Two Books the Same
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1906,6 +1934,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 25
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-25-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 25 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2470,6 +2520,28 @@
     <span class="md-ellipsis">
       
         Chapter 24 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 25
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-25-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 25 -- hints for the exercises
       
     </span>
   </a>
@@ -3152,6 +3224,30 @@
 <li>A down-counter loaded with <code>HB</code> that sets <code>hb_due</code> when it reaches 0, with the flag registered, makes the heartbeat due one cycle after the count: the period becomes <code>HB + 1</code> cycles, the model and the hand-worked timelines change accordingly, and the critical path is a compare against zero (a NOR) instead of against a constant of 16 bits.</li>
 <li>A parser that finds a packet's type and length across beats feeds <code>rx_valid</code>; the state machine needs to see <code>H</code> as soon as it is complete, even if no <code>S</code> follows. Test a heartbeat split across two beats and a server that is silent except for heartbeats, for <code>K x HB</code> cycles: it must not be given up on.</li>
 <li>Candidates: a mutant in the top bit of the 16-bit timers (equivalent for the configured <code>HB</code> and <code>TL</code>), or in <code>cfg_what</code> values 6 and 7 (outside the contract).</li>
+</ol>
+<h2 id="chapter-25">Chapter 25<a class="headerlink" href="#chapter-25" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Token, account, symbol, side, the order's price, the remaining quantity and a state (PENDING_NEW, LIVE, PENDING_CANCEL). The price is kept so that a release carries the order's <em>own</em> price: the notional given back is then exactly the notional the gate charged, whatever the market or the exchange's execution price was.</li>
+<li>A report for an unknown token, an ACK for an order that is not PENDING_NEW, a fill of 0 or above the remainder, and a REJECT for an order that is not PENDING_NEW. Each changes nothing, releases nothing and sets the sticky fault: the exchange and the books disagree, and which of them is wrong is not something the tracker can know, so it believes neither until reset.</li>
+<li>A fill can only come from an order the exchange has accepted, so it proves the acknowledgement; a PENDING_NEW order that is filled becomes LIVE. An ACK that arrives afterwards finds the order LIVE (or gone), which is BADSTATE or UNKNOWN: an anomaly.</li>
+<li>A local refusal says no to the <em>requester</em> (the order has not been sent, nothing in the books is wrong); a fault says the exchange's reports contradict the books. Refusing a duplicate or a full table is the table doing its job, so it must not kill the gate.</li>
+<li>The gate has already charged an order the tracker cannot hold (ZERO, DUPTOK, FULL). The state machine sends the gate a CANCEL with the same account, symbol, side, price and quantity, in the first cycle in which the event port is free. The requester sees an answer of 16 plus the tracker's code (and must not send the order).</li>
+<li>A release from the tracker, then a give-back, then a new order. A tracker release is already in the tracker's output register when it is seen, and the new order is only taken when no release is there (<code>ord_ready</code> includes <code>!t_rv</code>), so a release always gets its cycle.</li>
+<li>For every account and symbol, the gate's open buys (sells) equal the sum of the remaining quantities of the tracker's buy (sell) orders, and the gate's notional equals the sum of price times remaining quantity. It is checked only when nothing is in flight: during an order, a release or the gate's two-cycle pipeline, the two books are legitimately a few cycles apart.</li>
+<li>It is indexed by token and keeps cumulative released quantities, while the tracker is indexed by entry and keeps remainders. A bug that is a consequence of how the table is organised (a wrong entry, a stale entry) is then not shared by the account that checks it.</li>
+<li>The line it removed cleared signals that are only set in the non-anomalous branches, so removing it changes no behaviour: no test, simulation or formal, can distinguish the two designs. The right response to an equivalent mutant is to delete the redundant code.</li>
+<li>At most one order that was already in flight (answered OK within a few cycles of the fault becoming visible) is still sent, new orders are refused (12 to 75 in a trial, the first about 6.7 cycles after the bad report), and the books still agree in every quiet cycle: failing closed stops new risk, it does not damage what is open.</li>
+<li>A smaller table is full more often, so the gate accepts orders the tracker cannot record and they are given back (13.9% of orders at 1 entry, none at 8 or 16 in the traffic used). It is a cost in orders refused, and the give-back is the correctness property: the gate's books are never left charged for an order that does not exist.</li>
+<li>For example: the lookup "takes the highest hit" (equivalent: the mutant text was the same as the original) and the free entry being the highest instead of the lowest (equivalent at the interface: which entry holds an order is not observable, so the wording was removed from the specification); or "the answer code is not cleared when idle" (outside the contract: the valid qualifies the field; the clearing was removed); or the six tracker-model mutants that were missing hand-checked cases.</li>
+</ol>
+<h2 id="chapter-25-hints-for-the-exercises">Chapter 25 -- hints for the exercises<a class="headerlink" href="#chapter-25-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The gate sees a CANCEL of the old charge and an ORDER of the new one; if the new order is refused the old charge must stay (so the order of the two events and a way to undo are the design). The tracker needs a PENDING_REPLACE state holding both quantities.</li>
+<li>A bust turns a FILL into a negative fill: the position moves back, <code>ob</code> or <code>os</code> may need to grow again, and the gate's invariants (open quantity never negative) hold only if the tracker remembers the filled quantity per order.</li>
+<li>A hash table adds a refusal when a bucket is full and a lookup that can miss for a collision reason; an unknown-token report then has two possible causes and the fault rule needs a second look. Example A changes from LUTs to block RAM.</li>
+<li>If the second order's NEW reaches a full tracker after the gate has charged both, two give-backs are needed and the event port needs a queue; the give-back must carry the held fields of <em>its</em> order, so the held registers become a small FIFO.</li>
+<li>The time grows quickly (it is a SAT problem over the unrolled design); spend the bound on the interesting part (a full table and a duplicate) rather than on more cycles of idle traffic.</li>
+<li>Candidates: a mutant in the top bit of the live counter (equivalent when <code>NT</code> is below a power of two), or in the bits of the report kind above its two bits (outside the contract).</li>
 </ol>
 
 
