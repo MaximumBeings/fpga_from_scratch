@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part05/21-triggers/">
+        <link rel="prev" href="../part05/22-fixed-point-signals/">
       
       
       
@@ -1167,6 +1167,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part05/22-fixed-point-signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    22. Fixed-Point Signals: Imbalance, Mid and Microprice, a Division That Is Exact to the Bit, and What a DSP Block Buys
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1756,6 +1784,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 22
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-22-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 22 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2254,6 +2304,28 @@
     <span class="md-ellipsis">
       
         Chapter 21 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 22
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-22-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 22 -- hints for the exercises
       
     </span>
   </a>
@@ -2867,6 +2939,29 @@
 <li>The visibility rule becomes: a table write in cycle <code>w</code> is seen by the lookups of cycle <code>w + 1</code> or later as before only if the write also passes through the new stage; the cleanest statement is "the lookups whose bank read happens after the write"; the model's <code>look</code> dictionary does not change, but the latency does (<code>L = 5 + PIPE</code>).</li>
 <li>Two messages of the same symbol in consecutive cycles read-modify-write the same counter: the second must see the first's increment. The usual fixes are forwarding from the stage's output to its input or a pipeline that processes one symbol per N cycles; the model states the result for back-to-back messages explicitly and a directed test uses them.</li>
 <li>Candidates: a mutant in a rule field's reset (the other fields are never read while <code>en</code> is 0: equivalent), or in the top bit of the registered index when <code>NS</code> is 16 (outside the contract if the control plane never writes an index above 15).</li>
+</ol>
+<h2 id="chapter-22">Chapter 22<a class="headerlink" href="#chapter-22" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>mid2 = Pa + Pb</code> (<code>PW + 1</code> bits, unsigned): half ticks, so it is exact (the mid is a half-integer in ticks when the spread is odd). <code>spread = Pa - Pb</code> (<code>PW + 1</code> bits, signed). <code>w = round_half_up(Qb 2^F / (Qa + Qb))</code> (<code>F + 1</code> bits). <code>imb = 2w - 2^F</code> (<code>F + 2</code> bits, signed; units of 2^-F). <code>micro = Pb 2^F + spread w</code> (<code>PW + F</code> bits; ticks x 2^F). All are 0 when a side has no shares.</li>
+<li>One division is the expensive operation, and everything else can be built on its rounded result: <code>imb</code> is <code>2w - 2^F</code> exactly, and <code>micro</code> is an exact integer product and sum of <code>w</code>. So no number is rounded by two rules, the error bounds follow from one rounding, and the hardware needs one divider.</li>
+<li>When both sides are present <code>Qb &lt; D</code>, so <code>Qb / D &lt; 1</code>: the integer part of the quotient is 0, and the remainder can start at <code>Qb</code>. Each step doubles the remainder and produces the next fraction bit, so <code>F</code> steps give the <code>F</code> fraction bits; the rounding looks at the next bit through the remainder.</li>
+<li>An exact half rounds up on both sides: <code>Qb 2^F / D = j + 1/2</code> and <code>Qa 2^F / D = (2^F - j - 1) + 1/2</code>, each rounded up gives <code>j + 1</code> and <code>2^F - j</code>, a sum of <code>2^F + 1</code>. With no shares on a side the signals do not exist: <code>ok = 0</code> and every output is 0.</li>
+<li><code>w</code> is in <code>[0, 2^F]</code>, so <code>micro = Pb + spread x w / 2^F</code> is a weighted average of <code>Pb</code> and <code>Pa</code> (<code>Pb + spread x w</code> for any sign of the spread), and a weighted average lies between its two terms. A crossed book (negative spread) puts the microprice between the two prices all the same.</li>
+<li>The imbalance error is at most one unit of 2^-F (the error of <code>w</code> is at most half a unit, and <code>imb = 2w - 2^F</code> doubles it); the microprice error is at most <code>spread / 2^(F+1)</code> (half a unit of <code>w</code> times the spread). The property run reaches both bounds exactly (the worst error seen is 1.0000 of each), at the exact halves.</li>
+<li>In cycle <code>a + F + 4</code> for a book offered in cycle <code>a</code>. The pipelined divider accepts one book per cycle; the shared divider is busy from the cycle after it accepts until the answer is visible, and accepts again in cycle <code>a + F + 4</code>.</li>
+<li>Each step is a stage with its own registers: the remainder, the total, the quotient so far and the values (price, spread, mid, ok) that the later stages need; the shared divider keeps one set. It gives up rate: one book per <code>F + 4</code> cycles, and waiting when books arrive faster.</li>
+<li>The product <code>spread x w</code> is a 25 x 13-bit multiplication; without a DSP block it is a few thousand LUTs of adders (3,156 against 1,408 in total), and its carry chains are slower than the block's multiplier (83 against 106 MHz).</li>
+<li>The multiplication stage: the DSP's multiplier with no pipeline registers inside it (about 9 ns). Use the DSP's own input and output registers or split the product in two stages (one more cycle of latency): Exercise 1.</li>
+<li><code>F = 10</code> for a hundredth of a tick (largest error 0.0097) and <code>F = 14</code> for a thousandth. The shared divider at its capacity (1.0 book per 16 cycles) has a mean wait of 928 cycles and the queue grows without bound; at 0.8 the mean wait is 29.5 cycles, at 0.48 it is 7.</li>
+<li>For example: the redundant valid resets (equivalent, each alone: the stage before it is reset, which flushes it; removed from the RTL); the shared divider's extra step (equivalent: it begins in the cycle the next stage takes the result; the guard was removed); half-down rounding (a missing test: random shares almost never land on exact halves; <code>half_books</code> added).</li>
+</ol>
+<h2 id="chapter-22-hints-for-the-exercises">Chapter 22 -- hints for the exercises<a class="headerlink" href="#chapter-22-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The DSP block can register its inputs and outputs internally; whether Yosys uses them depends on the registers around the multiplier. Splitting <code>w</code> into halves (<code>w = w_hi 2^8 + w_lo</code>) gives two smaller products and an add; <code>L</code> becomes <code>F + 5</code>, and <code>sig_gold.run</code> and the testbench's tail change by one cycle; check the clock with nextpnr.</li>
+<li>Two quotient bits per step need a comparison against <code>D</code>, <code>2D</code> and <code>3D</code> (or a subtract and a select); a radix-4 step costs about twice the LUTs of a radix-2 step and halves the cycles; <code>division()</code> must do the same steps, and the exact-half books must still hit exact halves.</li>
+<li>A table of the reciprocal of the leading bits of <code>D</code> plus one Newton step <code>x(2 - Dx)</code> gives <code>w</code> to a few bits less than the exact quotient; the properties of Section 2 (the microprice between the prices, the bounds) no longer hold exactly, so the model must give its own error bound and the test must check it, and <code>micro</code> must be clamped if you want to keep the "between the two prices" property.</li>
+<li>With four quantities the total needs <code>QW + 2</code> bits and the divider remainder one more bit; the microprice formula weights the best prices by the other side's quantity at the touch, and does not generalise directly: the weights of the second levels are a modelling choice that the specification must state.</li>
+<li>Candidates: a mutant in a width above the contract (a share count above <code>2^QW</code>: outside the contract), or in the top bit of <code>cnt</code> (equivalent, as it never counts that high).</li>
 </ol>
 
 
