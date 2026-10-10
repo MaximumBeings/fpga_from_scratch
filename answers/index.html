@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part05/23-pre-trade-risk/">
+        <link rel="prev" href="../part05/24-order-entry/">
       
       
       
@@ -1223,6 +1223,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part05/24-order-entry/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    24. Order Entry: A Binary Protocol, Templates Patched in One Cycle, and the Client Side of a Session That Fails Closed
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1856,6 +1884,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 24
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-24-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 24 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2398,6 +2448,28 @@
     <span class="md-ellipsis">
       
         Chapter 23 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 24
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-24-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 24 -- hints for the exercises
       
     </span>
   </a>
@@ -3057,6 +3129,29 @@
 <li>A per-symbol notional limit is another cumulative sum with its own limit, reset and refill-free; a daily loss limit needs a realised profit, which needs the fill price and the average cost: it is a different gate. The wrapper's sums need the matching ghost state, and S1 gets one more conjunct.</li>
 <li>A candidate invariant: for every account and symbol, <code>pos + ob - (the sum of buys accepted under the limit at the time) = ...</code> does not hold when the limit changes. A stable one: <code>pos + ob &lt;= max over all configurations ever written of max_long</code> (a history variable), which is weaker than S1; for the induction to prove S1 itself it must be strengthened with <code>-tempinduct</code> counterexamples (the engine shows a state it considers reachable but is not: add what excludes it).</li>
 <li>Candidates: a mutant in the top bit of the tick counter's width (equivalent when <code>R</code> is a power of two minus one), or in the bit above <code>NA</code> of the account index (outside the contract: the index is 4 bits and <code>NA &lt;= 15</code>).</li>
+</ol>
+<h2 id="chapter-24">Chapter 24<a class="headerlink" href="#chapter-24" title="Permanent link">&para;</a></h2>
+<ol>
+<li>An order is <code>O</code>, token(4), side(1: <code>B</code> or <code>S</code>), shares(4), stock(4), price(4), tif(4), firm(4), display(1), capacity(1): 28 bytes of payload, after the 2-byte length and the <code>U</code> of the data packet, 31 bytes on the wire. The template fixes the <code>U</code>, the <code>O</code>, the stock name (from the symbol index), the firm, the display and the capacity; the token, the side, the shares, the price and the tif are patched in from the request.</li>
+<li>The packet is formed in one cycle (the template's fixed bytes are registers and the patched fields are wired into a 32-byte word) and loaded into the transmitter at the end of the acceptance cycle, so the first beat is on the wire in the next cycle whatever the packet and <code>W</code>. The last byte leaves in cycle <code>a + ceil(bytes / W)</code>.</li>
+<li><code>ready</code> is high when at most <code>W</code> bytes are left in the transmitter (the last beat is leaving, or nothing) and no heartbeat is due; the new packet is loaded at the same edge, so its first beat follows the last beat of the old one. A due heartbeat takes the free slot and <code>ready</code> is low in that cycle: the request waits one cycle.</li>
+<li>Only ACTIVE: orders, cancels, replaces and a logout need it; a login needs IDLE. DEAD, GAP, REJECTED and CLOSED are states in which the session is not known to be in step with the server, so the unit refuses everything until a reset rebuilds the session.</li>
+<li>The login waits <code>TL</code> cycles in LOGIN (the counter's end of cycle <code>TL - 1</code>, DEAD visible <code>TL</code> cycles after LOGIN is); the session in ACTIVE waits until the quiet counter, which counts from 0 in the cycle after the last word from the server, reaches <code>3 HB</code>: DEAD is visible <code>3 HB + 1</code> cycles after the cycle of the last word (61 cycles at <code>HB = 20</code>).</li>
+<li>The cycle in which the quiet counter is <code>3 HB - 1</code>, that is, exactly <code>3 HB</code> cycles after the previous word. A mutant that dropped the "unless heard" condition from the give-up test was the same as the original in every test whose heartbeats came earlier, and only a test that sent one exactly on that cycle told them apart (the <em>limit</em> scenario).</li>
+<li>It is not the expected number, so the state becomes GAP (the stream lost or repeated a message) and the expected number does not change; orders are refused from the next cycle.</li>
+<li>BADSYM is for an order whose symbol index is not in the template table (<code>NS</code> or more); REFUSED is for a request that the session state does not allow (a login when not IDLE, anything else when not ACTIVE). A refused request sends nothing, and the answer comes one cycle after acceptance.</li>
+<li>The template and the 32-byte buffer are the same whatever <code>W</code>; <code>W</code> only decides how many top bytes are taken as the beat and how far the buffer shifts. So the logic is about the same (870 to 909 LUTs on iCE40) and the time on the wire is <code>ceil(bytes / W)</code> cycles.</li>
+<li>The session counters: the heartbeat counter's comparison with <code>HB</code> and its clearing, and the timers that feed the state and <code>ready</code> (5.8 ns of logic and 7.6 of routing on iCE40). Count down and register <code>hb_due</code> a cycle ahead (Exercise 3), accepting that the heartbeat period is one cycle different and saying so in the specification.</li>
+<li>4 cycles (31 bytes in beats of 8). At 108.8 MHz that is 37 ns for the last byte; a 10G MAC takes 8 bytes per 6.4 ns (156.25 MHz), so a transmitter clocked at 108 MHz delivers bytes more slowly than the line can send them and a FIFO (or a wider beat) is needed between them; a budget in cycles is only a budget in time when the clock is stated.</li>
+<li>For example: the quiet counter's clearing on entering ACTIVE (equivalent: the session goes through ACTIVE once between resets, so the counter is already 0, and the clearing was removed); an end of session while logging in (a missing test; scenario <em>closelogin</em>); reset that does not clear the user (a missing test: every scenario configured first; scenario <em>bare</em>).</li>
+</ol>
+<h2 id="chapter-24-hints-for-the-exercises">Chapter 24 -- hints for the exercises<a class="headerlink" href="#chapter-24-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Real order entry protocols number every client message (and the server replays what it has not acknowledged on a reconnect), keep the order token as a client-chosen identifier with rules about reuse, and have their own message set for replace and cancel and for rejections. The template and the session state machine keep their shape; the model needs a sequence number in each client message, a table of unacknowledged messages and the replay rule; the heartbeat rules are usually the same.</li>
+<li>The first 16 bytes can leave while the price is being computed; the model must say what the wire sees if the price is late by <code>d</code> beats (the beat is held or the packet is abandoned: a packet cannot be unsent on a TCP stream, so the only safe design is to guarantee the price arrives in time or not to start early). That is why cut-through is a property of the whole path, not of the transmitter.</li>
+<li>A down-counter loaded with <code>HB</code> that sets <code>hb_due</code> when it reaches 0, with the flag registered, makes the heartbeat due one cycle after the count: the period becomes <code>HB + 1</code> cycles, the model and the hand-worked timelines change accordingly, and the critical path is a compare against zero (a NOR) instead of against a constant of 16 bits.</li>
+<li>A parser that finds a packet's type and length across beats feeds <code>rx_valid</code>; the state machine needs to see <code>H</code> as soon as it is complete, even if no <code>S</code> follows. Test a heartbeat split across two beats and a server that is silent except for heartbeats, for <code>K x HB</code> cycles: it must not be given up on.</li>
+<li>Candidates: a mutant in the top bit of the 16-bit timers (equivalent for the configured <code>HB</code> and <code>TL</code>), or in <code>cfg_what</code> values 6 and 7 (outside the contract).</li>
 </ol>
 
 
