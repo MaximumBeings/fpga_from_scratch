@@ -1,0 +1,75 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  sess: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model (python3 model/sess_gold.py); the bytes of 2,000 random packets of every kind against struct.pack; the scenarios (W 8, NS 4, HB 20, TL 60, seed 0)
+  sess_gold: hand-checked scenarios passed
+  packets whose bytes differ from struct.pack: 0 of 2000; sizes on the wire: HEARTBEAT 3, ORDER 31, CANCEL 12, REPLACE 25, LOGIN 15, LOGOUT 3
+  normal  states: IDLE 14, LOGIN 4, ACTIVE 293 | packets: CANCEL 11, HEARTBEAT 2, LOGIN 1, ORDER 40, REPLACE 11 | answers: OK 63, REFUSED 10
+  reject  states: IDLE 14, LOGIN 8, REJECTED 289 | packets: LOGIN 1 | answers: OK 1, REFUSED 75
+  silent  states: IDLE 14, LOGIN 60, DEAD 237 | packets: LOGIN 1 | answers: OK 1, REFUSED 69
+  dead    states: IDLE 14, LOGIN 10, ACTIVE 115, DEAD 173 | packets: CANCEL 5, LOGIN 1, ORDER 15, REPLACE 1 | answers: BADSYM 2, OK 22, REFUSED 44
+  gap     states: IDLE 14, LOGIN 8, ACTIVE 35, GAP 254 | packets: CANCEL 1, LOGIN 1, ORDER 7 | answers: OK 9, REFUSED 58
+  close   states: IDLE 14, LOGIN 5, ACTIVE 36, CLOSED 256 | packets: CANCEL 1, LOGIN 1, ORDER 6, REPLACE 2 | answers: OK 10, REFUSED 71
+  logout  states: IDLE 14, LOGIN 6, ACTIVE 59, CLOSED 232 | packets: CANCEL 2, LOGIN 1, LOGOUT 1, ORDER 6, REPLACE 3 | answers: OK 13, REFUSED 48
+  random  states: IDLE 14, LOGIN 9, ACTIVE 14, GAP 274 | packets: CANCEL 1, LOGIN 1, REPLACE 1 | answers: OK 3, REFUSED 63
+  closelogin states: IDLE 14, LOGIN 6, CLOSED 291 | packets: LOGIN 1 | answers: OK 1, REFUSED 80
+  limit   states: IDLE 14, LOGIN 7, ACTIVE 300, DEAD 41 | packets: CANCEL 9, HEARTBEAT 2, LOGIN 1, ORDER 41, REPLACE 9 | answers: BADSYM 1, OK 60, REFUSED 12
+  bare    states: IDLE 5, LOGIN 10, ACTIVE 60, DEAD 228 | packets: CANCEL 5, LOGIN 1, ORDER 6, REPLACE 2 | answers: OK 14, REFUSED 57
+
+== 3. the transmitter against the model: beats, state, expected sequence number, ready and answers in every cycle
+  scenario  W  NS  HB  TL |  cycles  beats  packets |  Icarus  Verilator
+  normal    8   4  20  60 |     313    229       64 |    PASS       PASS
+  normal    1   4  20  60 |     313    292       19 |    PASS       PASS
+  normal    2   3   9  25 |     311    272       33 |    PASS       PASS
+  normal    4  15  12  40 |     311    269       41 |    PASS       PASS
+  normal    8   1   7  15 |     309    223       65 |    PASS       PASS
+  reject    8   4  20  60 |     311      2        1 |    PASS       PASS
+  reject    1   4  20  60 |     311     15        1 |    PASS       PASS
+  reject    2   3   9  25 |     310      8        1 |    PASS       PASS
+  reject    4  15  12  40 |     311      4        1 |    PASS       PASS
+  reject    8   1   7  15 |     308      2        1 |    PASS       PASS
+  silent    8   4  20  60 |     311      2        1 |    PASS       PASS
+  silent    1   4  20  60 |     311     15        1 |    PASS       PASS
+  silent    2   3   9  25 |     310      8        1 |    PASS       PASS
+  silent    4  15  12  40 |     311      4        1 |    PASS       PASS
+  silent    8   1   7  15 |     308      2        1 |    PASS       PASS
+  dead      8   4  20  60 |     311    110       32 |    PASS       PASS
+  dead      1   4  20  60 |     311    132        8 |    PASS       PASS
+  dead      2   3   9  25 |     310     99       11 |    PASS       PASS
+  dead      4  15  12  40 |     311     97       14 |    PASS       PASS
+  dead      8   1   7  15 |     308     78       22 |    PASS       PASS
+  gap       8   4  20  60 |     313     58       17 |    PASS       PASS
+  gap       1   4  20  60 |     313     80        4 |    PASS       PASS
+  gap       2   3   9  25 |     312     42        4 |    PASS       PASS
+  gap       4  15  12  40 |     313     55        8 |    PASS       PASS
+  gap       8   1   7  15 |     310     42       12 |    PASS       PASS
+  close     8   4  20  60 |     314     44       13 |    PASS       PASS
+  close     1   4  20  60 |     314     74        4 |    PASS       PASS
+  close     2   3   9  25 |     313     77        9 |    PASS       PASS
+  close     4  15  12  40 |     313     78       11 |    PASS       PASS
+  close     8   1   7  15 |     310     56       16 |    PASS       PASS
+  logout    8   4  20  60 |     311     51       15 |    PASS       PASS
+  logout    1   4  20  60 |     311    294       18 |    PASS       PASS
+  logout    2   3   9  25 |     310    121       15 |    PASS       PASS
+  logout    4  15  12  40 |     311    119       18 |    PASS       PASS
+  logout    8   1   7  15 |     308     53       17 |    PASS       PASS
+  random    8   4  20  60 |     311    132       36 |    PASS       PASS
+  random    1   4  20  60 |     311    176       11 |    PASS       PASS
+  random    2   3   9  25 |     310    192       23 |    PASS       PASS
+  random    4  15  12  40 |     311    128       19 |    PASS       PASS
+  random    8   1   7  15 |     308     52       15 |    PASS       PASS
+  closelogin  8   4  20  60 |     311      2        1 |    PASS       PASS
+  closelogin  1   4  20  60 |     311     15        1 |    PASS       PASS
+  closelogin  2   3   9  25 |     310      8        1 |    PASS       PASS
+  closelogin  4  15  12  40 |     311      4        1 |    PASS       PASS
+  closelogin  8   1   7  15 |     308      2        1 |    PASS       PASS
+  limit     8   4  20  60 |     359    240       67 |    PASS       PASS
+  limit     1   4  20  60 |     359    306       18 |    PASS       PASS
+  limit     2   3   9  25 |     310    147       16 |    PASS       PASS
+  limit     4  15  12  40 |     311    181       25 |    PASS       PASS
+  limit     8   1   7  15 |     308     93       26 |    PASS       PASS
+  bare      8   4  20  60 |     302     42       13 |    PASS       PASS
+  bare      1   4  20  60 |     302     88        6 |    PASS       PASS
+  bare      2   3   9  25 |     304     30        3 |    PASS       PASS
+  bare      4  15  12  40 |     305     39        6 |    PASS       PASS
+  bare      8   1   7  15 |     302     14        6 |    PASS       PASS

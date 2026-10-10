@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Chapter 24 figures -> docs/assets/fig/ch24-*.svg (data from out/ch24_*_out.txt)."""
+import os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from figs import Fig, C, bar_chart, line_chart
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__))); OUT = os.path.join(ROOT, "docs", "assets", "fig"); os.makedirs(OUT, exist_ok=True)
+rd = lambda n: open(f"{ROOT}/out/{n}").read()
+f = Fig(980, 400, "Transmitter"); f.text(490, 24, "The transmitter: a template patched in one cycle, then W bytes per beat, no gap between packets", 14, bold=True)
+f.box(20, 140, 120, 90, ["request", "order, cancel,", "replace, login,", "logout"], C["gray2"], C["gray"], 11, True)
+f.box(170, 70, 190, 100, ["template (configuration)", "stock name per symbol, firm,", "display, capacity, user,", "password, sequence number"], C["blue2"], C["blue"], 11, True)
+f.box(170, 200, 190, 90, ["patch: token, side, shares,", "price, tif into the fixed bytes", "(wiring and a multiplexer:", "one cycle)"], C["purple2"], C["purple"], 11, True)
+f.box(400, 140, 170, 90, ["32-byte packet buffer", "len 2 | type | payload", "31, 12, 25, 15 or 3 bytes"], C["orange2"], C["orange"], 11, True)
+f.box(600, 140, 150, 90, ["beats: W bytes", "first byte first,", "ceil(bytes / W)", "beats"], C["green2"], C["green"], 11, True)
+f.box(780, 70, 180, 90, ["session state", "IDLE LOGIN ACTIVE ...", "heartbeat and quiet timers", "expected sequence number"], C["blue2"], C["blue"], 11, True)
+f.box(780, 200, 180, 90, ["server events", "A accepted, J rejected,", "H heartbeat, S sequenced,", "Z end of session"], C["gray2"], C["gray"], 11, True)
+f.arrow(142, 185, 168, 245, C["ink"], 1.6); f.arrow(142, 175, 168, 130, C["ink"], 1.6); f.arrow(362, 120, 398, 170, C["ink"], 1.6); f.arrow(362, 245, 398, 200, C["ink"], 1.6); f.arrow(572, 185, 598, 185, C["ink"], 1.6)
+f.arrow(870, 198, 870, 162, C["blue"], 1.4); f.arrow(778, 115, 480, 138, C["blue"], 1.2)
+f.text(490, 335, "ready = at most W bytes left in the buffer and no heartbeat due; the next packet's first beat follows the last beat of this one", 12, C["ink"], italic=True)
+f.text(490, 360, "first byte on the wire in the cycle after acceptance, for every W", 12, C["ink"], italic=True)
+f.save(f"{OUT}/ch24-unit.svg")
+g = Fig(980, 380, "Session"); g.text(490, 24, "The client's session: it only ever leaves ACTIVE for a state that refuses orders", 14, bold=True)
+def st(x, y, w, t, col): g.box(x, y, w, 56, t, C[col + "2"], C[col], 11, True)
+st(30, 150, 100, ["IDLE", "after reset"], "gray"); st(190, 150, 110, ["LOGIN", "login sent"], "blue"); st(380, 150, 120, ["ACTIVE", "orders flow"], "green")
+st(190, 40, 130, ["REJECTED", "'J'"], "red") if "red2" in C else st(190, 40, 130, ["REJECTED", "'J'"], "orange")
+st(380, 40, 130, ["DEAD", "login timeout"], "orange"); st(580, 150, 130, ["GAP", "wrong seq number"], "orange"); st(580, 250, 130, ["CLOSED", "'Z' or logout"], "purple"); st(380, 250, 130, ["DEAD", "quiet for 3 HB"], "orange")
+g.arrow(132, 178, 188, 178, C["ink"], 1.6); g.arrow(302, 178, 378, 178, C["ink"], 1.6); g.arrow(245, 148, 250, 98, C["ink"], 1.4); g.arrow(500, 178, 578, 178, C["ink"], 1.4); g.arrow(470, 208, 600, 250, C["ink"], 1.4); g.arrow(440, 208, 440, 248, C["ink"], 1.4); g.arrow(260, 148, 380, 90, C["ink"], 1.4)
+g.text(160, 140, "LOGIN request", 10, C["ink"]); g.text(340, 168, "'A'", 10, C["ink"]); g.text(250, 120, "'J'", 10, C["ink"]); g.text(540, 168, "bad S", 10, C["ink"]); g.text(380, 125, "no answer in TL", 10, C["ink"])
+g.text(490, 345, "no state leaves REJECTED, DEAD, GAP or CLOSED except reset: orders are refused until the session is built again (it fails closed)", 12, C["ink"], italic=True)
+g.save(f"{OUT}/ch24-states.svg")
+B = rd("ch24_example_b_out.txt"); s1 = B.split("== 2.")[0]
+rows = re.findall(r"^\s+([A-Z]+)\s+(\d+) \|\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)", s1, re.M)
+if rows: bar_chart(900, 330, [f"{r[0].title()} {r[1]}B" for r in rows[:3]], [[float(r[2 + k]) for r in rows[:3]] for k in range(4)], "Cycles to put a packet on the wire, by beat width", "cycles", colors=[C["blue"], C["orange"], C["green"], C["purple"]], legend=["W = 1", "W = 2", "W = 4", "W = 8"], fmt="{:.0f}").save(f"{OUT}/ch24-wire.svg")
+s2 = B.split("== 2.")[1].split("== 3.")[0]; lv = re.findall(r"^\s+(\d+)\s+([\d.]+) \|\s+([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%\s+([\d.]+)%", s2, re.M)
+sel = [r for r in lv if r[0] == "10"]
+if sel: bar_chart(900, 320, [f"p = {r[1]}" for r in sel], [[float(r[2 + k]) for r in sel] for k in range(4)], "Sessions wrongly given up (%), by multiple K (jitter 10 cycles)", "% of heartbeats", colors=[C["red"], C["orange"], C["blue"], C["green"]], legend=["K = 2", "K = 3", "K = 4", "K = 5"], fmt="{:.1f}").save(f"{OUT}/ch24-live.svg")
+print("ch24 figures written")

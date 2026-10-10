@@ -1,0 +1,33 @@
+== 1. cycles from acceptance to the last byte on the wire: ceil(bytes / W)
+  packet     bytes |  W = 1  W = 2  W = 4  W = 8 W = 16
+  ORDER         31 |     31     16      8      4      2
+  CANCEL        12 |     12      6      3      2      1
+  REPLACE       25 |     25     13      7      4      2
+  LOGIN         15 |     15      8      4      2      1
+  HEARTBEAT      3 |      3      2      1      1      1
+  LOGOUT         3 |      3      2      1      1      1
+  (the first byte is on the wire in the cycle after acceptance for every W: one cycle to patch the template)
+
+== 2. liveness: false give-ups against the multiple K (the server's heartbeat period HB = 20 cycles, delay uniform in 0 .. J, loss probability p)
+     J      p |    K = 2    K = 3    K = 4    K = 5
+     0   0.00 |    0.00%    0.00%    0.00%    0.00%
+     0   0.05 |    4.79%    0.22%    0.01%    0.00%
+     0   0.20 |   16.48%    3.29%    0.71%    0.10%
+    10   0.00 |    0.00%    0.00%    0.00%    0.00%
+    10   0.05 |    2.81%    0.11%    0.01%    0.00%
+    10   0.20 |   10.41%    2.18%    0.42%    0.09%
+    30   0.00 |    6.67%    0.00%    0.00%    0.00%
+    30   0.05 |    8.57%    0.43%    0.03%    0.00%
+    30   0.20 |   14.02%    2.80%    0.56%    0.14%
+
+== 3. dead-server detection time, from the model (the unit): the cycles between the last heartbeat heard and DEAD, for HB = 20 and K = 3; checked against the cycle model
+  HB   7: last heartbeat heard in cycle 27, DEAD from cycle 49: 22 cycles = 3.14 HB
+  HB  20: last heartbeat heard in cycle 66, DEAD from cycle 127: 61 cycles = 3.05 HB
+  HB  50: last heartbeat heard in cycle 156, DEAD from cycle 307: 151 cycles = 3.02 HB
+
+== 4. the client's heartbeats against the order rate (HB = 20): the share of packets sent that are heartbeats, for orders offered at rate r per cycle (one 31-byte order is 4 beats at W = 8)
+  rate  0.00:     0 orders,   953 heartbeats (100.0% of the packets)
+  rate  0.01:   226 orders,   850 heartbeats ( 79.0% of the packets)
+  rate  0.02:   442 orders,   760 heartbeats ( 63.2% of the packets)
+  rate  0.05:  1007 orders,   550 heartbeats ( 35.3% of the packets)
+  rate  0.10:  1988 orders,   259 heartbeats ( 11.5% of the packets)

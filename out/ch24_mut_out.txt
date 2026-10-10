@@ -1,0 +1,119 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  a heartbeat does not stop a request: caught by: random, W 8, NS 4, HB 20, TL 60
+  the transmitter is free only when empty: caught by: normal, W 1, NS 4, HB 20, TL 60
+  the transmitter is free one beat early: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the byte count of a full beat is zero: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the byte count of the last beat is W: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the beat is taken from the wrong end: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a sell is sent as a buy: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order length is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order type is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order has no data marker: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order token is the new token: caught by: dead, W 8, NS 4, HB 20, TL 60
+  the order shares are the price: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order price is the shares: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order tif is the price: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order stock is the firm: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order firm is the stock: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order display and capacity are swapped: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the order stock is always symbol 0: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the cancel length is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the cancel type is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the cancel shares are the price: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the cancel token is the new token: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the replace length is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the replace type is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the replace tokens are swapped: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the replace price and shares are swapped: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the replace has no display: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the login length is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the login type is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the login user and password are swapped: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the login has no sequence number: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the heartbeat type is wrong: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the logout type is wrong: caught by: logout, W 4, NS 15, HB 12, TL 40
+  an order is one byte short: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a cancel is one byte short: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a replace is one byte long: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a login is one byte short: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a logout is longer than a heartbeat: caught by: logout, W 8, NS 4, HB 20, TL 60
+  a heartbeat is one byte short: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a login is allowed when active: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a login is allowed after a rejection: caught by: reject, W 8, NS 4, HB 20, TL 60
+  orders are allowed while logging in: caught by: silent, W 8, NS 4, HB 20, TL 60
+  orders are allowed after a gap: caught by: gap, W 8, NS 4, HB 20, TL 60
+  a symbol equal to NS is allowed: caught by: limit, W 8, NS 4, HB 20, TL 60
+  a replace with a bad symbol is refused: caught by: logout, W 8, NS 4, HB 20, TL 60
+  a bad symbol is sent anyway: caught by: limit, W 8, NS 4, HB 20, TL 60
+  the answer is valid for every offer: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a refusal is reported as accepted: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a bad symbol is reported as refused: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a login is not heard accepted: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the accepted login takes the wrong sequence number: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a login is accepted from any state: caught by: closelogin, W 8, NS 4, HB 20, TL 60
+  a rejection is ignored: caught by: reject, W 8, NS 4, HB 20, TL 60
+  a rejection goes to dead: caught by: reject, W 8, NS 4, HB 20, TL 60
+  an end of session is ignored while logging in: caught by: closelogin, W 8, NS 4, HB 20, TL 60
+  an end of session is ignored while active: caught by: close, W 8, NS 4, HB 20, TL 60
+  an end of session closes any state: caught by: random, W 2, NS 3, HB 9, TL 25
+  a server heartbeat is not heard: caught by: dead, W 8, NS 4, HB 20, TL 60
+  a sequenced packet in order is not counted: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a sequenced packet in order is not heard: caught by: normal, W 1, NS 4, HB 20, TL 60
+  a number ahead is accepted: caught by: gap, W 8, NS 4, HB 20, TL 60
+  a number behind is accepted: caught by: gap, W 1, NS 4, HB 20, TL 60
+  a gap is not noticed: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the login timer is one cycle long: caught by: silent, W 8, NS 4, HB 20, TL 60
+  the login timer is one cycle short: caught by: silent, W 8, NS 4, HB 20, TL 60
+  the quiet limit is twice the heartbeat: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the quiet limit is four heartbeats: caught by: dead, W 8, NS 4, HB 20, TL 60
+  a packet heard does not save the session: caught by: limit, W 8, NS 4, HB 20, TL 60
+  the login timer is not counted: caught by: silent, W 8, NS 4, HB 20, TL 60
+  the quiet counter is not restarted by a packet: caught by: dead, W 8, NS 4, HB 20, TL 60
+  a heartbeat is due one cycle late: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a heartbeat is due one cycle early: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a request does not restart the heartbeat count: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the heartbeat count is not cleared outside ACTIVE: caught by: bare, W 8, NS 4, HB 20, TL 60
+  a logout does not close the session: caught by: logout, W 8, NS 4, HB 20, TL 60
+  a heartbeat is not sent when the transmitter is free: caught by: normal, W 1, NS 4, HB 20, TL 60
+  the transmitter is not advanced: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the transmitter advances one byte: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the length is not reduced: caught by: normal, W 8, NS 4, HB 20, TL 60
+  the length is reduced by one: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a stock write ignores the symbol: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a user write goes to the password: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a password write is ignored: caught by: normal, W 8, NS 4, HB 20, TL 60
+  a firm write is ignored: caught by: normal, W 8, NS 4, HB 20, TL 60
+  display and capacity are swapped: caught by: dead, W 8, NS 4, HB 20, TL 60
+  a sequence number write is ignored: caught by: normal, W 8, NS 4, HB 20, TL 60
+  reset does not clear the state: caught by: normal, W 8, NS 4, HB 20, TL 60
+  reset does not clear the transmitter: caught by: normal, W 8, NS 4, HB 20, TL 60
+  reset does not clear the expected number: caught by: normal, W 8, NS 4, HB 20, TL 60
+  reset does not clear the answer flag: caught by: normal, W 8, NS 4, HB 20, TL 60
+  reset does not clear the stock names: caught by: bare, W 8, NS 4, HB 20, TL 60
+  reset does not clear the user: caught by: bare, W 8, NS 4, HB 20, TL 60
+  reset does not clear the firm: caught by: bare, W 8, NS 4, HB 20, TL 60
+  reset does not clear the sequence number: caught by: bare, W 8, NS 4, HB 20, TL 60
+  reset does not clear the display: caught by: bare, W 8, NS 4, HB 20, TL 60
+  model: a sell is a buy: caught by: hand-checked scenarios
+  model: the order length is wrong: caught by: hand-checked scenarios
+  model: the heartbeat comes one cycle late: caught by: hand-checked scenarios
+  model: ready ignores the heartbeat: caught by: hand-checked scenarios
+  model: ready needs an empty transmitter: caught by: hand-checked scenarios
+  model: a login is allowed when active: caught by: hand-checked scenarios
+  model: orders are allowed after a gap: caught by: hand-checked scenarios
+  model: a bad symbol is allowed: caught by: hand-checked scenarios
+  model: the quiet limit is two heartbeats: caught by: hand-checked scenarios
+  model: the login timer is one cycle long: caught by: hand-checked scenarios
+  model: a server heartbeat does not count: caught by: hand-checked scenarios
+  model: a number ahead is accepted: caught by: hand-checked scenarios
+  model: a gap is not noticed: caught by: hand-checked scenarios
+  model: the accepted login keeps the old number: caught by: hand-checked scenarios
+  model: an end of session is ignored while logging in: caught by: hand-checked scenarios
+  model: a logout does not close: caught by: hand-checked scenarios
+  model: a refused request is not answered: caught by: hand-checked scenarios
+  model: a request does not restart the heartbeat count: caught by: hand-checked scenarios
+  model: a write for a bad symbol overwrites symbol 0: caught by: hand-checked scenarios
+  rtl/sess.sv: caught 95 of 95
+  model/sess_gold.py: caught 19 of 19
+mutants caught: 114 of 114

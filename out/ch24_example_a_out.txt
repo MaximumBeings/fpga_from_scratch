@@ -1,0 +1,15 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper
+   W  NS | iCE40 LUT    FF   Fmax | ECP5 LUT    FF   Fmax
+   1   4 |       909   893   74.8 |      882   894  103.9
+   2   4 |       903   893   75.8 |      883   894  103.6
+   4   4 |       890   893   72.7 |      891   894  105.5
+   8   4 |       870   893   62.7 |      906   894  108.8
+   8  15 |      1151  1245   75.4 |     1925  1246   93.1
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  W 1 NS  4 ice40  u.hbc                    -> u.hbc                    5.8 ns logic, 7.6 ns routing
+  W 1 NS  4 ecp5   u.txlen                  -> u.hbc                    3.5 ns logic, 6.1 ns routing
+  W 8 NS  4 ice40  u.ltc                    -> u.rxc                    5.4 ns logic, 10.6 ns routing
+  W 8 NS  4 ecp5   u.hbc                    -> u.tx                     3.5 ns logic, 5.6 ns routing
+  W 8 NS 15 ice40  u.hbc                    -> u.hbc                    5.6 ns logic, 7.6 ns routing
+  W 8 NS 15 ecp5   u.txlen                  -> u.hbc                    3.2 ns logic, 7.6 ns routing
