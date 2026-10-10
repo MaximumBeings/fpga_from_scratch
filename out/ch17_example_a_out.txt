@@ -1,0 +1,28 @@
+== resources, clock and throughput (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper; throughput = W x Fmax
+   W version | iCE40 LUT    FF   Fmax  Gbit/s | ECP5 LUT    FF   Fmax  Gbit/s
+   1       1 |       287   358   87.1    0.70 |      315   360  132.3    1.06
+   2       1 |      1391   490   61.5    0.98 |     2055   490   79.9    1.28
+   4       1 |      2843   506   35.1    1.12 |     3407   506   40.2    1.29
+   8       1 | synthesis did not finish in 15 minutes (iCE40 and ECP5)
+   2       2 |      1254   588   71.5    1.14 |     1237   588   90.2    1.44
+   4       2 |      2639   656   37.2    1.19 |     2854   656   41.1    1.32
+   8       2 | synthesis did not finish in 15 minutes (iCE40 and ECP5)
+   2       3 |      1261   528   54.6    0.87 |     1831   528   56.8    0.91
+   4       3 |      2659   596   33.2    1.06 |     3379   596   36.7    1.17
+   8       3 | synthesis did not finish in 15 minutes (iCE40 and ECP5)
+
+== the end points of each critical path (nextpnr's last report for the clock)
+  W = 1 v1 ice40  u.off                  -> u.f_stock              4.0 ns logic, 7.4 ns routing
+  W = 1 v1 ecp5   iv                     -> u.er                   2.5 ns logic, 5.0 ns routing
+  W = 2 v1 ice40  u.c_rem                -> u.o_ts                 5.8 ns logic, 10.5 ns routing
+  W = 2 v1 ecp5   u.rem                  -> u.f_stock              3.7 ns logic, 8.8 ns routing
+  W = 4 v1 ice40  iv                     -> u.er                   8.2 ns logic, 20.3 ns routing
+  W = 4 v1 ecp5   u.pos                  -> u.f_match              8.0 ns logic, 16.9 ns routing
+  W = 2 v2 ice40  u.c_rem                -> u.m_i                  5.8 ns logic, 8.2 ns routing
+  W = 2 v2 ecp5   u.pos                  -> rst                    4.9 ns logic, 6.2 ns routing
+  W = 4 v2 ice40  u.c_rem                -> u.c_ses                7.4 ns logic, 19.5 ns routing
+  W = 4 v2 ecp5   u.pos                  -> u.er                   8.8 ns logic, 15.6 ns routing
+  W = 2 v3 ice40  iv                     -> u.c_ses                8.7 ns logic, 9.6 ns routing
+  W = 2 v3 ecp5   u.pos                  -> u.ses                  6.6 ns logic, 11.1 ns routing
+  W = 4 v3 ice40  iv                     -> u.c_seq                11.4 ns logic, 18.7 ns routing
+  W = 4 v3 ecp5   u.pos                  -> u.ses                  9.2 ns logic, 18.1 ns routing

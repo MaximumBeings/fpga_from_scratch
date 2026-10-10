@@ -761,3 +761,26 @@ Worked answer: the hot path that does not advance `SND.UNA` survived because no 
 3. SoupBinTCP packets are `length(2) type(1) payload`: the same loop with a one-byte type in place of the Mold header; generate it by giving the generator a different framing preamble, then check against a model with its own struct layouts.
 4. Walk the grammar in the same order and emit, per type, a `case` that shifts each field out most significant byte first; the test is `decode(encode(x)) == x` on random values, then compare with the parser's output.
 5. Candidates: a mutant of the unreachable `default` branches (equivalent), or one that changes the width of a counter that can never fill (outside the contract).
+
+## Chapter 17
+
+1. The previous block ends wherever its length says, which is unrelated to the beat size; the next block's length bytes and body start in whatever lane follows. The parser must carry its position in the block across beats and process several bytes of different roles in one clock.
+2. The number of valid bytes in the beat (1 to W). Only the last beat of a packet may have fewer than W (a packet that is abandoned without eop is cut to whole beats).
+3. The next message can start in the same beat in which one completes, and its first bytes would shift into the same field registers. The snapshot copies the fields at the lane where the block completes.
+4. At most one block completes per beat; a second completion is error 3, reported as an `X` event, the packet is abandoned and its end is flagged truncated. A second block's total length (L + 2) must be below W to share a beat with the end of the first, and a valid ITCH message is at least 14 bytes on the wire, so W of 15 or more is needed for valid traffic to do it.
+5. The block takes L + 2 bytes. If the previous block ends in lane `e` (uniform over W lanes) the new block ends in the same beat when `e + L + 2 < W`, which holds for `W - L - 2` values of `e`: P = max(0, W - L - 2) / W.
+6. 41 bytes is 6 beats at W = 8 (5 full and one of one byte): 41 / 48 = 85.4% of the bus.
+7. Stage 1 runs the framing chain (state, counters, block lengths, errors) and registers, for each lane, whether it is a field byte, its offset in the body, the type, and whether a block completes there. Stage 2 uses the registered tags and the registered data to shift bytes into the field registers and take the snapshot, with no framing logic in its path.
+8. Writing header bytes by an index computed from the position counter makes every lane's store a decoder driven by the chain's position variable, in front of 80-bit and 64-bit registers: more logic on the same path than a shift. The measured clock fell from 37 to 33 MHz (W = 4, iCE40).
+9. The role of lane `j` depends on all earlier lanes (where blocks end is a function of the length bytes), so the logic is a chain W lanes deep. Breaking it takes speculation (compute every possible role in parallel and select) or a first stage that finds the boundaries from the length bytes alone.
+10. That the straightforward design, simulated and correct, is too large for the book's flow at W = 8 in 15 minutes for both families and for all three versions. It does not say that W = 8 cannot be built, or how fast it would be.
+11. One byte per clock at 125 MHz is 1 Gbit/s, which is gigabit Ethernet's rate (and ECP5 reaches 132 MHz). Ten gigabit is eight bytes at 156 MHz or more, and the wide design here does not get near it.
+12. For example: a zero-length block in lane 0 (missing test: too rare an alignment, now an `alignments` stream); the type byte tagged as a field byte (code that cannot matter: the field selects already exclude offset 0).
+
+## Chapter 17 -- hints for the exercises
+
+1. For lane `j` assume a block starts at `j` (LENH at `j`, LENL at `j+1`, type at `j+2`): the role of every lane after `j` follows from the length read at `j`, `j+1`. Select by the actual `rem`/state at beat start. Speculating for every `j` costs about W times the per-lane logic but each is shallow; the selection is a mux tree.
+2. Stage 1 needs only the length bytes and the remaining count: boundaries are `pos_k = pos_{k-1} + 2 + L_k`, a prefix sum whose terms are unknown until the length bytes are read, so pipeline it over two cycles or limit it to the lanes where a length can start.
+3. The second slot needs its own field registers and snapshot (double the output registers); the rule becomes "a third completion is an error".
+4. Replace the 8 per-lane type comparisons by one decode of the type byte shared by tags and lengths; the field selects are then comparisons against a one-hot vector.
+5. Candidates: a mutant in the unreachable `default` of the state case (equivalent), or in the saturation value of the offset (outside the contract above 255 bytes only for blocks that are errors anyway).

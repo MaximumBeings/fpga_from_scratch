@@ -1,0 +1,46 @@
+== 1. the generator: deterministic, and its output lints
+  two runs give the same text: True; the checked-in rtl/mold_wide.sv (W = 8) equals it: True; 544 lines for W = 8 (336 for W = 4, 232 for W = 2)
+  W = 2: Verilator warnings 0, Yosys check problems 0
+  W = 4: Verilator warnings 0, Yosys check problems 0
+  W = 8: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model (python3 model/wide_gold.py) and what the stimulus contains (W = 8, 8 seeds of 60 packets)
+  wide_gold hand-checked scenarios passed
+  480 packets: messages ok 1453, unknown type 20, bad length 12; framing errors (X) 1; packet ends clean 451, truncated or abandoned 13
+
+== 3. the parser against the model, W = 2, 4, 8: every message, framing error and packet end, each at its cycle (the cycle after the beat), 6 seeds of 40 packets per kind
+   W       stream  packets  messages   beats  framing errors |    Icarus  Verilator
+   2        mixed      240       721   14333               0 |      6 of 6       PASS
+   2  faults only      240       551   13299               0 |      6 of 6       PASS
+   2  well formed      240       724   14087               0 |      6 of 6       PASS
+   2 long packets      240      4920   81705               0 |      6 of 6       PASS
+   2   alignments      240      1308   21187               0 |      6 of 6       PASS
+   4        mixed      240       718    7297               1 |      6 of 6       PASS
+   4  faults only      240       521    6759              10 |      6 of 6       PASS
+   4  well formed      240       724    7164               0 |      6 of 6       PASS
+   4 long packets      240      4920   40988               0 |      6 of 6       PASS
+   4   alignments      240      1184   10683              48 |      6 of 6       PASS
+   8        mixed      240       717    3801               1 |      6 of 6       PASS
+   8  faults only      240       505    3494              16 |      6 of 6       PASS
+   8  well formed      240       724    3695               0 |      6 of 6       PASS
+   8 long packets      240      4909   20650               1 |      6 of 6       PASS
+   8   alignments      240      1049    5503             102 |      6 of 6       PASS
+
+== 3b. the three versions of the generator (1: the chain of byte steps unrolled; 2: framing and field assembly in two pipeline stages; 3: as 2 with the header bytes written by position), each against the model (latency 1, 2, 2), 6 seeds of 40 packets on the mixed and the faults-only streams
+   W version  latency |     mixed  faults only
+   2       1        1 |      6 of 6         6 of 6
+   2       2        2 |      6 of 6         6 of 6
+   2       3        2 |      6 of 6         6 of 6
+   4       1        1 |      6 of 6         6 of 6
+   4       2        2 |      6 of 6         6 of 6
+   4       3        2 |      6 of 6         6 of 6
+   8       1        1 |      6 of 6         6 of 6
+   8       2        2 |      6 of 6         6 of 6
+   8       3        2 |      6 of 6         6 of 6
+
+== 4. throughput: clean packets of 12 ITCH messages (the A/D/E mix of Chapter 16, example B) back to back, no idle cycles; cycles from the first beat to the packet end
+  bytes per beat  bytes per packet  cycles per packet  bytes per cycle  derived cycles
+               1      (Chapter 16)            = bytes             1.00
+               2               440             220.00             2.00             220
+               4               452             113.00             4.00             113
+               8               414              52.00             7.96              52

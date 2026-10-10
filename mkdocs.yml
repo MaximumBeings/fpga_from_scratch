@@ -71,5 +71,6 @@ nav:
       - "15. Hot Path and Cold Path: Splitting TCP Between Hardware and Software, Keeping the Order, Head-of-Line Blocking, and Reconnects": part03/15-hot-and-cold-path.md
   - "Part 4 -- Market data":
       - "16. Exchange Protocols: MoldUDP64 and ITCH, and a Generator That Turns a Message Grammar into a Parser": part04/16-exchange-protocols.md
+      - "17. Line-Rate Message Parsing: W Bytes per Clock, Messages That Span Beats, and a Straightforward Design That Does Not Scale": part04/17-wide-parsing.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md
