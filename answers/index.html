@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part04/20-order-book-engineering/">
+        <link rel="prev" href="../part05/21-triggers/">
       
       
       
@@ -1089,6 +1089,95 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 5 -- Decide and act
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 5 -- Decide and act
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part05/21-triggers/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    21. Triggers: Predicates on Messages, a Symbol Table, and Comparators That Meet the Clock
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -1107,10 +1196,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -1128,8 +1217,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1645,6 +1734,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 21
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-21-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 21 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2121,6 +2232,28 @@
     <span class="md-ellipsis">
       
         Chapter 20 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 21
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-21-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 21 -- hints for the exercises
       
     </span>
   </a>
@@ -2711,6 +2844,29 @@
 <li>The rule on emptying the top level is a refill: the next level is read from the RAM and moved into the register array, a number of cycles the model must state; the worst case rises by the refill; test an event stream that empties the best level many times in a row.</li>
 <li>A multiplicative hash (<code>(ref * odd constant) &gt;&gt; (32 - log2 NB)</code>) mixes all the bits; strided references stop being a worst case, but the model, the RTL and the mutants about the hash must all change; check the near-miss test still lands in the same bucket (its design assumes the XOR fold).</li>
 <li>Candidates: a mutant in a counter's unreachable top bit (equivalent), or in the width of the wrapper's folded output (outside the contract).</li>
+</ol>
+<h2 id="chapter-21">Chapter 21<a class="headerlink" href="#chapter-21" title="Permanent link">&para;</a></h2>
+<ol>
+<li>A message is <code>(type, key, side, price, shares)</code>. A rule is <code>en</code>, <code>neg</code>, a type mask, symany or a symbol mask, sideany or a side, and one comparison each on price and shares against a constant. An answer is <code>mask</code> (bit r = rule r matched), <code>fire</code> (any bit) and <code>first</code> (the lowest matching rule). A rule matches when it is enabled and (its predicate xor <code>neg</code>) is true.</li>
+<li>An unknown key gets <code>(found, index) = (0, 0)</code>, and index 0 is also a real symbol; if the symbol mask were applied to the index of an unknown key, a rule for symbol 0 would fire on every unknown symbol. The predicate therefore tests <code>found and symmask[index]</code>, and only <code>symany</code> admits a key that is not in the table.</li>
+<li>In cycle <code>a + 4</code> (stage 1 reads the banks, stage 2 compares the keys, stage 3 compares the rules, the last stage forms mask, fire and first). With two comparison stages it is <code>a + 5</code>; the throughput is still one message per cycle.</li>
+<li>A table write in cycle <code>w</code> lands at the end of cycle <code>w</code>; a lookup in cycle <code>w</code> reads the old contents, so the message of cycle <code>w</code> does not see it and the message of cycle <code>w + 1</code> does. A rule write in cycle <code>c</code> is seen by the messages whose rules are compared in cycle <code>c + 1</code> or later, that is, offered from cycle <code>c - 1</code> (compared in cycle <code>a + 2</code>), so the message of cycle <code>c - 1</code> does see it.</li>
+<li>The <code>K</code> keys of a bucket are compared at once, so the lookup takes the same number of cycles whatever the <code>K</code> (and whatever is found); Chapter 20 read one way per cycle (K + 1 cycles) with one comparator. The price is <code>K</code> comparators and <code>K</code> RAM banks; the gain is a fixed, short latency and one lookup per cycle.</li>
+<li>Row bit <code>b</code> is <code>key[b] ^ key[b+8] ^ key[b+16] ^ key[b+24]</code>; two keys with the same row and the same bits above the low <code>log2(NB)</code> positions must therefore have the same low bits (each can be recovered from the row and the bits at <code>b + 8</code>, <code>b + 16</code>, <code>b + 24</code>). This needs the bits <code>b + 8, ...</code> to be stored, so <code>log2(NB) &lt;= 8</code>, that is <code>NB &lt;= 256</code>.</li>
+<li>The halves are compared separately in the first stage (<code>&lt;</code> and <code>==</code> on bits 31:16 and on bits 15:0, registered); in the second, <code>lt = hi_lt | (hi_eq &amp; lo_lt)</code> and <code>eq = hi_eq &amp; lo_eq</code>, and the operator selects the result. A rule write must be seen at one well-defined moment, so every field of the rule (including the operators, the enable and the negation) is copied into the registers of the first stage, which reads the rule registers in cycle <code>a + 2</code> just as the one-stage design does.</li>
+<li>The table is in RAM: more entries mean more RAM words, not more logic; the logic is the hash, the <code>K</code> comparators and the control, which do not depend on <code>NB</code>. Example A: 1,138 and 1,185 LUTs on iCE40 for 256 and 1,024 symbols.</li>
+<li>With 8 rows Yosys uses LUT RAM, whose read is fast; with 64 or 256 rows it uses block RAM, whose clock-to-output delay (about 9 ns of logic with the key comparators on ECP5) is the whole critical path. Register the RAM's output before the comparators (one more stage, one more cycle of latency, and the table-write visibility rule moves with it).</li>
+<li>The row is the low bits of the XOR of the four bytes; ASCII capital letters differ only in their low five bits, so the XOR of four of them takes at most 32 values, and the low 6 or 7 bits (the row) of a table with 64 or 128 or more rows cannot be spread over the table. A multiplicative hash takes the top bits of <code>key x constant</code>, to which every bit of the key contributes, so structured keys are spread like random ones.</li>
+<li><code>in_valid</code> must be 0: only the last valid register is reset, and the earlier stages are flushed by the idle input during the three reset cycles. Resetting every stage was redundant (each alone was an equivalent mutant), so the RTL resets one.</li>
+<li>For example: the table write that ignores the valid bit (a missing test: deletions wrote key 0, so only a message with key 0 saw the difference; deletions now carry the old key); the 31-bit key comparison (equivalent: the low bit is implied by the row, so the RTL stores keys without their low <code>log2(NB)</code> bits and the mutant became one bit fewer than that); the model whose negated rule ignores the enable (a missing scenario, and the first one written did not tell them apart because its predicate was true).</li>
+</ol>
+<h2 id="chapter-21-hints-for-the-exercises">Chapter 21 -- hints for the exercises<a class="headerlink" href="#chapter-21-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The partial-key trick relies on the row being a XOR of key bits that can be solved for the low bits; the top bits of a product do not allow that, so the full key must be stored (more RAM width). The multiplier (32 x constant, a few adders or a DSP) is in front of the RAM address and probably needs its own stage; measure the refusals as in Example B, and note the near-miss test assumes the fold (keys one bit apart do not share a bucket under the new hash).</li>
+<li><code>shares * 100 &gt;= price</code> is a multiplication by a constant in front of a 32 x 40-bit comparison; the model must say whether the product is computed in 64 bits (no overflow) or modulo 2^32; the clause is a new template field (an enable and an operator) per rule, so the cost scales with R.</li>
+<li>The visibility rule becomes: a table write in cycle <code>w</code> is seen by the lookups of cycle <code>w + 1</code> or later as before only if the write also passes through the new stage; the cleanest statement is "the lookups whose bank read happens after the write"; the model's <code>look</code> dictionary does not change, but the latency does (<code>L = 5 + PIPE</code>).</li>
+<li>Two messages of the same symbol in consecutive cycles read-modify-write the same counter: the second must see the first's increment. The usual fixes are forwarding from the stage's output to its input or a pipeline that processes one symbol per N cycles; the model states the result for back-to-back messages explicitly and a directed test uses them.</li>
+<li>Candidates: a mutant in a rule field's reset (the other fields are never read while <code>en</code> is 0: equivalent), or in the top bit of the registered index when <code>NS</code> is 16 (outside the contract if the control plane never writes an index above 15).</li>
 </ol>
 
 
