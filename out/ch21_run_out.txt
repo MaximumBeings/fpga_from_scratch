@@ -1,0 +1,38 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  trig: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model (python3 model/trig_gold.py) and what the stimulus contains (NB 8, K 2, R 4, NS 16, 8 seeds of 300 cycles; edge: the directed set)
+  trig_gold hand-checked scenarios passed
+  random  messages  1696, key found   106, fired   765, rule writes  120, table writes  130; rules matched per message: 0 x931, 1 x637, 2 x124, 3 x4
+  wide    messages  1704, key found   137, fired   714, rule writes  126, table writes  134; rules matched per message: 0 x990, 1 x584, 2 x126, 3 x4
+  near    messages  2162, key found   205, fired  1169, rule writes  130, table writes  242; rules matched per message: 0 x993, 1 x809, 2 x310, 3 x49, 4 x1
+  dense   messages  2400, key found   379, fired  1435, rule writes  500, table writes  356; rules matched per message: 0 x965, 1 x1062, 2 x330, 3 x43
+  edge    messages  3136, key found     0, fired  1567, rule writes  224, table writes    0; rules matched per message: 0 x1569, 1 x1567
+
+== 3. the engine against the cycle model: found, index, matching rules, fire, first, and ready, in every cycle; 4 seeds of 300 cycles per row (edge: the directed set)
+  traffic  NB  K   R  NS PIPE |  cycles  answers  fired |    Icarus  Verilator
+  random    8  2   4  16    0 |    1232      865    343 |      4 of 4       PASS
+  random    8  2   4  16    1 |    1232      865    343 |      4 of 4       PASS
+  random    4  4   8  32    0 |    1216      863    409 |      4 of 4       PASS
+  random   16  1  16   8    1 |    1264      864    668 |      4 of 4       PASS
+  random    2  8   3  32    0 |    1208      869    301 |      4 of 4       PASS
+  wide      8  2   4  16    0 |    1232      867    286 |      4 of 4       PASS
+  wide      8  2   4  16    1 |    1232      867    286 |      4 of 4       PASS
+  wide      4  4   8  32    0 |    1216      869    406 |      4 of 4       PASS
+  wide     16  1  16   8    1 |    1264      868    575 |      4 of 4       PASS
+  wide      2  8   3  32    0 |    1208      870    300 |      4 of 4       PASS
+  near      8  2   4  16    0 |    1232     1086    553 |      4 of 4       PASS
+  near      8  2   4  16    1 |    1232     1086    553 |      4 of 4       PASS
+  near      4  4   8  32    0 |    1216     1077    743 |      4 of 4       PASS
+  near     16  1  16   8    1 |    1264     1084    840 |      4 of 4       PASS
+  near      2  8   3  32    0 |    1208     1082    284 |      4 of 4       PASS
+  dense     8  2   4  16    0 |    1232     1200    677 |      4 of 4       PASS
+  dense     8  2   4  16    1 |    1232     1200    677 |      4 of 4       PASS
+  dense     4  4   8  32    0 |    1216     1200    981 |      4 of 4       PASS
+  dense    16  1  16   8    1 |    1264     1200   1080 |      4 of 4       PASS
+  dense     2  8   3  32    0 |    1208     1200    584 |      4 of 4       PASS
+  edge      8  2   4  16    0 |    4040     3136   1567 |      1 of 1       PASS
+  edge      8  2   4  16    1 |    4040     3136   1567 |      1 of 1       PASS
+  edge      4  4   8  32    0 |    4036     3136   1567 |      1 of 1       PASS
+  edge     16  1  16   8    1 |    4048     3136   1567 |      1 of 1       PASS
+  edge      2  8   3  32    0 |    4034     3136   1567 |      1 of 1       PASS

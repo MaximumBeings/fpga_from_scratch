@@ -1,0 +1,18 @@
+== resources and clock (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper; one message per cycle
+   NB  K   R stages latency | iCE40 LUT    FF  EBR   Fmax | ECP5 LUT    FF DP16KD DPR16X4   Fmax
+    8  2   4      1       4 |       603  1095    6   76.4 |      749  1018      0      18  115.2
+    8  2   8      1       4 |      1474  1554    6   72.5 |     1134  1477      0      18  112.8
+    8  2  16      1       4 |      2786  2469    6   69.5 |     2882  2392      0      18  110.7
+    8  2   4      2       5 |       625  1170    6   98.8 |      586  1093      0      18  146.7
+    8  2   8      2       5 |      1459  1697    6  114.9 |      985  1620      0      18  147.4
+    8  2  16      2       5 |      1727  2748    6   92.0 |     1939  2671      0      18  135.0
+   64  4   8      2       5 |      1138  1833    8   93.8 |     1438  1838      4       0   67.4
+  256  4   8      2       5 |      1185  1825    8  100.0 |     1666  1830      4       0   70.5
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  NB   8 K 2 R 16 PIPE 0 ice40  u.s2_px                  -> u.r_en[5]                6.4 ns logic, 7.9 ns routing
+  NB   8 K 2 R 16 PIPE 0 ecp5   u.s2_px                  -> u.s3_m                   2.9 ns logic, 6.1 ns routing
+  NB   8 K 2 R 16 PIPE 1 ice40  u.way[1].mem.RDATA_14    -> u.idx_or                 4.3 ns logic, 6.6 ns routing
+  NB   8 K 2 R 16 PIPE 1 ecp5   u.s2_idx                 -> u.cmp2.a_pre             2.6 ns logic, 4.8 ns routing
+  NB 256 K 4 R  8 PIPE 1 ice40  u.way[1].mem.RDATA_5     -> u.idx_or                 4.5 ns logic, 5.5 ns routing
+  NB 256 K 4 R  8 PIPE 1 ecp5   u.way[0].mem.DOB1        -> u.s2_idx                 8.8 ns logic, 5.4 ns routing

@@ -75,5 +75,7 @@ nav:
       - "18. Sequence Gaps and A/B Feed Arbitration: Forwarding Once and in Order, Asking for What Is Missing, and a Window That Must Be Big Enough": part04/18-sequence-and-arbitration.md
       - "19. The Order Book in Hardware: Orders, Price Levels, Top of Book, and a Design That Is Correct and Too Big": part04/19-order-book.md
       - "20. Order-Book Engineering: RAMs, a Hash Table, and What a Bounded Latency Costs": part04/20-order-book-engineering.md
+  - "Part 5 -- Decide and act":
+      - "21. Triggers: Predicates on Messages, a Symbol Table, and Comparators That Meet the Clock": part05/21-triggers.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

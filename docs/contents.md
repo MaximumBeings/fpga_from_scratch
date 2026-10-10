@@ -36,7 +36,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 20. *(written)* Order-book engineering: the book in two RAMs with a hash table, timing in the specification, worst-case latency against depth, checked cycle for cycle against a Python golden book
 
 ## Part 5 -- Decide and act
-21. Triggers: predicates on messages, pipelined comparators, symbol tables
+21. *(written)* Triggers: predicates on messages (a fixed template), a symbol table in RAM banks, pipelined comparators, exact rules for when a write is seen
 22. Fixed-point signals: imbalance, mid and microprice on DSP and LUT
 23. Pre-trade risk: position, notional and rate limits, price bands, kill switch, fail-closed design, formal proof of the invariants
 24. Order entry: binary encoding, pre-built templates, session state, sequence numbers

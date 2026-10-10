@@ -1,0 +1,100 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  the hash ignores byte 1: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the hash ignores byte 2: caught by: wide, NB 8, K 2, R 4, NS 16, PIPE 0
+  the hash ignores byte 3: caught by: wide, NB 8, K 2, R 4, NS 16, PIPE 0
+  the hash is of the low bits of the key only: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a table write goes to the wrong row: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a table write ignores the valid bit: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a table write ignores the index: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a table write drops a key bit: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a table write is not conditioned on its way: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a table write is not conditioned on ld_valid: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the clearing sweep stops one row early: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the clearing sweep writes nothing: caught by: random, NB 2, K 8, R 3, NS 32, PIPE 0
+  the engine is always ready: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the lookup reads another row: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  an invalid entry can match: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  one bit fewer of the key is compared: caught by: near, NB 8, K 2, R 4, NS 16, PIPE 0
+  only the high 16 bits of the key are compared: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the index drops its top bit: caught by: random, NB 4, K 4, R 8, NS 32, PIPE 0
+  the found flag needs all the ways to match: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the found flag is always set: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write ignores the rule index: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write is not conditioned on cfg_valid: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set en: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set neg: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the type mask: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set symany: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set sideany: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the side: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the price op: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the shares op: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the symbol mask: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the price value: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write does not set the shares value: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule write swaps the two values: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  reset does not disable the rules: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the type mask is indexed by bit 0 only: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the type mask is indexed by the wrong type: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  symany does not admit an unknown key: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  symany is ignored: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  an unknown key can match a symbol mask: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the symbol mask is read at the wrong index: caught by: near, NB 8, K 2, R 4, NS 16, PIPE 0
+  sideany is ignored: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the side test is inverted: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  ANY is not always true: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  LT is LE: caught by: edge, NB 8, K 2, R 4, NS 16, PIPE 0
+  LE is LT: caught by: near, NB 8, K 2, R 4, NS 16, PIPE 0
+  EQ is NE: caught by: near, NB 8, K 2, R 4, NS 16, PIPE 0
+  NE is EQ: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  GE is GT: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  GT is GE: caught by: edge, NB 8, K 2, R 4, NS 16, PIPE 0
+  NEVER is always true: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  a rule needs no enable: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  negation is ignored: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the price is compared signed: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the shares are compared signed: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the shares are compared with the price value: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the price equality is on 31 bits: caught by: edge, NB 8, K 2, R 4, NS 16, PIPE 0
+  the low halves are compared with LE (price, two stages): caught by: near, NB 8, K 2, R 4, NS 16, PIPE 1
+  the high halves are compared on 15 bits (price, two stages): caught by: edge, NB 8, K 2, R 4, NS 16, PIPE 1
+  the halves are not combined (price, two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  equality needs only the low halves (price, two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  equality needs only the high halves (price, two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  the halves are not combined (shares, two stages): caught by: near, NB 8, K 2, R 4, NS 16, PIPE 1
+  equality needs only the low halves (shares, two stages): caught by: dense, NB 8, K 2, R 4, NS 16, PIPE 1
+  the low halves of the shares are not compared (two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  the price op is taken from the shares op (two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  the shares op is taken from the price op (two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  the rule's enable is lost between the stages (two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  the negation is lost between the stages (two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  the symbol and type part is lost between the stages (two stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  fire is the first rule only: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  first is the highest matching rule: caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the last stage is not reset (one comparison stage): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 0
+  the last stage is not reset (two comparison stages): caught by: random, NB 8, K 2, R 4, NS 16, PIPE 1
+  model: the hash ignores byte 1: caught by: hand-checked scenarios
+  model: the hash ignores byte 3: caught by: hand-checked scenarios
+  model: LT is LE: caught by: hand-checked scenarios
+  model: GE is GT: caught by: hand-checked scenarios
+  model: NE is EQ: caught by: hand-checked scenarios
+  model: NEVER is true: caught by: hand-checked scenarios
+  model: a duplicate key can be placed: caught by: hand-checked scenarios
+  model: a full bucket is not refused: caught by: hand-checked scenarios
+  model: a table lookup returns the wrong index: caught by: hand-checked scenarios
+  model: an unknown key matches a symbol mask: caught by: hand-checked scenarios
+  model: a negated rule ignores the enable: caught by: hand-checked scenarios
+  model: first is the highest rule: caught by: hand-checked scenarios
+  model: a message sees a table write of its own cycle: caught by: hand-checked scenarios
+  model: the rules are read in cycle a + 1: caught by: hand-checked scenarios
+  model: the rules are read in cycle a + 3: caught by: hand-checked scenarios
+  model: the answer comes one cycle early: caught by: hand-checked scenarios
+  model: two stages do not add a cycle: caught by: hand-checked scenarios
+  model: ready one cycle early: caught by: hand-checked scenarios
+  model: an answer without a match has a first rule: caught by: hand-checked scenarios
+  model: the side test is ignored: caught by: hand-checked scenarios
+  model: the type test is ignored: caught by: hand-checked scenarios
+  rtl/trig.sv: caught 74 of 74
+  model/trig_gold.py: caught 21 of 21
+mutants caught: 95 of 95
