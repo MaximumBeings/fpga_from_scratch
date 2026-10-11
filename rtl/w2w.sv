@@ -12,7 +12,9 @@ module w2w #(parameter int NS = 4, parameter int NA = 4, parameter int NT = 4, p
     input  logic sc_valid, input logic [2:0] sc_what, input logic [3:0] sc_sym, input logic [31:0] sc_data, input logic rx_valid, input logic [7:0] rx_type, input logic [31:0] rx_seq,
     input  logic cq_valid, input logic [2:0] cq_kind,
     // the order entry stream
-    output logic o_valid, output logic [8*W-1:0] o_data, output logic o_last, output logic [3:0] o_nb);
+    output logic o_valid, output logic [8*W-1:0] o_data, output logic o_last, output logic [3:0] o_nb,
+    // what a supervisor needs to see (Chapter 27)
+    output logic tap_slot, output logic tap_fault, output logic [2:0] tap_sess, output logic tap_txready, output logic tap_quiet);
     localparam int SW = (NS > 1) ? $clog2(NS) : 1;
     // ---- the parser
     logic m_valid; logic [7:0] m_type; logic [1:0] m_err; logic [15:0] m_idx; logic [63:0] h_seq; logic p_valid, p_trunc, p_cntbad; logic [79:0] h_session; logic [15:0] h_count;
@@ -82,6 +84,7 @@ module w2w #(parameter int NS = 4, parameter int NA = 4, parameter int NT = 4, p
     sess #(.W(W), .NS(NS), .HB(HB), .TL(TL)) xmit (.clk(clk), .rst(rst), .in_valid(tx_in_valid), .in_kind(cq_valid ? cq_kind : 3'd0), .in_tok(o_tok), .in_tok2(32'd0), .in_sym(o_sym), .in_side(o_side), .in_shares(32'(OQ)), .in_px(32'(o_px)), .in_tif(32'd0), .in_ready(tx_ready),
         .rx_valid(rx_valid), .rx_type(rx_type), .rx_seq(rx_seq), .cfg_valid(sc_valid), .cfg_what(sc_what), .cfg_sym(sc_sym), .cfg_data(sc_data),
         .o_valid(o_valid), .o_data(o_data), .o_last(o_last), .o_nb(o_nb), .o_state(ostate), .o_exp(oexp), .o_rv(rv_), .o_res(ores));
+    assign tap_slot = slot; assign tap_fault = t_fault; assign tap_sess = ostate; assign tap_txready = tx_ready; assign tap_quiet = (st_o == 3'd0) && !snd_hold && !d_valid;
     // ---- state
     always_ff @(posedge clk) begin
         if (rst) begin fcnt <= '0; fhd <= '0; ftl <= '0; drops <= '0; slot <= 1'b0; tokc <= 32'd1; o_tok <= '0; o_sym <= '0; o_side <= 1'b0; o_px <= '0; miss <= '0; rej_pend <= 1'b0; snd_hold <= 1'b0; ord_q <= 1'b0; refused <= '0; end
@@ -114,7 +117,7 @@ module w2w_syn #(parameter int QD = 8, parameter int F = 12) (input logic clk, i
         .cfg_a_valid(iv[230]), .cfg_a_idx(iv[234:231]), .cfg_maxlong(iv[250:235]), .cfg_maxshort(iv[266:251]), .cfg_maxqty(iv[282:267]), .cfg_maxonot(iv[322:283]), .cfg_maxnot(iv[364:323]), .cfg_cap(iv[372:365]),
         .cfg_b_valid(iv[373]), .cfg_b_idx(iv[377:374]), .cfg_lo(iv[393:378]), .cfg_hi(iv[409:394]), .ctl_arm(iv[410]), .ctl_disarm(iv[411]), .ext_kill(iv[412]),
         .sc_valid(iv[413]), .sc_what(iv[416:414]), .sc_sym(iv[420:417]), .sc_data(iv[452:421]), .rx_valid(iv[453]), .rx_type(iv[461:454]), .rx_seq(iv[493:462]), .cq_valid(iv[494]), .cq_kind(iv[497:495]),
-        .o_valid(o_valid), .o_data(o_data), .o_last(o_last), .o_nb(o_nb));
+        .o_valid(o_valid), .o_data(o_data), .o_last(o_last), .o_nb(o_nb), .tap_slot(), .tap_fault(), .tap_sess(), .tap_txready(), .tap_quiet());
     logic [15:0] x, r1; always_comb x = o_data[15:0] ^ o_data[31:16] ^ o_data[47:32] ^ o_data[63:48] ^ {o_nb, o_last, o_valid, 10'd0};
     always_ff @(posedge clk) begin r1 <= x; info <= r1; end
 endmodule

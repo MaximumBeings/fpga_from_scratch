@@ -83,5 +83,6 @@ nav:
       - "25. The Order Lifecycle: Tracking What Is Open, Giving Back What Is Not, and Keeping Two Books the Same": part05/25-order-lifecycle.md
   - "Part 6 -- The whole system":
       - "26. Wire to Wire: Chaining the Units into One Design and Writing Down Where Every Cycle Goes": part06/26-wire-to-wire.md
+      - "27. Resets, Power-Up, Watchdogs and Safe States: A Supervisor That Decides Whether Orders May Leave": part06/27-safe-states.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

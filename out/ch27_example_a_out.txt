@@ -1,0 +1,18 @@
+== 1. the supervisor and the reset generator (Yosys + nextpnr, seed 1, asked for 300 MHz), behind the pin wrapper (10 input flip-flops and 9 output flip-flops are in the counts)
+        FT       ST | iCE40 LUT   FF   Fmax | ECP5 LUT   FF   Fmax
+       100      100 |        71   51  127.4 |       45   54  145.9
+     10000      100 |       119   72  111.7 |       73   75  131.1
+   1000000      100 |       141   90   91.7 |       89   93  122.6
+       100  1000000 |       141   90   86.3 |       89   93  114.8
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  FT      100 ice40  u.cnt                -> u.state              3.5 ns logic, 4.4 ns routing
+  FT      100 ecp5   u.cnt                -> u.state              3.3 ns logic, 3.6 ns routing
+  FT  1000000 ice40  u.cnt                -> u.state              5.4 ns logic, 5.5 ns routing
+  FT  1000000 ecp5   u.cnt                -> u.state              3.9 ns logic, 4.3 ns routing
+
+== 2. the supervised design, unit by unit (Yosys synth_ice40 -noflatten; FT 400, ST 100, WARM 48)
+  module                       LUT4     FF
+  TOTAL (safe)                 9956   7952
+  w2w                           462    306
+  sup                            70     35

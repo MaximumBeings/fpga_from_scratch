@@ -1,0 +1,42 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  safe (all units): Verilator warnings 5
+
+== 2. what the runs contain: the supervisor's path and what the wire saw
+  scenario  cycles INIT->READY  ->RUN  ->SAFE     cause orders sent sent after SAFE  logout  P1-P4
+  normal      6597          48    101    6486      feed          10               0       1     ok
+  dense       5502          48    101    5391      feed           6               0       1     ok
+  slow        9894          48    101    9783      feed          16               0       1     ok
+  refuse      6642          48    101    3172   session           3               0       0     ok
+  close       6440          48    101    2059   session           0               0       0     ok
+  faults      6384          48    101    6273      feed           3               0       1     ok
+  collide     6272          48    101    6161      feed          14               0       1     ok
+  slowsig     5566          48    101    5455      feed          16               0       1     ok
+  narrow      5420          48    101    5309      feed          10               0       1     ok
+  hand         528          48    101       -         -           1               0       0     ok
+  feedloss    6512          48    101    1801      feed           0               0       1     ok
+  stall       5271          48    101    3307     stall          17               1       1     ok
+  trip        6425          48    101    2001      trip           2               0       1     ok
+  extkill     6210          48    101     804     fault           1               0       1     ok
+  holdtrip    5592          48    101     936      trip           2               1       1     ok
+  go_early    6591          48    401     683     fault           0               0       1     ok
+  reset       6132          48    101       -         -           0               0       0     ok
+
+== 3. the supervised design against the model: every cycle, every output
+  scenario  |  Icarus  Verilator
+  normal    |    PASS       PASS
+  dense     |    PASS       PASS
+  slow      |    PASS       PASS
+  refuse    |    PASS       PASS
+  close     |    PASS       PASS
+  faults    |    PASS       PASS
+  collide   |    PASS       PASS
+  slowsig   |    PASS       PASS
+  narrow    |    PASS       PASS
+  hand      |    PASS       PASS
+  feedloss  |    PASS       PASS
+  stall     |    PASS       PASS
+  trip      |    PASS       PASS
+  extkill   |    PASS       PASS
+  holdtrip  |    PASS       PASS
+  go_early  |    PASS       PASS
+  reset     |    PASS       PASS

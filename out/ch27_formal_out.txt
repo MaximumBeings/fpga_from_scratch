@@ -1,0 +1,24 @@
+== 1. the supervisor, proved for 24 cycles from reset (free inputs; S1 absorbing, S2 entry, S3 causes, S4 detection bound, S5 kill, S6 logout, S7 warm-up)
+  supervisor: proved in 1 s
+
+== 2. mutants against the same search at depth 24
+  SAFE can be left by go: counterexample found (1 s)
+  RUN is entered without the session ACTIVE: counterexample found (1 s)
+  RUN is entered without a go: counterexample found (1 s)
+  INIT lasts one cycle too long: counterexample found (1 s)
+  INIT lasts one cycle too short: counterexample found (1 s)
+  the feed watchdog is one cycle late: counterexample found (1 s)
+  the feed watchdog counts in the slot's cycles: counterexample found (1 s)
+  a feed byte does not restart the watchdog: counterexample found (1 s)
+  the stall watchdog is one cycle late: counterexample found (1 s)
+  a free slot does not restart the stall count: counterexample found (1 s)
+  the tracker's fault is ignored: counterexample found (1 s)
+  a dead session is ignored: counterexample found (1 s)
+  the external trip is ignored: counterexample found (1 s)
+  kill is low in READY: counterexample found (1 s)
+  kill is low in SAFE: counterexample found (1 s)
+  the logout is offered without waiting for quiet: counterexample found (1 s)
+  the logout is offered without the transmitter ready: counterexample found (1 s)
+  the logout is offered again and again: counterexample found (1 s)
+  the logout is offered in RUN: counterexample found (1 s)
+  counterexamples found: 19 of 19

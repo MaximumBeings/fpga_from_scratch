@@ -44,7 +44,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 
 ## Part 6 -- The whole system
 26. *(written)* Integration: the wire-to-wire pipeline and a per-stage cycle-budget table (the register interface and DMA to the host are not in this chapter)
-27. Resets, power-up, watchdogs and safe states
+27. *(written)* Resets, power-up, watchdogs and safe states: a supervisor, a reset generator, a safe state that fails closed
 28. Timestamps and measurement: defining tick-to-trade, jitter, histograms
 29. System tests: replay, scenario generation, fault injection, cycle-count regression
 

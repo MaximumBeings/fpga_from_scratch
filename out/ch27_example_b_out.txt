@@ -1,0 +1,20 @@
+== 1. detection latency and exposure, per cause (the scenarios of ch27_run.py; cycle numbers are model time)
+  scenario       cause  event   kill  logout | orders sent after kill last start - kill
+  feedloss        feed   1500   1801    1801 |           0          0                 -
+  stall          stall      -   3307    3314 |          17          1                 3
+  trip            trip   2000   2001    2001 |           2          0                 -
+  faults          feed      -   6273    6273 |           3          0                 -
+  refuse       session      -   3172    None |           3          0                 -
+  close        session      -   2059    None |           0          0                 -
+  (the bound on how long after leaving RUN an order may still START on the wire: 37 cycles)
+
+== 2. the margins: the longest silence of the feed and the longest hold of the strategy slot in the healthy mixes of Chapter 26 (seed 1)
+  mix       longest feed gap longest slot hold  (F = 12 unless noted)
+  normal                  41                41  F = 12
+  dense                    3                42  F = 12
+  slow                   118                46  F = 12
+  burst                    1                36  F = 12
+  slowsig                  3                62  F = 32
+  narrow                   4                43  F = 12
+  openbook                41                42  F = 12
+  (a supervisor with FT at or below the longest gap trips a healthy system; the same for ST and the longest hold; the gap includes the idle cycles between packets, which the mixes choose)

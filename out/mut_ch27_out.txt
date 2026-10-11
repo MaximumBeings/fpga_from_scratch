@@ -1,0 +1,69 @@
+NOTE: this script deliberately breaks copies of the RTL and of the models. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated designs and models pass their batteries: True
+  INIT lasts one cycle too long: caught by: each_cause, config 0
+  INIT lasts one cycle too short: caught by: each_cause, config 0
+  a go needs no ACTIVE session: caught by: goearly, config 0
+  READY starts RUN by itself: caught by: each_cause, config 0
+  the feed watchdog is one cycle late: caught by: each_cause, config 0
+  the feed watchdog is one cycle early: caught by: each_cause, config 0
+  a byte does not restart the feed count: caught by: each_cause, config 0
+  the stall watchdog is one cycle late: caught by: each_cause, config 0
+  the stall watchdog is one cycle early: caught by: each_cause, config 0
+  a free slot does not restart the stall count: caught by: boundaries, config 0
+  the tracker's fault is ignored: caught by: each_cause, config 0
+  a dead session is ignored: caught by: each_cause, config 0
+  the external trip is ignored: caught by: each_cause, config 0
+  the causes are not latched together: caught by: random, config 1
+  the cause is not kept: caught by: each_cause, config 0
+  kill is low in INIT: caught by: each_cause, config 0
+  kill is low in READY: caught by: each_cause, config 0
+  kill is low in SAFE: caught by: each_cause, config 0
+  the logout waits for no quiet: caught by: random, config 2
+  the logout waits for no transmitter: caught by: random, config 0
+  the logout is offered on a dead session: caught by: each_cause, config 0
+  the logout is offered again: caught by: each_cause, config 0
+  the logout is never counted as sent: caught by: each_cause, config 0
+  reset leaves the state: caught by: each_cause, config 0
+  reset leaves the warm-up count: caught by: each_cause, config 0
+  reset leaves the sent flag: caught by: each_cause, config 0
+  reset leaves the cause: caught by: each_cause, config 0
+  the reset stretch is one cycle short: caught by: each_cause, config 0
+  the reset release is not synchronised: NOT CAUGHT
+  the stretch is not restarted by a second pulse: caught by: each_cause, config 0
+  the reset ignores the synchroniser: NOT CAUGHT
+  the supervisor's kill is ignored: caught by: refuse
+  the control plane's kill is ignored: caught by: extkill
+  the logout request is not offered: caught by: normal
+  the logout is the wrong request: caught by: normal
+  the control plane's request is lost: caught by: normal
+  the supervisor does not see the feed: caught by: normal
+  the supervisor sees the wrong slot: caught by: stall
+  the supervisor does not see the fault: caught by: extkill
+  the supervisor sees a session that is always active: caught by: refuse
+  the supervisor does not wait for the transmitter: caught by: stall
+  the supervisor does not wait for quiet: caught by: stall
+  the supervisor is not reset by the generator: caught by: normal
+  the units are reset by the raw input: NOT CAUGHT
+  the slot tap is the queue: caught by: slowsig
+  the fault tap is wrong: caught by: extkill
+  the quiet tap ignores a held order: caught by: holdtrip
+  the quiet tap ignores an answer being sent: caught by: stall
+  the quiet tap ignores the lifecycle: caught by: stall
+  the ready tap is always ready: caught by: stall
+  the session tap is the transmitter's expected sequence: caught by: normal
+  model: INIT is one cycle short: caught by: hand-checked scenarios
+  model: the feed trips late: caught by: hand-checked scenarios
+  model: the stall trips early: caught by: hand-checked scenarios
+  model: a go needs no session: caught by: hand-checked scenarios
+  model: the logout needs no quiet: caught by: hand-checked scenarios
+  model: the logout is repeated: caught by: hand-checked scenarios
+  model: the reset stretch is short: caught by: hand-checked scenarios
+  model: the supervisor's kill is ignored: caught by: hand-checked scenarios
+  model: the logout is not offered: caught by: hand-checked scenarios
+  model: the supervisor sees no feed: caught by: hand-checked scenarios
+  rtl/sup.sv: caught 29 of 31
+  rtl/safe.sv: caught 12 of 13
+  rtl/w2w.sv: caught 7 of 7
+  model/sup_gold.py: caught 7 of 7
+  model/safe_gold.py: caught 3 of 3
+mutants caught: 58 of 61

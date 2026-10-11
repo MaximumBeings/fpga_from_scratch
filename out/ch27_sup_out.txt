@@ -1,0 +1,29 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  sup: Verilator warnings 0, Yosys check problems 0
+  rst_gen: Verilator warnings 0, Yosys check problems 0
+
+== 2. the model's hand-checked scenarios (python3 model/sup_gold.py)
+  selftest True
+
+== 3. supervisor and reset generator against the model, every cycle, every output
+    FT   ST WARM RSTN scenario    | cycles trips in SAFE |  Icarus  Verilator
+   100  100   48    8 each_cause  |    606     5      46 |    PASS       PASS
+   100  100   48    8 boundaries  |   1704     6     466 |    PASS       PASS
+   100  100   48    8 random      |    604     2     152 |    PASS       PASS
+   100  100   48    8 goearly     |    184     1       8 |    PASS       PASS
+   100  100   48    8 pulses      |     52     0       0 |    PASS       PASS
+     5    4    3    3 each_cause  |    165     5      46 |    PASS       PASS
+     5    4    3    3 boundaries  |    258     6      84 |    PASS       PASS
+     5    4    3    3 random      |    604     3     376 |    PASS       PASS
+     5    4    3    3 goearly     |     39     1       8 |    PASS       PASS
+     5    4    3    3 pulses      |     37     0       0 |    PASS       PASS
+    20    7    6    1 each_cause  |    188     5      46 |    PASS       PASS
+    20    7    6    1 boundaries  |    372     6     120 |    PASS       PASS
+    20    7    6    1 random      |    604     3     238 |    PASS       PASS
+    20    7    6    1 goearly     |     55     1       8 |    PASS       PASS
+    20    7    6    1 pulses      |     31     0       0 |    PASS       PASS
+    33   40   17    5 each_cause  |    309     5      46 |    PASS       PASS
+    33   40   17    5 boundaries  |    738     6     212 |    PASS       PASS
+    33   40   17    5 random      |    604     2     325 |    PASS       PASS
+    33   40   17    5 goearly     |     83     1       8 |    PASS       PASS
+    33   40   17    5 pulses      |     43     0       0 |    PASS       PASS
