@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part06/26-wire-to-wire/">
+        <link rel="prev" href="../part06/27-safe-states/">
       
       
       
@@ -1368,6 +1368,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part06/27-safe-states/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    27. Resets, Power-Up, Watchdogs and Safe States: A Supervisor That Decides Whether Orders May Leave
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -2067,6 +2095,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 27
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-27-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 27 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2675,6 +2725,28 @@
     <span class="md-ellipsis">
       
         Chapter 26 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-27" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 27
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-27-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 27 -- hints for the exercises
       
     </span>
   </a>
@@ -3405,6 +3477,30 @@
 <li>A trade message carries a price and a side that the adapter must pass on (it forces them to 0 for E, X and D); mutants of the form "the trade's price is the book's" now have a second place to survive, and the rules need a type mask bit for P.</li>
 <li>The rules, table, limits, band and session configuration are written rarely and by index: registers. Arm, disarm and kill must stay fast and unconditional (pins or a dedicated register with write priority). Order of writes: the symbol table and the rules before arm; the gate's limits before arm (arm last, since the gate is disarmed after reset).</li>
 <li>Candidates: a mutant in a bit of the token counter above what 105 orders can reach (outside the traffic), or in the adapter's use of the high word of a reference (outside the contract: references below 2^32).</li>
+</ol>
+<h2 id="chapter-27">Chapter 27<a class="headerlink" href="#chapter-27" title="Permanent link">&para;</a></h2>
+<ol>
+<li>INIT (kill high; WARM cycles after a reset), READY (kill high; waits for <code>go</code> and an ACTIVE session), RUN (kill low) and SAFE (kill high). Only a reset leaves SAFE.</li>
+<li>The feed silent for FT cycles, the strategy slot held for ST cycles, an external trip, the tracker's fault, the session not ACTIVE. The cause register has a bit for every cause that was true in the cycle the supervisor left RUN, so two together set two bits (for example 12 = trip and fault).</li>
+<li>No. The silence count is the count <em>before</em> this cycle's byte, and the test <code>fc &gt;= FT</code> is made in the same cycle; the byte clears the count for the next cycle, but the supervisor has already decided. The boundary scenarios (a byte after FT - 1, FT and FT + 1 silent cycles) show exactly that.</li>
+<li>The transmitter has one request port. If the logout is offered in a cycle in which an order's answer is being sent (or while an order is held for a busy transmitter) it takes the port and the order is lost, although the gate and the tracker both recorded it. The <code>quiet</code> tap (lifecycle idle, nothing held, no answer being sent) and the mutants that remove its terms show it; <em>holdtrip</em> is the scenario for the held order.</li>
+<li>An order offered to the lifecycle while the supervisor was still in RUN. It is answered 5 cycles later and its packet starts up to a transmitter-busy time after that: 5 + 1 + 31 = 37 cycles after the supervisor left RUN at most. One order was seen at 3 cycles.</li>
+<li>Chapter 23's gate sets <code>armed</code> on an arm only if <code>kill</code> is low. The supervisor holds kill high until RUN, so an arm sent earlier is ignored without any answer. The control plane must arm after <code>go</code> (the supervised scenarios arm at cycle 104, <code>go</code> is at 100).</li>
+<li>It asserts the units' reset at once, even between clock edges, and releases it two clocks after the external reset goes away (the two-flip-flop chain), then holds it for RSTN more. The release is synchronised so that every flip-flop leaves reset in the same cycle; an asynchronous release near a clock edge could leave some units out of reset one cycle before others.</li>
+<li>The first form of S4 was an upper bound (the supervisor has left RUN by FT + 2 silent cycles), which a mutant that trips early (or a count that does not restart on a byte) satisfies. S4 was made exact: the supervisor leaves RUN for the feed cause when, and only when, the shadow count has reached FT. All four were then found.</li>
+<li>(a) Clearing the feed and slot counts on entering RUN: nothing counts outside RUN and a reset clears them. (b) Saturating the counts at their limits: a count that reaches its limit leaves RUN in the next cycle. (c) Loading the reset counter asynchronously: it is loaded again at every clock while the chain is high.</li>
+<li>With a reset pulse that spans a clock edge they behave the same in a cycle-accurate simulation; they differ in how a flip-flop resolves an input that changes at the edge (metastability), which RTL simulation does not model, and in the stretch for units that need more than one reset cycle (none does). So the chapter claims nothing about metastability or a real reset tree.</li>
+<li>The healthy mixes had a feed gap up to 118 cycles and a strategy-slot hold up to 62 (F = 32); FT = 100 trips the slow mix and ST = 60 the slow-signal mix. The limits must be above what the healthy system does and below what is tolerable: they are inputs of the design, to be measured on a real feed.</li>
+<li>That the exchange cancels a session's open orders when the session logs out (cancel on disconnect). If it does not, the supervisor still stops <em>new</em> orders and the tracker still holds the open ones, but the orders stay at the exchange: the promise becomes "no new orders", not "nothing is open".</li>
+</ol>
+<h2 id="chapter-27-hints-for-the-exercises">Chapter 27 -- hints for the exercises<a class="headerlink" href="#chapter-27-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The tracker knows the tokens of the open orders; SAFE can send a cancel for each (one per quiet cycle). The transmitter's request port must take cancels from the supervisor; the exposure bound grows by the time to send them, and the tracker must treat the exchange's CANCELED reports as expected (it does) but a late FILL for a cancelled order is still legal.</li>
+<li>A <code>clear</code> needs: the gate's kill released only after the supervisor is READY, the tracker's fault clear (it is sticky: a reset of the tracker alone), the session re-established, and the cause acknowledged; to be safe against a repeat the clear must re-run INIT's warm-up and must refuse while the cause is still true.</li>
+<li>The tracker has an order in PENDING_NEW; a counter of its age that trips at T gives a watchdog on the exchange's acknowledgements, independent of heartbeats.</li>
+<li>Writes to FT, ST and the causes must be refused while in RUN (or take effect at the next INIT); reading the cause must not clear it (a separate acknowledge).</li>
+<li>Model the release chain as a flip-flop whose output is a random value for one cycle when the input changes in the cycle before the edge; the unsynchronised mutants then release some units a cycle apart.</li>
+<li>Candidates: the top bit of a counter wider than the limits need (equivalent), or the bits of <code>sess</code> above 3 (outside the contract: the session state is 3 bits).</li>
 </ol>
 
 
