@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../part05/25-order-lifecycle/">
+        <link rel="prev" href="../part06/26-wire-to-wire/">
       
       
       
@@ -1290,6 +1290,95 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Part 6 -- The whole system
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Part 6 -- The whole system
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part06/26-wire-to-wire/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    26. Wire to Wire: Chaining the Units into One Design and Writing Down Where Every Cycle Goes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -1308,10 +1397,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
             
   
   
@@ -1329,8 +1418,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_8">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1956,6 +2045,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#chapter-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 26
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-26-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 26 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2542,6 +2653,28 @@
     <span class="md-ellipsis">
       
         Chapter 25 -- hints for the exercises
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-26" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 26
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-26-hints-for-the-exercises" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chapter 26 -- hints for the exercises
       
     </span>
   </a>
@@ -3248,6 +3381,30 @@
 <li>If the second order's NEW reaches a full tracker after the gate has charged both, two give-backs are needed and the event port needs a queue; the give-back must carry the held fields of <em>its</em> order, so the held registers become a small FIFO.</li>
 <li>The time grows quickly (it is a SAT problem over the unrolled design); spend the bound on the interesting part (a full table and a duplicate) rather than on more cycles of idle traffic.</li>
 <li>Candidates: a mutant in the top bit of the live counter (equivalent when <code>NT</code> is below a power of two), or in the bits of the report kind above its two bits (outside the contract).</li>
+</ol>
+<h2 id="chapter-26">Chapter 26<a class="headerlink" href="#chapter-26" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The parser (the message appears the cycle after its last byte), the adapter and queue (1 cycle to the head), the book (n cycles: 11 for an ADD on an empty side), the signal and trigger (F + 4 = 16), the strategy (the same cycle as the signal's answer), the gate and tracker (5) and the transmitter (the first byte 1 cycle after the answer): 35 cycles from the last byte of the message at best.</li>
+<li>So that the trigger's result and the book's result and symbol, which are single registers, belong to the message the signal's answer is about; nothing has to be matched up. It costs throughput: the slot is held <code>n + F + 4</code> cycles, so the design takes one message per about 31 cycles. A pipelined strategy would carry the event's symbol, type and the trigger's result along the signal's pipeline in a FIFO and would take a message per cycle.</li>
+<li>The adapter drops what it cannot use (S, P, unknown types, messages with a parser error, a symbol of NS or more); the queue drops a message that arrives when it is full. Both are visible: the queue counts its drops.</li>
+<li><code>wait + n + F + 11 + x</code>: the queue wait, the book's cycles, the signal's F + 4, the lifecycle's 5, the transmitter's x (1 if ready), and 2 for the parser and queue cycles. The smallest is 0 + 11 + 12 + 11 + 1 = 35: no wait, an ADD on an empty side, F = 12, a ready transmitter.</li>
+<li>The decision is combinational in the cycle the signal answers, and the lifecycle's interface takes an order in the cycle it is offered; the design does not hold it (a held order would need a state and would be stale). If the lifecycle is busy (a tracker release is using the gate's port) the order is missed and counted (<code>miss</code>).</li>
+<li>The transmitter answers REFUSED when the session is not ACTIVE, but the gate has already charged the order and the tracker has recorded it. The design turns the refusal into a REJECT report for that token, so the tracker releases the charge. It works because a REJECT is valid for an order in PENDING_NEW, which is where the order still is; an exchange report in the same cycle wins the report port and the REJECT waits one cycle (scenario <em>dead2</em>).</li>
+<li>The gate's event port (a tracker release, then a give-back, then a new order), the tracker's report port (the exchange's report, then the design's own REJECT) and the transmitter's request port (a control request, then an order).</li>
+<li>The testbench printed each register as it is in the cycle (before the clock edge), and the model returned its counters after the end-of-cycle update; the counters were off by one cycle in every row. The model was changed to report the state at the start of the cycle.</li>
+<li>The imbalance exactly at the threshold (9/16 and 7/16 of the shares give +512 and -512), and a repeated ADD that the book refuses and that must not trade. Without it the mutants "the buy threshold is strict" and "the sell threshold is strict" survived (and a failed event could trade in the model).</li>
+<li>It could not be nonzero: it counts a second answer arriving while an order is held, but answers are at least 24 cycles apart (the slot lasts at least n + F + 5) and the transmitter is busy at most 31 cycles, so the second answer is never inside the first hold. A counter that cannot count is dead code, and a test that cannot be written is the proof; the argument is next to the hold register.</li>
+<li>The risk gate's second stage (the check and the token bucket): <code>gate.s1_s -&gt; gate.tok[0]</code>, 8.9 ns of logic and 18.0 of routing on ECP5. The queue and the signal's precision are off that path, so changing QD from 4 to 16 or F from 12 to 24 moves the clock by a few MHz.</li>
+<li>Because the queue only delays the loss: if messages arrive faster than the slot frees (every 24 cycles against 31), the backlog grows without limit and a deeper queue only postpones the first drop (17 of 99 dropped at a queue of 2 and 0 at 32 for a feed twice as fast, but 27 of 99 even at 32 for four times). What helps is a shorter service time: a pipelined strategy.</li>
+</ol>
+<h2 id="chapter-26-hints-for-the-exercises">Chapter 26 -- hints for the exercises<a class="headerlink" href="#chapter-26-hints-for-the-exercises" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The closed form becomes <code>wait + n + F + 11 + x</code> with <code>wait</code> the queue wait only, and the throughput is limited by the book (a message per n cycles, 11 to 36) instead of by the slot. Two orders in consecutive cycles need two places in the lifecycle (it takes one order in flight), so the model must say what happens to the second (missed, or queued).</li>
+<li>The one-byte parser's message times are replaced by the wide parser's (a message per few cycles); the study in Example B predicts the drops; compare the RTL's drop counts with the model's at the speeds of the study.</li>
+<li>If the gate answered 3 cycles after the offer and still applied the update before the next event's check, the specification's "answer in cycle a + 2" changes and Chapter 25's give-back needs one more wait cycle; the safest is to keep the update in the same stage as the check and pipeline the checks' arithmetic.</li>
+<li>A trade message carries a price and a side that the adapter must pass on (it forces them to 0 for E, X and D); mutants of the form "the trade's price is the book's" now have a second place to survive, and the rules need a type mask bit for P.</li>
+<li>The rules, table, limits, band and session configuration are written rarely and by index: registers. Arm, disarm and kill must stay fast and unconditional (pins or a dedicated register with write priority). Order of writes: the symbol table and the rules before arm; the gate's limits before arm (arm last, since the gate is disarmed after reset).</li>
+<li>Candidates: a mutant in a bit of the token counter above what 105 orders can reach (outside the traffic), or in the adapter's use of the high word of a reference (outside the contract: references below 2^32).</li>
 </ol>
 
 
