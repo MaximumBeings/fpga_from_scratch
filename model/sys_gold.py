@@ -13,7 +13,7 @@ SN = ["IDLE", "RISK1", "RISK2", "TNEW", "TANS", "RB"]
 class Sys:
     def __init__(self, nt=4, na=4, ns=4, r=4):
         self.na, self.ns, self.r = na, ns, r; self.g = RG.Gate(na, ns, r); self.T = LG.Tracker(nt); self.c = 0; self.st = IDLE; self.h = None; self.hres = 0
-        self.tpend = (0, 0, 0, None); self.rpend = None; self.rvis = (0,) * 8; self.dvis = (0, 0, 0); self.ordq = []; self.crq = []; self.checks = 0; self.bad = 0; self.collide = 0
+        self.tpend = (0, 0, 0, None); self.rpend = None; self.rvis = (0,) * 8; self.dvis = (0, 0, 0); self.ordq = []; self.crq = []; self.checks = 0; self.bad = 0; self.collide = 0; self.accepted_once = None
     def reconcile(self):
         g, T = self.g, self.T; self.checks += 1
         for a in range(self.na):
@@ -25,7 +25,8 @@ class Sys:
         c, g, T = self.c, self.g, self.T
         if "ord" in cy: self.ordq.append(cy["ord"])
         if "cr" in cy: self.crq.append(cy["cr"])
-        ordp = self.ordq[0] if self.ordq else None; crp = self.crq[0] if self.crq else None; rep = cy.get("rep")
+        once = "ord1" in cy                                                                 # an order offered in this cycle only (the pins are not held): taken now or not at all
+        ordp = cy["ord1"] if once else (self.ordq[0] if self.ordq else None); crp = self.crq[0] if self.crq else None; rep = cy.get("rep")
         tv, tsrc, tres, trel = self.tpend; t_ready = rep is None; trv = trel is not None; st = self.st
         ord_ready = int(st == IDLE and not trv); cr_ready = int(st != TNEW and t_ready)
         c_valid = int(bool(tv) and not tsrc and st != TANS)
@@ -49,7 +50,7 @@ class Sys:
         # the state machine
         dnext = (0, 0, 0)
         if st == IDLE:
-            if took: self.h = self.ordq.pop(0); self.st = RISK1
+            if took: self.h = ordp if once else self.ordq.pop(0); self.st = RISK1
         elif st == RISK1: self.st = RISK2
         elif st == RISK2:
             if self.rvis[2] != RG.OK: dnext = (1, self.rvis[2], self.h["tok"] & LG.M32); self.st = IDLE
@@ -72,6 +73,7 @@ class Sys:
             if s < self.ns: g.band[s] = (lo, hi)
         if cy.get("disarm"): g.armed = 0
         elif cy.get("arm") and not cy.get("kill", 0): g.armed = 1
+        self.accepted_once = took if once else None
         self.tpend = tnext; self.rvis = rnext; self.dvis = dnext; self.c += 1
         return row
 def run(cycles, nt=4, na=4, ns=4, r=4):

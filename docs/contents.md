@@ -43,7 +43,7 @@ The plan for the whole book. **Part 0 to Part 7 build the trading data path; Par
 25. *(written)* Order lifecycle: acks, cancels, replaces, fills, reconciliation
 
 ## Part 6 -- The whole system
-26. Integration: the wire-to-wire pipeline, a per-stage cycle-budget table, a register interface and DMA to the host
+26. *(written)* Integration: the wire-to-wire pipeline and a per-stage cycle-budget table (the register interface and DMA to the host are not in this chapter)
 27. Resets, power-up, watchdogs and safe states
 28. Timestamps and measurement: defining tick-to-trade, jitter, histograms
 29. System tests: replay, scenario generation, fault injection, cycle-count regression

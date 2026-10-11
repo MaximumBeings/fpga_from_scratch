@@ -1,0 +1,23 @@
+== 1. LUTs and flip-flops of each unit (Yosys synth_ice40 -noflatten; the pin wrapper's shift register is in w2w_syn)
+  module                             LUT4     FF  RAM4K
+  TOTAL (all units + pin wrapper)    9975   8971     26
+  risk                               2852   1764      0
+  sig                                2034   1934      0
+  book2                              1832   1243     11
+  sess                                844    612      0
+  trig                                814    875      6
+  track                               683    354      0
+  w2w                                 459    306      9
+  mold_itch                           264    705      0
+  life                                149    118      0
+
+== 2. the whole design placed (nextpnr seed 1, asked for 300 MHz), flat
+   QD   F | iCE40 LUT     FF    LCs   Fmax | ECP5 LUT     FF   Fmax
+    8  12 |      7034   5793  11891 no fit |     6345   5562   37.2
+    4  12 |      7374   6193  12625 no fit |     6333   5558   40.7
+   16  12 |      7050   5796  11910 no fit |     6408   5566   40.4
+    8  24 |      7997   7083  14062 no fit |     6781   6852   43.1
+
+== the end points of the critical path (nextpnr's last report for the clock)
+  QD  8 F 12 ecp5   u.lc.gate.s1_s             -> u.lc.gate.tok[0]           8.9 ns logic, 18.0 ns routing
+  QD  8 F 24 ecp5   u.lc.gate.s1_s             -> u.lc.gate.tok[0]           8.4 ns logic, 14.8 ns routing

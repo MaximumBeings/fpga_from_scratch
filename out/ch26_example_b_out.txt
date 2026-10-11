@@ -1,0 +1,24 @@
+== 1. the closed form: total = wait + n + F + 11 + x, for every order of every mix (the mixes of ch26_run.py); x = cycles from the gate's answer to the first byte (1 if the transmitter is ready, more if it is still sending)
+  orders checked 105, closed form wrong for 0; x = 1 for 100 of them (the transmitter was ready) and up to 4 otherwise; (total - F) from 23 to 165 cycles
+
+== 2. what the book costs by type of event (cycles n of Chapter 20's rules; 4000 events from the generator, D = 8, NB = 8, K = 4, 4 symbols)
+  event     result  count  min   mean  max
+  ADD       DUPREF     24    7    7.0    7
+  ADD       FULL      548    7    7.0    7
+  ADD       OK        997   11   13.2   18
+  ADD       ZERO       38    1    1.0    1
+  CANCEL    OK        366   10   12.0   16
+  DELETE    OK        690   10   12.3   17
+  EXEC      OK        370   10   11.9   15
+  REPLACE   FULL      247   16   18.6   23
+  REPLACE   OK        613   20   24.5   34
+  REPLACE   UNK        24    7    7.0    7
+  the worst case the rules allow (D = 8, K = 4): 36 cycles
+
+== 3. the feed s times faster than one byte per cycle (model only): messages dropped of 99, by queue size QD, on the 'dense' stream; F = 12
+  mean strategy-slot occupancy (n + F + 4 + 1, over all 99 events): 31.0 cycles per message; the feed at one byte per cycle gives one message per 48.6 cycles
+   speed |   QD = 2   QD = 4   QD = 8  QD = 16  QD = 32 | mean queue wait at QD 32
+       1 |        0        0        0        0        0 | 1.7
+       2 |       17       13       11        6        0 | 342.0
+       4 |       52       52       48       43       27 | 623.6
+       8 |       75       72       70       63       47 | 596.0

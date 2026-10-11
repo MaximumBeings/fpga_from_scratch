@@ -1,0 +1,53 @@
+== 1. lint gate (Verilator -Wall --lint-only, Yosys 'check')
+  w2w (all units): Verilator warnings 0, Yosys check problems 0
+
+== 2. the model's self-test and what the traffic contains (seed 1)
+  selftest: the stepped transmitter equals sess_gold.run on 30 random sessions; the hand-worked scenario gives the hand-worked times: True
+  mix         msgs kept drops books offered taken missed  sent refused gate answers
+  normal            100     0   100      13    13      0    10       0 BAND 3, OK 10
+  dense              99     0    99       7     7      0     6       0 BAND 1, OK 6
+  dense_clean       100     0   100      14    14      0    14       0 OK 14
+  slow               99     0    99      12    12      0    11       0 BAND 1, OK 11
+  refuse             99     0    99      16    16      0     6       8 BAND 2, OK 14
+  close              99     0    99      23    23      0     4      15 BAND 4, OK 19
+  faults             99     0    99       6     6      0     2       0 KILL 4, OK 2
+  burst              99     0    99       3     3      0     3       0 OK 3
+  slowsig            99     0    99      27    27      0    26       0 BAND 1, OK 26
+  collide            99     0    99      15    14      1    10       0 BAND 4, OK 10
+  narrow             99     0    99      11    11      0     5       0 BAND 6, OK 5
+  openbook           99     0    99      20    20      0     4       0 BAND 3, OK 17
+  hand                2     0     2       1     1      0     1       0 OK 1
+  edge                5     0     5       2     2      0     2       0 OK 2
+  dead                2     0     2       1     1      0     0       1 OK 1
+  dead2               3     0     3       2     2      0     1       1 OK 2
+  queue               5     1     4       0     0      0     0       0 
+
+== 3. the whole design against the model: every cycle, every output (queue, counters, book, strategy, lifecycle, bytes on the wire)
+  mix         | cycles orders bytes sent |  Icarus  Verilator
+  normal      |   6597     13        310 |    PASS       PASS
+  dense       |   5502      7        186 |    PASS       PASS
+  dense_clean |   4925     14        434 |    PASS       PASS
+  slow        |  10055     12        341 |    PASS       PASS
+  refuse      |   6058     16        186 |    PASS       PASS
+  close       |   6352     23        124 |    PASS       PASS
+  faults      |   6704      6         62 |    PASS       PASS
+  burst       |   4993      3         93 |    PASS       PASS
+  slowsig     |   5691     27        806 |    PASS       PASS
+  collide     |   6561     14        310 |    PASS       PASS
+  narrow      |   5198     11        155 |    PASS       PASS
+  openbook    |   6361     20        124 |    PASS       PASS
+  hand        |    528      1         31 |    PASS       PASS
+  edge        |    882      2         62 |    PASS       PASS
+  dead        |    528      1          0 |    PASS       PASS
+  dead2       |    646      2         31 |    PASS       PASS
+  queue       |    617      0          0 |    PASS       PASS
+
+== 4. the cycle budget: from the last byte of the message to the first byte of the order (all orders of all mixes)
+  stage                               min   mean  max
+  queue wait (accepted - pushed - 1)    0   16.9  141
+  order book (n of the event)          11   13.4   28
+  signal + trigger (F + 4)             16   21.0   36
+  gate + tracker (offer to answer)      5    5.0    5
+  transmitter (answer to first byte)    1    1.1    4
+  TOTAL last byte in -> first byte out   35   59.3  197
+  by the type of the message that caused the order: ADD 80 orders (total 35..197), EXEC 10 orders (total 35..166), REPLACE 15 orders (total 44..167)

@@ -81,5 +81,7 @@ nav:
       - "23. Pre-Trade Risk: Position, Notional and Rate Limits, a Price Band, a Kill Switch, a Gate That Fails Closed, and a Bounded Proof That It Holds": part05/23-pre-trade-risk.md
       - "24. Order Entry: A Binary Protocol, Templates Patched in One Cycle, and the Client Side of a Session That Fails Closed": part05/24-order-entry.md
       - "25. The Order Lifecycle: Tracking What Is Open, Giving Back What Is Not, and Keeping Two Books the Same": part05/25-order-lifecycle.md
+  - "Part 6 -- The whole system":
+      - "26. Wire to Wire: Chaining the Units into One Design and Writing Down Where Every Cycle Goes": part06/26-wire-to-wire.md
   - Appendices:
       - "H. Answers to the Self-Check Questions": answers.md

@@ -1,0 +1,88 @@
+NOTE: this script deliberately breaks copies of the RTL and of the model. 'caught' lines are EXPECTED: they show the battery notices the mistake.
+unmutated design and model pass their batteries: True
+  F (a full add order) is not an ADD: caught by: normal
+  the side of an add is inverted: caught by: normal
+  an add carries no price: caught by: normal
+  an add carries no shares: caught by: normal
+  an execute is a cancel: caught by: normal
+  an execute carries no shares: caught by: normal
+  a cancel is a delete: caught by: normal
+  a cancel carries no shares: caught by: normal
+  a delete is a cancel: caught by: normal
+  a replace is an add: caught by: normal
+  a replace carries no price: caught by: normal
+  a replace carries no shares: caught by: normal
+  a symbol equal to NS is traded: caught by: normal
+  messages with an error are queued: caught by: normal
+  the queued symbol is always 0: caught by: normal
+  the reference is the high word: caught by: normal
+  the new reference is the old one: caught by: normal
+  the queue is full one entry early: caught by: slowsig
+  a full queue is overwritten: caught by: queue
+  drops are not counted: caught by: queue
+  the queue count ignores pops: caught by: normal
+  the head pointer does not advance: caught by: normal
+  the strategy slot is ignored: caught by: normal
+  the slot is never freed: caught by: normal
+  the trigger sees the wrong event type: caught by: normal
+  the trigger sees the wrong price: caught by: normal
+  the trigger sees the wrong shares: caught by: normal
+  the trigger key is not the symbol: caught by: normal
+  the trigger side is wrong: caught by: normal
+  the signal sees bid and ask swapped: caught by: normal
+  the trigger result is not kept: caught by: normal
+  a failed event can trade: caught by: normal
+  the traded symbol is the event's: caught by: normal
+  a crossed book can trade (buy): caught by: close
+  a locked book can trade (sell): caught by: normal
+  a buy needs no trigger: caught by: normal
+  a sell needs no trigger: caught by: normal
+  a buy needs no applied event: caught by: dense_clean
+  a sell needs no applied event: caught by: normal
+  the buy threshold is strict: caught by: edge
+  the sell threshold is strict: caught by: edge
+  the buy threshold is half: caught by: dense
+  a sell is also taken when imbalance is positive: caught by: normal
+  the ask price is the bid: caught by: normal
+  the bid price is the ask: caught by: normal
+  the order side is wrong: caught by: normal
+  the order quantity is wrong: caught by: normal
+  the order account is 1: caught by: normal
+  the order symbol is the event's: caught by: normal
+  the order price is the wrong side's: caught by: normal
+  the token counts offers, not takes: caught by: normal
+  the sent price is the wrong side's: caught by: normal
+  the sent side is wrong: caught by: normal
+  the sent symbol is the event's: caught by: dense_clean
+  missed orders are not counted: caught by: collide
+  a held order is forgotten: caught by: normal
+  every answer is sent: caught by: normal
+  the control request loses to the order: caught by: normal
+  the control request is not offered: caught by: normal
+  the sent token is wrong: caught by: normal
+  the sent price is wrong: caught by: normal
+  the sent shares are wrong: caught by: normal
+  the sent symbol is 0: caught by: normal
+  a control request counts as an order: NOT CAUGHT
+  a refusal is not turned into a reject: caught by: refuse
+  a refusal count is not kept: caught by: refuse
+  the reject names the wrong token: caught by: refuse
+  an exchange report does not win over the reject: caught by: dead2
+  a waiting reject is lost when a report arrives: caught by: dead2
+  the hold is never set: caught by: normal
+  the hold is never released: caught by: normal
+  reset leaves the token counter at 0: caught by: normal
+  reset leaves the queue count: caught by: normal
+  reset leaves the slot: caught by: normal
+  model: the queue is never full: caught by: hand-checked scenarios
+  model: drops are not counted: caught by: hand-checked scenarios
+  model: the slot is ignored: caught by: hand-checked scenarios
+  model: the book is always ready: NOT CAUGHT
+  model: the signal is faster: caught by: hand-checked scenarios
+  model: a failed event can trade: caught by: hand-checked scenarios
+  model: the buy threshold is strict: caught by: hand-checked scenarios
+  model: the ask is the bid: caught by: hand-checked scenarios
+  model: a refusal is not a reject: caught by: hand-checked scenarios
+  rtl/w2w.sv: caught 73 of 74
+  model/w2w_gold.py: caught 8 of 9
+mutants caught: 81 of 83
